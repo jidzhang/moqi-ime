@@ -20,13 +20,13 @@ const frostCustomFileName = "rime_frost.custom.yaml"
 const frostCustomManagedMark = "# managed by moqi local_behavior.json"
 
 type localBehaviorConfig struct {
-	DisableSlashPunct *bool `json:"disable_slash_punct,omitempty"`
-	SlashPunctVOnly   *bool `json:"slash_punct_v_only,omitempty"`
-	DisableUnicode    *bool `json:"disable_unicode_trigger,omitempty"`
-	DisableNumber     *bool `json:"disable_number_trigger,omitempty"`
-	DisableLunar      *bool `json:"disable_lunar_trigger,omitempty"`
-	DisableCalculator *bool `json:"disable_calculator,omitempty"`
-	DisableAuxLookup  *bool `json:"disable_aux_lookup,omitempty"`
+	DisableSlashPunct *bool   `json:"disable_slash_punct,omitempty"`
+	SlashPunctVOnly   *bool   `json:"slash_punct_v_only,omitempty"`
+	DisableUnicode    *bool   `json:"disable_unicode_trigger,omitempty"`
+	DisableNumber     *bool   `json:"disable_number_trigger,omitempty"`
+	DisableLunar      *bool   `json:"disable_lunar_trigger,omitempty"`
+	DisableCalculator *bool   `json:"disable_calculator,omitempty"`
+	DisableAuxLookup  *bool   `json:"disable_aux_lookup,omitempty"`
 	GrammarModel      *string `json:"grammar_model,omitempty"`
 }
 
@@ -96,6 +96,17 @@ func buildFrostCustomPatch(cfg localBehaviorConfig, sharedDir string) string {
 	if lang := resolveGrammarLanguage(sharedDir, cfg); lang != "" {
 		emit("grammar/language: " + lang)
 		emit(`"translator/contextual_suggestions": true`)
+		// 大语法模型就位时的产品调优（2026-10-18 实测定档）：
+		// 1) abbrev_sentences：混合输入（全拼+首字母）也构建组句候选，让
+		//    语法模型参与排序。实测核心场景 +2.4；必须以大 gram 为前提——
+		//    无模型时句子路径反而大幅劣化（44.3 vs 52.2）。
+		// 2) melt_eng 权重降到 0.01：中文可解析的输入不再被英文词劫持
+		//    （der→的人 而非英文 der）；纯英文输入不受影响（hello 照常首选）。
+		//    配对 A/B +0.33。显式配置小 gram 时不启用 1（守卫见 bigGrammarActive）。
+		if bigGrammarActive(sharedDir, lang) {
+			emit(`"translator/abbrev_sentences": true`)
+			emit(`"melt_eng/initial_quality": 0.01`)
+		}
 	}
 	if lines == 0 {
 		return ""
@@ -140,4 +151,14 @@ func syncFrostCustomPatch(userDir, sharedDir string) bool {
 		return false
 	}
 	return true
+}
+
+// bigGrammarActive 判断指定语言的 gram 文件是否达到大模型门槛（64MB）。
+// abbrev_sentences 只应在大模型下启用（见 buildFrostCustomPatch 注释）。
+func bigGrammarActive(sharedDir, lang string) bool {
+	if sharedDir == "" || lang == "" {
+		return false
+	}
+	info, err := os.Stat(filepath.Join(sharedDir, lang+".gram"))
+	return err == nil && info.Size() >= minAutoGramBytes
 }

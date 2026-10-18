@@ -105,3 +105,37 @@ func TestSyncFrostCustomPatchKeepsHandEditedFile(t *testing.T) {
 		t.Fatalf("hand-edited file was modified: %q err=%v", body, err)
 	}
 }
+
+func TestBuildFrostCustomPatchBigGrammarTuning(t *testing.T) {
+	dir := t.TempDir()
+	// 伪造一个 ≥64MB 的 gram 文件
+	big := make([]byte, (64<<20)+1)
+	if err := os.WriteFile(filepath.Join(dir, "zh-hans-t-essay-bgw.gram"), big, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cfg := localBehaviorConfig{}
+	patch := buildFrostCustomPatch(cfg, dir)
+	if !strings.Contains(patch, "grammar/language: zh-hans-t-essay-bgw") {
+		t.Fatalf("应包含 grammar/language:\n%s", patch)
+	}
+	if !strings.Contains(patch, `"translator/abbrev_sentences": true`) {
+		t.Fatalf("大 gram 应启用 abbrev_sentences:\n%s", patch)
+	}
+	if !strings.Contains(patch, `"melt_eng/initial_quality": 0.01`) {
+		t.Fatalf("大 gram 应降 melt_eng 权重:\n%s", patch)
+	}
+}
+
+func TestBuildFrostCustomPatchSmallGrammarNoTuning(t *testing.T) {
+	dir := t.TempDir()
+	// 只有小 gram（<64MB）：不启用 abbrev_sentences
+	if err := os.WriteFile(filepath.Join(dir, "zh-moqi.gram"), make([]byte, 1024), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	s := "zh-moqi"
+	cfg := localBehaviorConfig{GrammarModel: &s}
+	patch := buildFrostCustomPatch(cfg, dir)
+	if strings.Contains(patch, "abbrev_sentences") {
+		t.Fatalf("小 gram 不应启用 abbrev_sentences:\n%s", patch)
+	}
+}
