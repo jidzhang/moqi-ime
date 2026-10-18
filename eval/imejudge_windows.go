@@ -321,3 +321,63 @@ func (j *IMEJudge) EvaluateMixed(pairs []BurstPair, readings CharReadings) Burst
 	}
 	return rep
 }
+
+// TypeKeysCollect 逐键输入并收集每次按键响应携带的 commit（诊断直通类行为，
+// 如标点直接上屏 '/'、数字分隔符上屏）。末尾不追加提交键。
+func (j *IMEJudge) TypeKeysCollect(keys [][2]int) []string {
+	if sid := j.ime.DebugSessionID(); sid != 0 {
+		rime.ClearComposition(sid)
+	}
+	var out []string
+	for _, kc := range keys {
+		if resp := j.sendKey(kc[0], kc[1]); resp != nil && resp.CommitString != "" {
+			out = append(out, resp.CommitString)
+		}
+	}
+	return out
+}
+
+// TypeKeys 按给定 (虚拟键,字符码) 序列逐键输入，末尾空格提交（诊断用）。
+// 复现 TSF 真实按键必须用 OEM 虚拟键：'.' 的字符码 0x2E 是 VK_DELETE，
+// 真实前端发的是 VK_OEM_PERIOD(0xBE)——用字符码会走完全不同的路径。
+func (j *IMEJudge) TypeKeys(keys [][2]int) (string, bool) {
+	if sid := j.ime.DebugSessionID(); sid != 0 {
+		rime.ClearComposition(sid)
+	}
+	for _, kc := range keys {
+		j.sendKey(kc[0], kc[1])
+	}
+	resp := j.sendKeyDownOnly(0x20, 0x20)
+	if resp == nil {
+		return "", false
+	}
+	if resp.CommitString != "" {
+		return resp.CommitString, true
+	}
+	resp = j.ime.HandleRequest(&imecore.Request{Method: "onKeyDown", SeqNum: nextIMESeq(), KeyCode: 0x20, CharCode: 0x20})
+	if resp != nil && resp.CommitString != "" {
+		return resp.CommitString, true
+	}
+	return "", false
+}
+
+// MenuAfterKeys 按给定 (虚拟键,字符码) 序列逐键输入后返回当前候选与
+// 组字串状态（诊断用，不发提交键）。
+func (j *IMEJudge) MenuAfterKeys(keys [][2]int) (candidates []string, composition string) {
+	if sid := j.ime.DebugSessionID(); sid != 0 {
+		rime.ClearComposition(sid)
+	}
+	var resp *imecore.Response
+	for _, kc := range keys {
+		resp = j.sendKey(kc[0], kc[1])
+	}
+	req := &imecore.Request{Method: "onKeyDown", SeqNum: nextIMESeq(), KeyCode: 0x0A, CharCode: 0}
+	st := j.ime.HandleRequest(req)
+	if st != nil {
+		return st.CandidateList, st.CompositionString
+	}
+	if resp != nil {
+		return resp.CandidateList, resp.CompositionString
+	}
+	return nil, ""
+}

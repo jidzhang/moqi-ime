@@ -28,6 +28,7 @@ func main() {
 	input := flag.String("input", "full", "input mode: full | jianpin")
 	triple := flag.Bool("triple", false, "burst: use chained 3-word pairs")
 	burstTopN := flag.Int("burstTopN", 2000, "top-N bigram pairs for burst eval")
+	burstDedupInput := flag.Bool("burstDedupInput", false, "burst: drop later pairs whose d3 input (W1 full pinyin + W2 initial) collides with an earlier pair; same-input golds cap top-2000 at 62.25%")
 	flag.Parse()
 
 	if *pinyin == "" || *dataDir == "" || *userDir == "" || (*burstTSV == "" && *corpus == "") {
@@ -140,6 +141,29 @@ func main() {
 			burstJudge = imeJudge
 		} else {
 			burstJudge = openNative()
+		}
+		if *burstDedupInput && *burstMode == "mixed" && !*triple {
+			seen := map[string]bool{}
+			deduped := pairs[:0]
+			for _, p := range pairs {
+				py, ok := eval.GoldToPinyin(p.W1, readings)
+				if !ok || p.W2 == "" {
+					continue
+				}
+				w2head := []rune(p.W2)[:1]
+				jp, ok2 := eval.GoldToJianpin(string(w2head), readings)
+				if !ok2 || jp == "" {
+					continue
+				}
+				in := py + jp
+				if seen[in] {
+					continue
+				}
+				seen[in] = true
+				deduped = append(deduped, p)
+			}
+			pairs = deduped
+			fmt.Printf("burst dedup: %d pairs remain (unique d3 inputs)\n", len(pairs))
 		}
 		var rep eval.BurstReport
 		if *burstMode == "mixed" {
