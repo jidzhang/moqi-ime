@@ -340,6 +340,14 @@ try {
         Write-Host "[INFO] Copied rime.dll into package output"
     }
 
+    Write-Step -Title "Step 6.5: Prebuild Rime dictionaries (first-key latency fix)"
+    $prebuildStart = Get-Date
+    & go run ./cmd/rime-prebuild -data "$PackageRimeDataDir"
+    if ($LASTEXITCODE -ne 0) {
+        throw "rime-prebuild failed with exit code $LASTEXITCODE"
+    }
+    Write-Host ("[INFO] Prebuild completed in {0:mm} min {0:ss} s" -f ((Get-Date) - $prebuildStart))
+
     Write-Step -Title "Step 7: Generate backends.json snippet"
     @(
         [ordered]@{
