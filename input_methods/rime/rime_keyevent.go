@@ -126,20 +126,49 @@ var vkMaps = map[int]int{
 	vkOem3:     '`',
 }
 
+// Set-1 扫描码（lParam 位 16-23，TSF 原样透传）：
+// Shift 左右码不同（0x2A/0x36）；Ctrl/Alt 左右同码，用扩展位（位 24）区分。
+const (
+	scanCodeShiftL = 0x2A
+	scanCodeShiftR = 0x36
+	scanCodeCtrl   = 0x1D
+)
+
+// shiftSide 判别本次 Shift 事件来自左键还是右键。
+// 优先用扫描码（物理身份）；缺失时回退到按键状态快照（GetKeyState 高位
+// =按住）。不能用 toggle 低位判别：非锁定键该位随每次按下翻转，右 Shift
+// 的身份会在两次按键间来回切换（曾表现为右 Shift 需按两次才切换中英）。
+func shiftSide(req *imecore.Request) int {
+	switch req.ScanCode {
+	case scanCodeShiftR:
+		return vkRShift
+	case scanCodeShiftL:
+		return vkLShift
+	}
+	if req.KeyStates.IsKeyDown(vkRShift) && !req.KeyStates.IsKeyDown(vkLShift) {
+		return vkRShift
+	}
+	return vkLShift
+}
+
+// controlSide 左右 Ctrl 同为 0x1D，靠扩展位区分；无扫描码时按住状态兜底。
+func controlSide(req *imecore.Request) int {
+	if req.ScanCode == scanCodeCtrl && req.IsExtended {
+		return vkRControl
+	}
+	if req.ScanCode == 0 && req.KeyStates.IsKeyDown(vkRControl) &&
+		!req.KeyStates.IsKeyDown(vkLControl) {
+		return vkRControl
+	}
+	return vkLControl
+}
+
 func translateKeyCode(req *imecore.Request) int {
 	keyCode := req.KeyCode
 	if keyCode == vkShift {
-		if req.KeyStates.IsKeyToggled(vkRShift) {
-			keyCode = vkRShift
-		} else {
-			keyCode = vkLShift
-		}
+		keyCode = shiftSide(req)
 	} else if keyCode == vkControl {
-		if req.KeyStates.IsKeyToggled(vkRControl) {
-			keyCode = vkRControl
-		} else {
-			keyCode = vkLControl
-		}
+		keyCode = controlSide(req)
 	}
 
 	if mapped, ok := vkMaps[keyCode]; ok {
