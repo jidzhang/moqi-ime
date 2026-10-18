@@ -4,6 +4,7 @@ package rime
 
 import (
 	"log"
+	"os"
 	"sync"
 	"time"
 
@@ -112,6 +113,8 @@ func (b *nativeBackend) Initialize(sharedDir, userDir string, firstRun bool) boo
 		executedOnce = true
 		onceStart := time.Now()
 		debugLogf("nativeBackend.Initialize 一次性初始化开始 firstRun=%t sharedDir=%q userDir=%q", firstRun, sharedDir, userDir)
+		// 日志目录体积兜底清理（正常不会触发，见 cleanupOversizedLogDir）。
+		cleanupOversizedLogDir(rimeLogDir())
 		rimeInitOK = RimeInit(sharedDir, userDir, APP, APP_VERSION, firstRun)
 		debugLogf("nativeBackend.Initialize 一次性初始化完成 elapsed=%s success=%t", time.Since(onceStart), rimeInitOK)
 		if !rimeInitOK {
@@ -392,4 +395,34 @@ func (b *nativeBackend) DeleteCandidateOnCurrentPage(index int) bool {
 		return false
 	}
 	return DeleteCandidateOnCurrentPage(b.sessionID, index)
+}
+
+// InitWithDirs 用显式目录初始化原生后端（评估器/工具用，绕过 exe 路径推导）。
+// 目录布局与正式运行一致：rime.dll 位于 sharedDir 的上级。
+func (ime *IME) InitWithDirs(sharedDir, userDir string) bool {
+	firstRun := false
+	info, err := os.Stat(userDir)
+	if os.IsNotExist(err) {
+		if err := os.MkdirAll(userDir, 0o700); err != nil {
+			return false
+		}
+		firstRun = true
+	} else if err != nil || !info.IsDir() {
+		return false
+	}
+	real := newNativeBackend()
+	if real == nil || !real.Initialize(sharedDir, userDir, firstRun) {
+		return false
+	}
+	ime.backend = real
+	ime.sharedDirOverride = sharedDir
+	return true
+}
+
+// DebugSessionID 暴露原生会话（评估器诊断用）。
+func (ime *IME) DebugSessionID() RimeSessionId {
+	if native, ok := ime.backend.(*nativeBackend); ok {
+		return native.sessionID
+	}
+	return 0
 }
