@@ -110,6 +110,18 @@ func buildFrostCustomPatch(cfg localBehaviorConfig, sharedDir string) string {
 			// 英文词（der/nas/mad…约 500 个）降到第 2 位，中文解析优先。
 			// 纯英文输入不受影响（hello/ok 不在词表）。
 			emit(`"reduce_english_filter/mode": all`)
+			// 句子候选质量补设 B=−2（2026-10-18 夜扫参定档）：仅在 abbrev
+			// 门（混合输入组句）触发时生效，exp(weight−2)+initial_quality。
+			// 扫参 B∈{0,-2,-4}：−2 即平台，d3 +0.95（55.40 vs 54.45），
+			// d5 逐位不动、d1 噪声内（0.05）。与 bigram 补充词典组合后
+			// +0.5（整词命中替代部分组句，作用面变小），仍净正。
+			emit(`"translator/sentence_quality_boost": -2`)
+			// 换位容错（2026-10-19 定档 −8）：T 类错字 23.4→51.6，守卫
+			// d1 −0.10 / d5 −0.12 / d3 ~−0.3 边界、每键延迟 +7.6%，全部达标。
+			// 漏字边（enable_deletion + deletion_credibility）机制已实现但
+			// 守卫超标（d5 −0.5~−0.9），暂不启用，待门控精细化。
+			emit(`"translator/enable_transpose": true`)
+			emit(`"translator/transpose_credibility": -8`)
 		}
 	}
 	if lines == 0 {
