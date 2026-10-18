@@ -106,6 +106,10 @@ func buildFrostCustomPatch(cfg localBehaviorConfig, sharedDir string) string {
 		if bigGrammarActive(sharedDir, lang) {
 			emit(`"translator/abbrev_sentences": true`)
 			emit(`"melt_eng/initial_quality": 0.01`)
+			// 上游自带的英文降位过滤器开全量模式：把"拼音前缀+尾字母"型
+			// 英文词（der/nas/mad…约 500 个）降到第 2 位，中文解析优先。
+			// 纯英文输入不受影响（hello/ok 不在词表）。
+			emit(`"reduce_english_filter/mode": all`)
 		}
 	}
 	if lines == 0 {
