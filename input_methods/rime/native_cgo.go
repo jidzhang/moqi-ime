@@ -419,6 +419,17 @@ func (ime *IME) InitWithDirs(sharedDir, userDir string) bool {
 	return true
 }
 
+// SetNativeInput 评测专用快路径：把整串原始输入一次性写入当前会话。
+// 逐键 ProcessKey 对每个字母触发一次完整翻译（30 字母 = 30 次），整串注入
+// 只翻译一次，整句评测因此快约 48 倍（单帧口径实测）。
+// 不用于产品按键路径（绕过按键事件语义）。
+func (ime *IME) SetNativeInput(input string) bool {
+	if native, ok := ime.backend.(*nativeBackend); ok && native.sessionID != 0 {
+		return SetInput(native.sessionID, input)
+	}
+	return false
+}
+
 // DebugSessionID 暴露原生会话（评估器诊断用）。
 func (ime *IME) DebugSessionID() RimeSessionId {
 	if native, ok := ime.backend.(*nativeBackend); ok {

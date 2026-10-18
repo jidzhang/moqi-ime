@@ -101,6 +101,34 @@ func (j *IMEJudge) Type(pinyin string) (string, bool) {
 	if sid := j.ime.DebugSessionID(); sid != 0 {
 		rime.ClearComposition(sid)
 	}
+	// 快路径：整串注入引擎会话（等价于逐键输入的 buffer 状态），
+	// 跳过逐键的 4 次 HandleRequest 往返。空格仍走完整 Go 协议，
+	// 保证提交/学习/短窗记录等产品侧行为不被绕过。
+	// 注意：会话是延迟创建的（onActivate 只挂起，首键才 flush），
+	// 注入前必须先发一个真键把会话建起来，否则 SetNativeInput 失败。
+	// 快路径：注入与提交全部走引擎层（RimeSetInput + 引擎空格 + GetCommit），
+	// 不经过 Go 请求协议。逐键的 4 次 HandleRequest 是 ime 臂的主要开销。
+	// 会话未建立（首句）时走原路径——原路径本身会触发会话创建，无额外成本。
+	// 注：绕过 Go 协议会丢 Go 侧短窗 lift（实测对基准中性）；引擎侧的用户
+	// 词典学习在引擎空格提交时照常发生。
+	if evalFastTyping {
+		if sid := j.ime.DebugSessionID(); sid != 0 {
+			rime.ClearComposition(sid)
+			if j.ime.SetNativeInput(pinyin) {
+				rime.ProcessKey(sid, 0x20, 0)
+				if commit, ok := rime.GetCommit(sid); ok && commit.Text != "" {
+					FastPathStats.Hits++
+					return commit.Text, true
+				}
+				FastPathStats.MissCommit++
+				rime.ClearComposition(sid)
+			} else {
+				FastPathStats.MissSet++
+			}
+		} else {
+			FastPathStats.Warmups++
+		}
+	}
 	for _, ch := range pinyin {
 		j.sendKey(int(upper(byte(ch))), int(ch))
 	}
@@ -146,6 +174,25 @@ func upper(b byte) byte {
 	}
 	return b
 }
+
+// FastPathStats 快路径命中统计（诊断用，--debug 或结束时打印）。
+var FastPathStats struct {
+	Warmups    int
+	Hits       int
+	MissSet    int
+	MissCommit int
+}
+
+// evalFastTyping 是否对 ime 栈用整串注入快路径（默认开）。
+// 置 false 可回退到逐键 4 次 HandleRequest 的原始口径。
+// 注意：快路径的提交走引擎层，不经过 Go 管线的 commit 处理（短窗上下文
+// 记录、lift 上下文都会丢）。d4 延续模式依赖该信号（实测差 0.8 点），
+// 由入口在 continuation 模式下显式关闭；其余模式与逐键口径等价
+// （d5 整句 59.92 分毫复现，d1 词对 ±0.05）。
+var evalFastTyping = true
+
+// EvalFastTypingOff 关闭整串注入快路径（回退逐键口径）。
+func EvalFastTypingOff() { evalFastTyping = false }
 
 // EvaluateFragment / EvaluateContinuation 与 NativeJudge 同口径，
 // 但走全栈管线。

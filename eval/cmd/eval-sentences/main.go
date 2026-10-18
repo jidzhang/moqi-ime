@@ -81,6 +81,8 @@ func main() {
 		defer imeJudge.Close()
 		eval.InputMode = *input
 		rep := imeJudge.Evaluate(golds, readings, *limit)
+		fmt.Printf("fast-path: hit=%d missSet=%d missCommit=%d warmup=%d\n",
+			eval.FastPathStats.Hits, eval.FastPathStats.MissSet, eval.FastPathStats.MissCommit, eval.FastPathStats.Warmups)
 		fmt.Printf("top-1 %.2f%% (%d/%d) macroCER %.4f\n",
 			100*rep.Accuracy(), rep.Matched, rep.Total, rep.MacroCER)
 		if avg, p95, mx, n := eval.LatencyReport(); n > 0 {
@@ -123,6 +125,10 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Printf("burst pairs=%d mode=%s stack=%s\n", len(pairs), *burstMode, *stack)
+		if *burstMode == "continuation" {
+			// d4 延续依赖 Go 管线的提交后处理（短窗 lift），快路径会绕过
+			eval.EvalFastTypingOff()
+		}
 		var burstJudge eval.BurstEvaluator
 		if *stack == "ime" {
 			imeJudge := &eval.IMEJudge{DataDir: *dataDir, UserDir: *userDir + "-ime/rime"}
