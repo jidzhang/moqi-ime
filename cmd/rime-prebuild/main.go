@@ -14,6 +14,8 @@
 package main
 
 import (
+	"strings"
+
 	"flag"
 	"fmt"
 	"log"
@@ -30,6 +32,10 @@ func main() {
 	if *dataDir == "" {
 		fmt.Fprintln(os.Stderr, "missing required flag: -data")
 		os.Exit(2)
+	}
+
+	if err := mergeJianpinPatch(*dataDir); err != nil {
+		log.Printf("简拼补丁合并失败（继续预编译）: %v", err)
 	}
 
 	tmp, err := os.MkdirTemp("", "moqi-rime-prebuild-*")
@@ -75,4 +81,55 @@ func copyTree(src, dst string) error {
 		}
 	}
 	return nil
+}
+
+// mergeJianpinPatch 把简拼高频组合补丁合并进打包数据目录的
+// custom_phrase.txt（幂等：已合并过则跳过）。
+// 补丁来源 input_methods/rime/patches/jianpin_phrases.txt，生成方法见其头部注释。
+func mergeJianpinPatch(dataDir string) error {
+	patchPath := filepath.Join("input_methods", "rime", "patches", "jianpin_phrases.txt")
+	patchLines, err := readNonCommentLines(patchPath)
+	if err != nil {
+		return err
+	}
+	if len(patchLines) == 0 {
+		return nil
+	}
+	marker := "\t的人\tdr\t"
+	target := filepath.Join(dataDir, "custom_phrase.txt")
+	existing, err := os.ReadFile(target)
+	if err != nil {
+		return err
+	}
+	if strings.Contains(string(existing), marker) {
+		return nil // 已合并
+	}
+	f, err := os.OpenFile(target, os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	for _, l := range patchLines {
+		if _, err := f.WriteString(l + "\n"); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("[prebuild] jianpin patch merged %d entries -> %s\n", len(patchLines), target)
+	return nil
+}
+
+func readNonCommentLines(path string) ([]string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, l := range strings.Split(string(data), "\n") {
+		l = strings.TrimRight(l, "\r")
+		if l == "" || strings.HasPrefix(l, "#") {
+			continue
+		}
+		out = append(out, l)
+	}
+	return out, nil
 }
