@@ -4047,8 +4047,8 @@ func TestLoadAppearancePrefsCreatesDefaultConfigWhenMissing(t *testing.T) {
 	if got := persisted["candidate_count"]; got != float64(9) {
 		t.Fatalf("expected persisted candidate_count 9, got %#v", got)
 	}
-	if got := persisted["font_point"]; got != float64(20) {
-		t.Fatalf("expected persisted font_point 20, got %#v", got)
+	if got := persisted["font_point"]; got != float64(16) {
+		t.Fatalf("expected persisted font_point 16 (defaultStyle), got %#v", got)
 	}
 	if got := persisted["font_face"]; got != "Segoe UI" {
 		t.Fatalf("expected persisted font_face Segoe UI, got %#v", got)

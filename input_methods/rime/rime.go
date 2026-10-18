@@ -225,6 +225,11 @@ type IME struct {
 	syncedSchemaBySchemeSet      map[string]string
 	syncedSettingsNeedsApply     bool
 	activationUIRefreshPending   bool
+	// 进程内缓存的中英/全半角状态：供 onActivate 立即推送语言栏徽标，
+	// 避免为读选项而同步创建会话（会话仍延迟到首键，保住切换速度）。
+	cachedASCII     bool
+	cachedFullShape bool
+	modeCacheValid  bool
 	autoPairQuotes               bool
 	semicolonSelectSecond        bool
 	rawInputTracked              string
@@ -240,6 +245,9 @@ type IME struct {
 	cloudClipboardCursor         int
 	cloudClipboardPage           int
 	cloudClipboardRequestSeq     uint64
+	contextualRecentCommits      []contextualCommitRecord
+	contextualCfg                *contextualConfig
+	sharedDirOverride            string
 }
 
 type aiAsyncResult struct {
@@ -384,6 +392,9 @@ func (ime *IME) HandleRequest(req *imecore.Request) *imecore.Response {
 func (ime *IME) onActivate(req *imecore.Request, resp *imecore.Response) *imecore.Response {
 	debugLogf("RIME 输入法已激活")
 	ime.activationUIRefreshPending = true
+	// 切换瞬间就显示中/英徽标（与微软拼音一致的体验）：
+	// 用缓存状态立即加按钮，不建会话；首键 flush 再校准真实状态。
+	ime.addButtons(resp)
 	resp.RemovePreservedKey = append(resp.RemovePreservedKey, cloudClipboardListPreservedKeyGUID)
 	resp.ReturnValue = 1
 	return resp
@@ -428,7 +439,7 @@ func (ime *IME) filterKeyDown(req *imecore.Request, resp *imecore.Response) *ime
 	if ime.activationUIRefreshPending {
 		ime.createSession(resp)
 	}
-	if !isAndroidSoftKeyboardRequest(req) && ime.lastKeyDownCode == req.KeyCode {
+	if !isAndroidSoftKeyboardRequest(req) && !isBareShiftKeyCode(req.KeyCode) && ime.lastKeyDownCode == req.KeyCode {
 		ime.lastKeySkip++
 		if ime.lastKeySkip >= 2 {
 			ime.lastKeyDownCode = 0
@@ -487,20 +498,31 @@ func (ime *IME) filterKeyUp(req *imecore.Request, resp *imecore.Response) *imeco
 	if ime.handleSecondSelectionKeyUpFilter(req, resp) {
 		return resp
 	}
-	if ime.lastKeyUpCode == req.KeyCode {
+	if !isBareShiftKeyCode(req.KeyCode) && ime.lastKeyUpCode == req.KeyCode {
 		ime.lastKeyUpCode = 0
-	} else {
+	} else if isKeyReleaseRelevantForBackend(req.KeyCode) {
 		ime.lastKeyUpCode = req.KeyCode
 		beforeASCII, beforeFullShape, hasInputState := ime.currentInputModeState()
 		start := time.Now()
 		ime.lastKeyUpRet = ime.processKey(req, true)
 		logRimeSlow("filterKeyUp.processKey", start, "key=%d char=%d ret=%v", req.KeyCode, req.CharCode, ime.lastKeyUpRet)
 		ime.updateLangStatusIfInputStateChanged(req, resp, beforeASCII, beforeFullShape, hasInputState)
+	} else {
+		// 字母/数字/空格等普通键的 release 对引擎无语义，转发只会扰乱
+		// 组句与语法上下文（实测延续场景 hit@1 -5~-10 个点）。
+		// 只有 Shift（中英切换）/Caps 这类 up/down 有别的键才进引擎。
+		ime.lastKeyUpCode = req.KeyCode
+		ime.lastKeyUpRet = false
 	}
 	ime.lastKeyDownCode = 0
 	ime.lastKeySkip = 0
 	resp.ReturnValue = boolToInt(ime.lastKeyUpRet)
 	return resp
+}
+
+// isKeyReleaseRelevantForBackend 判断某键的 release 是否需要转发引擎。
+func isKeyReleaseRelevantForBackend(keyCode int) bool {
+	return keyCode == vkShift || keyCode == vkCapital
 }
 
 func isAndroidSoftKeyboardRequest(req *imecore.Request) bool {
@@ -518,7 +540,25 @@ func (ime *IME) currentInputModeState() (asciiMode bool, fullShape bool, ok bool
 	if !ime.backend.HasSession() {
 		return false, false, false
 	}
-	return ime.backend.GetOption("ascii_mode"), ime.backend.GetOption("full_shape"), true
+	asciiMode = ime.backend.GetOption("ascii_mode")
+	fullShape = ime.backend.GetOption("full_shape")
+	ime.rememberModeState(asciiMode, fullShape)
+	return asciiMode, fullShape, true
+}
+
+// rememberModeState 记录最近一次从引擎读到的模式，供激活瞬间免会话推送。
+func (ime *IME) rememberModeState(asciiMode, fullShape bool) {
+	ime.cachedASCII = asciiMode
+	ime.cachedFullShape = fullShape
+	ime.modeCacheValid = true
+}
+
+// uiModeState 返回用于 UI 的模式状态：优先缓存，无缓存时默认中文/半角。
+func (ime *IME) uiModeState() (asciiMode bool, fullShape bool) {
+	if ime.modeCacheValid {
+		return ime.cachedASCII, ime.cachedFullShape
+	}
+	return false, false
 }
 
 func (ime *IME) updateLangStatusIfInputStateChanged(req *imecore.Request, resp *imecore.Response, beforeASCII, beforeFullShape bool, hasInputState bool) {
@@ -1133,6 +1173,15 @@ func (ime *IME) BackendAvailable() bool {
 	return ime.backend != nil
 }
 
+// isBareShiftKeyCode 标识裸 Shift 键（VK_SHIFT）。Shift 的中英切换由引擎在
+// keyup 时翻转：一旦某个 keyup 在 TSF 链路丢失（焦点切换、应用不转发 keyup），
+// 同键去重会把后续 keydown 当重复事件按对吞掉，短按 Shift 就会"时不时失效"。
+// 对引擎而言多余的 Shift down/up 都是幂等空操作（只在记住按下状态后的 release
+// 才翻转），因此 Shift 豁免同键去重，保证每次物理按下都到达引擎。
+func isBareShiftKeyCode(keyCode int) bool {
+	return keyCode == vkShift
+}
+
 func (ime *IME) processKey(req *imecore.Request, isUp bool) bool {
 	start := time.Now()
 	defer func() {
@@ -1660,6 +1709,7 @@ func (ime *IME) commitAICandidate(resp *imecore.Response) {
 	}
 	resp.CommitString = ime.aiCandidates[ime.aiCandidateCursor]
 	ime.rememberAICommit(resp.CommitString)
+	ime.pushContextualCommit(resp.CommitString)
 	ime.clearResponse(resp)
 	ime.resetAIState()
 	ime.resetTrackedRawInput()
@@ -2075,6 +2125,8 @@ func (ime *IME) redeploy(req *imecore.Request, resp *imecore.Response) bool {
 	if err := ime.reloadAIConfig(); err != nil {
 		log.Printf("重新加载 AI 配置失败，将继续部署: %v", err)
 	}
+	ime.reloadContextualConfig()
+	syncFrostCustomPatch(userDir, sharedDir)
 	ime.destroySession(resp)
 
 	if native, ok := ime.backend.(*nativeBackend); ok {
@@ -2236,6 +2288,7 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 	if allowCommit && state.CommitString != "" {
 		resp.CommitString = state.CommitString
 		ime.rememberAICommit(state.CommitString)
+		ime.pushContextualCommit(state.CommitString)
 		ime.resetTrackedRawInput()
 	}
 	if state.Composition == "" {
@@ -2269,6 +2322,18 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 	}
 	if len(state.Candidates) > remainingCandidateCount {
 		state.Candidates = append([]candidateItem(nil), state.Candidates[:remainingCandidateCount]...)
+	}
+	// 短窗连贯：上一句刚上屏时，对接续首字候选做稳定提升（含光标重映射）。
+	if len(state.Candidates) > 0 {
+		if reordered, newCursor, changed := ime.applyContextualLift(state.Candidates, state.CandidateCursor); changed {
+			state.Candidates = reordered
+			state.CandidateCursor = newCursor
+		}
+		// bigram 精修：前三内部的保守换位（hit@3→hit@1）。
+		if reordered, newCursor, changed := ime.applyBigramRerank(state.Candidates, state.CandidateCursor); changed {
+			state.Candidates = reordered
+			state.CandidateCursor = newCursor
+		}
 	}
 	if len(state.Candidates) > 0 || len(customPhraseCandidates) > 0 {
 		resp.CandidateList = append(ime.formatCandidates(customPhraseCandidates), ime.formatCandidates(state.Candidates)...)
@@ -2799,6 +2864,7 @@ func (ime *IME) updateLangStatus(req *imecore.Request, resp *imecore.Response) {
 	}
 	asciiMode := ime.backend.GetOption("ascii_mode")
 	fullShape := ime.backend.GetOption("full_shape")
+	ime.rememberModeState(asciiMode, fullShape)
 	capsOn := req != nil && req.KeyStates.IsKeyToggled(vkCapital)
 
 	if ime.Client != nil && ime.Client.IsWindows8Above {
@@ -3049,8 +3115,7 @@ func (ime *IME) addButtons(resp *imecore.Response) {
 	if !ime.style.DisplayTrayIcon || ime.backend == nil {
 		return
 	}
-	asciiMode := ime.backend.GetOption("ascii_mode")
-	fullShape := ime.backend.GetOption("full_shape")
+	asciiMode, fullShape := ime.uiModeState()
 	if ime.Client != nil && ime.Client.IsWindows8Above {
 		if iconPath := ime.iconPath(modeIconName(asciiMode, fullShape, false)); iconPath != "" {
 			resp.AddButton = append(resp.AddButton, imecore.ButtonInfo{
@@ -3337,6 +3402,9 @@ func (ime *IME) AIHotkeyDescription() string {
 }
 
 func (ime *IME) sharedDir() string {
+	if ime.sharedDirOverride != "" {
+		return ime.sharedDirOverride
+	}
 	if sharedDir, _, ok := androidRimeDirs(); ok {
 		return sharedDir
 	}
