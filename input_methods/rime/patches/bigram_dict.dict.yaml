@@ -1,0 +1,1938 @@
+# 高频口语 bigram 补充词典（自动生成，勿手编）
+# 来源：四源语料 bigram 挖掘（subs/news/ted/leipzig），筛白霜词典缺失或
+# 权重为 0 的 2~4 字组合，聚合频次 ≥300。权重 = min(2.2×频次, 30000)，
+# 刻意低于真实高频词条（当然 176k / 但是 562k），不越权压制全拼排序。
+# 与简拼补丁互补：本词典挂主翻译器，全拼/混合/简拼均可整词命中。
+# 生成：eval-workspace/gen-bigram-dict.py；打包合入：rime-prebuild。
+---
+name: moqi_bigram
+version: "1"
+sort: by_weight
+...
+是的	shi de	30000
+的人	de ren	30000
+的是	de shi	30000
+的事	de shi	28547
+的国家	de guo jia	20455
+的东西	de dong xi	19428
+的经济	de jing ji	18246
+的地方	de di fang	18090
+国家的	guo jia de	17633
+你了	ni le	16152
+的一个	de yi ge	15936
+了你	le ni	15505
+美国的	mei guo de	15490
+的方式	de fang shi	15369
+年的	nian de	14718
+的时间	de shi jian	14366
+之间的	zhi jian de	13730
+把我	ba wo	13290
+中国的	zhong guo de	13186
+的新	de xin	12821
+的工作	de gong zuo	12612
+和其他	he qi ta	11974
+的政治	de zheng zhi	11818
+你和	ni he	11305
+如果我们	ru guo wo men	11112
+的吗	de ma	10929
+最大的	zui da de	10656
+在我们	zai wo men	10621
+的影响	de ying xiang	10573
+他们在	ta men zai	10161
+的世界	de shi jie	10027
+的生活	de sheng huo	9772
+的故事	de gu shi	9726
+如果我	ru guo wo	9629
+他们会	ta men hui	9451
+的政策	de zheng ce	9231
+带来的	dai lai de	9215
+的能力	de neng li	8615
+问题的	wen ti de	8588
+我了	wo le	8430
+同样的	tong yang de	8360
+看到的	kan dao de	8261
+了我们	le wo men	8008
+的机会	de ji hui	7944
+需要的	xu yao de	7889
+的行为	de xing wei	7810
+我们还	wo men hai	7739
+的社会	de she hui	7592
+经济的	jing ji de	7565
+中国家	zhong guo jia	7559
+的朋友	de peng you	7370
+我们去	wo men qu	7332
+的关系	de guan xi	7165
+的钱	de qian	7114
+的孩子	de hai zi	7026
+工作的	gong zuo de	6989
+我吗	wo ma	6938
+知道的	zhi dao de	6833
+政府的	zheng fu de	6778
+的一部分	de yi bu fen	6749
+的发展	de fa zhan	6692
+的全球	de quan qiu	6668
+这里的	zhe li de	6646
+的研究	de yan jiu	6624
+了这	le zhe	6580
+我们现在	wo men xian zai	6571
+的小	de xiao	6540
+的目标	de mu biao	6492
+欧洲的	ou zhou de	6474
+的力量	de li liang	6461
+造成的	zao cheng de	6448
+方面的	fang mian de	6417
+世界的	shi jie de	6289
+到的	dao de	6265
+增长的	zeng zhang de	6171
+现在的	xian zai de	6166
+政策的	zheng ce de	6083
+的结果	de jie guo	6023
+的风险	de feng xian	6019
+的主要	de zhu yao	5995
+对的	dui de	5979
+一样的	yi yang de	5973
+的政府	de zheng fu	5847
+美国和	mei guo he	5781
+公司的	gong si de	5678
+了一些	le yi xie	5673
+我们不能	wo men bu neng	5662
+我真的	wo zhen de	5623
+是如何	shi ru he	5546
+面临的	mian lin de	5533
+的作用	de zuo yong	5504
+因为我们	yin wei wo men	5458
+我们所	wo men suo	5418
+的未来	de wei lai	5394
+的观点	de guan dian	5365
+的车	de che	5339
+我们来	wo men lai	5315
+了他们	le ta men	5286
+的那	de na	5282
+的美国	de mei guo	5282
+的声音	de sheng yin	5277
+发展的	fa zhan de	5275
+的数据	de shu ju	5269
+的支持	de zhi chi	5262
+的挑战	de tiao zhan	5185
+的天	de tian	5163
+因为他们	yin wei ta men	5090
+的增长	de zeng zhang	5066
+的计划	de ji hua	5046
+了这个	le zhe ge	4991
+存在的	cun zai de	4956
+的那个	de na ge	4866
+的一切	de yi qie	4851
+的女人	de nv ren	4842
+没事的	mei shi de	4837
+的选择	de xuan ze	4815
+着我	zhe wo	4776
+市场的	shi chang de	4763
+和经济	he jing ji	4677
+的环境	de huan jing	4668
+经济和	jing ji he	4648
+的那样	de na yang	4648
+想要的	xiang yao de	4617
+组织的	zu zhi de	4595
+复杂的	fu za de	4587
+的国际	de guo ji	4569
+的关键	de guan jian	4545
+你吗	ni ma	4538
+特朗普的	te lang pu de	4485
+的了	de le	4411
+危机的	wei ji de	4393
+现在你	xian zai ni	4325
+的例子	de li zi	4274
+的心	de xin	4246
+和美国	he mei guo	4210
+在了	zai le	4186
+的历史	de li shi	4158
+的利益	de li yi	4140
+的技术	de ji shu	4111
+现在我们	xian zai wo men	4107
+着你	zhe ni	4105
+过你	guo ni	4089
+他们也	ta men ye	4087
+欧盟的	ou meng de	4081
+其中的	qi zhong de	4063
+是美国	shi mei guo	4054
+人类的	ren lei de	4039
+的决定	de jue ding	4023
+的生命	de sheng ming	4004
+这些国家	zhe xie guo jia	3955
+变化的	bian hua de	3935
+你真的	ni zhen de	3927
+的吧	de ba	3889
+地区的	di qu de	3887
+了它	le ta	3883
+的金融	de jin rong	3878
+他了	ta le	3856
+这并不	zhe bing bu	3850
+持续的	chi xu de	3839
+的欧洲	de ou zhou	3832
+的男人	de nan ren	3819
+很大的	hen da de	3810
+的投资	de tou zi	3795
+的财政	de cai zheng	3788
+人们的	ren men de	3759
+产生的	chan sheng de	3748
+和政治	he zheng zhi	3746
+的位置	de wei zhi	3744
+的变化	de bian hua	3722
+的好	de hao	3718
+得到的	de dao de	3713
+的就是	de jiu shi	3696
+我吧	wo ba	3691
+的贸易	de mao yi	3678
+的基础	de ji chu	3658
+去的	qu de	3638
+所带来	suo dai lai	3627
+一个新	yi ge xin	3614
+提出的	ti chu de	3603
+的呢	de ne	3601
+但是我们	dan shi wo men	3579
+者的	zhe de	3553
+月的	yue de	3553
+的脸	de lian	3550
+了的	le de	3517
+的不	de bu	3513
+的电话	de dian hua	3511
+岁的	sui de	3509
+所说的	suo shuo de	3506
+计划的	ji hua de	3504
+在等	zai deng	3502
+的所有	de suo you	3498
+人会	ren hui	3489
+相同的	xiang tong de	3489
+了自己	le zi ji	3458
+的中国	de zhong guo	3425
+系统的	xi tong de	3388
+的唯一	de wei yi	3368
+的货币	de huo bi	3366
+个好	ge hao	3352
+生命的	sheng ming de	3333
+的长期	de chang qi	3319
+了这些	le zhe xie	3311
+都将	dou jiang	3282
+的同时	de tong shi	3282
+的书	de shu	3275
+的威胁	de wei xie	3264
+人了	ren le	3260
+去你	qu ni	3258
+时代的	shi dai de	3247
+可能的	ke neng de	3223
+的重要	de zhong yao	3218
+你疯	ni feng	3196
+的那些	de na xie	3176
+出现的	chu xian de	3172
+的努力	de nu li	3168
+领域的	ling yu de	3143
+健康的	jian kang de	3126
+冠肺炎	guan fei yan	3108
+年轻的	nian qing de	3106
+如果他们	ru guo ta men	3099
+中国和	zhong guo he	3084
+我开始	wo kai shi	3080
+的最	de zui	3066
+漂亮的	piao liang de	3053
+目标的	mu biao de	3044
+想的	xiang de	3042
+过他	guo ta	3022
+的手	de shou	3018
+的头	de tou	3014
+的改革	de gai ge	3014
+了美国	le mei guo	3011
+提供的	ti gong de	3003
+是来	shi lai	3000
+的信息	de xin xi	2998
+的家庭	de jia ting	2992
+而且我	er qie wo	2989
+它们是	ta men shi	2981
+美国在	mei guo zai	2981
+他们还	ta men hai	2967
+当前的	dang qian de	2965
+的人们	de ren men	2963
+的民主	de min zhu	2959
+的父母	de fu mu	2954
+亿美元的	yi mei yuan de	2954
+的大	de da	2952
+冠病毒	guan bing du	2950
+内的	nei de	2928
+技术的	ji shu de	2921
+孩子的	hai zi de	2919
+的战略	de zhan lve	2915
+银行的	yin hang de	2910
+印度的	yin du de	2908
+是怎样	shi zen yang	2895
+关系的	guan xi de	2893
+的措施	de cuo shi	2877
+需的	xu de	2873
+的承诺	de cheng nuo	2842
+进行的	jin xing de	2840
+的可能性	de ke neng xing	2833
+得太	de tai	2811
+而不	er bu	2809
+企业的	qi ye de	2809
+机构的	ji gou de	2807
+的房子	de fang zi	2800
+有你	you ni	2800
+了新	le xin	2796
+和中国	he zhong guo	2796
+日本的	ri ben de	2789
+俄罗斯的	e luo si de	2787
+性的	xing de	2783
+的作品	de zuo pin	2765
+的爱	de ai	2763
+的安全	de an quan	2756
+服务的	fu wu de	2754
+的儿子	de er zi	2750
+的行动	de xing dong	2747
+了啊	le a	2745
+要的	yao de	2743
+说这	shuo zhe	2741
+国家都	guo jia dou	2736
+国的	guo de	2736
+他们不	ta men bu	2719
+怎样的	zen yang de	2717
+民主的	min zhu de	2714
+传统的	chuan tong de	2701
+世纪的	shi ji de	2692
+人们对	ren men dui	2690
+在内的	zai nei de	2688
+全球金融	quan qiu jin rong	2684
+美好的	mei hao de	2679
+对自己	dui zi ji	2675
+的债务	de zhai wu	2673
+部门的	bu men de	2670
+政治和	zheng zhi he	2662
+领导的	ling dao de	2662
+棒的	bang de	2655
+了对	le dui	2648
+的成本	de cheng ben	2635
+导致的	dao zhi de	2626
+的地区	de di qu	2626
+是这	shi zhe	2622
+我们看到	wo men kan dao	2613
+组成的	zu cheng de	2602
+和一个	he yi ge	2600
+人民的	ren min de	2600
+全球变	quan qiu bian	2591
+影响的	ying xiang de	2585
+然后我们	ran hou wo men	2580
+那么你	na me ni	2565
+但这些	dan zhe xie	2560
+的公共	de gong gong	2556
+我们不是	wo men bu shi	2534
+里有	li you	2534
+发现的	fa xian de	2534
+政府和	zheng fu he	2534
+的需求	de xu qiu	2521
+当时的	dang shi de	2514
+总统的	zong tong de	2505
+的后果	de hou guo	2505
+因为在	yin wei zai	2494
+我们能够	wo men neng gou	2494
+改革的	gai ge de	2492
+的一些	de yi xie	2490
+开始的	kai shi de	2486
+伊朗的	yi lang de	2461
+和欧洲	he ou zhou	2459
+的市场	de shi chang	2450
+了一种	le yi zhong	2448
+的日子	de ri zi	2448
+价值的	jia zhi de	2448
+的我	de wo	2446
+将继续	jiang ji xu	2446
+一个小	yi ge xiao	2446
+非洲的	fei zhou de	2444
+的危机	de wei ji	2442
+国家和	guo jia he	2439
+间的	jian de	2439
+会看到	hui kan dao	2428
+的外交	de wai jiao	2426
+中所	zhong suo	2424
+的成功	de cheng gong	2424
+美元的	mei yuan de	2409
+上你	shang ni	2404
+就是我们	jiu shi wo men	2402
+有关的	you guan de	2400
+告诉他们	gao su ta men	2387
+的压力	de ya li	2384
+于是我	yu shi wo	2382
+的消息	de xiao xi	2378
+得更	de geng	2376
+英国的	ying guo de	2376
+在为	zai wei	2362
+的收入	de shou ru	2360
+主要的	zhu yao de	2358
+一问题	yi wen ti	2354
+他们所	ta men suo	2351
+式的	shi de	2347
+我们该	wo men gai	2325
+投资的	tou zi de	2323
+许多国家	xu duo guo jia	2316
+社会和	she hui he	2310
+幸运的是	xing yun de shi	2290
+战争的	zhan zheng de	2290
+时间的	shi jian de	2288
+上是	shang shi	2285
+为什么我	wei shen me wo	2274
+我们用	wo men yong	2272
+的家	de jia	2257
+中国在	zhong guo zai	2257
+我们只是	wo men zhi shi	2246
+环境中	huan jing zhong	2246
+了许多	le xu duo	2244
+的权力	de quan li	2244
+行为的	xing wei de	2237
+上帝啊	shang di a	2233
+的资金	de zi jin	2233
+增长和	zeng zhang he	2228
+我以为你	wo yi wei ni	2226
+独立的	du li de	2226
+基本的	ji ben de	2224
+的狗	de gou	2219
+大学的	da xue de	2219
+举行的	ju xing de	2215
+今天我	jin tian wo	2211
+体系的	ti xi de	2211
+想我们	xiang wo men	2206
+年代的	nian dai de	2206
+人口的	ren kou de	2204
+类似地	lei si di	2197
+对这些	dui zhe xie	2191
+共同的	gong tong de	2191
+钱的	qian de	2184
+上说	shang shuo	2178
+帮助我们	bang zhu wo men	2171
+即使在	ji shi zai	2169
+接受的	jie shou de	2169
+会的	hui de	2164
+了所有	le suo you	2162
+她了	ta le	2160
+合作的	he zuo de	2160
+全新的	quan xin de	2158
+它们在	ta men zai	2156
+的人口	de ren kou	2153
+我们被	wo men bei	2149
+着的	zhe de	2149
+的军事	de jun shi	2149
+的人生	de ren sheng	2140
+行动的	xing dong de	2140
+病毒的	bing du de	2140
+找到的	zhao dao de	2136
+的衣服	de yi fu	2131
+的领导人	de ling dao ren	2129
+希望我	xi wang wo	2127
+活动的	huo dong de	2127
+中心的	zhong xin de	2125
+获得的	huo de de	2123
+的企业	de qi ye	2123
+欧洲和	ou zhou he	2118
+的银行	de yin hang	2114
+但它们	dan ta men	2105
+实现的	shi xian de	2103
+的女儿	de nv er	2096
+研究的	yan jiu de	2092
+项目的	xiang mu de	2085
+实现这	shi xian zhe	2083
+的学生	de xue sheng	2083
+的啊	de a	2076
+不是的	bu shi de	2072
+认为我	ren wei wo	2070
+不会的	bu hui de	2068
+我们不会	wo men bu hui	2063
+是新	shi xin	2061
+的地位	de di wei	2061
+但是这	dan shi zhe	2059
+有我	you wo	2057
+一个叫	yi ge jiao	2057
+下来的	xia lai de	2057
+平等的	ping deng de	2057
+想是	xiang shi	2050
+困难的	kun nan de	2050
+的合作	de he zuo	2050
+和国际	he guo ji	2050
+不错的	bu cuo de	2039
+特殊的	te shu de	2039
+基础的	ji chu de	2032
+如果你们	ru guo ni men	2021
+的好处	de hao chu	2021
+和发展	he fa zhan	2019
+的家人	de jia ren	2017
+运动的	yun dong de	2017
+的父亲	de fu qin	2013
+因为它们	yin wei ta men	2013
+了巨大	le ju da	1993
+认为你	ren wei ni	1986
+风险的	feng xian de	1984
+他们不会	ta men bu hui	1977
+到我们	dao wo men	1977
+经济体的	jing ji ti de	1973
+的城市	de cheng shi	1969
+背后的	bei hou de	1964
+利益的	li yi de	1964
+的任务	de ren wu	1962
+的枪	de qiang	1958
+正常的	zheng chang de	1958
+和金融	he jin rong	1958
+关注的	guan zhu de	1951
+冲突的	chong tu de	1951
+我们到	wo men dao	1949
+以色列的	yi se lie de	1949
+着他	zhe ta	1942
+教育的	jiao yu de	1938
+我们只	wo men zhi	1936
+个大	ge da	1931
+优秀的	you xiu de	1929
+制度的	zhi du de	1920
+着我们	zhe wo men	1918
+关键的	guan jian de	1911
+是一样	shi yi yang	1909
+可爱的	ke ai de	1907
+贸易和	mao yi he	1907
+了一	le yi	1905
+协议的	xie yi de	1905
+一目标	yi mu biao	1898
+时候了	shi hou le	1894
+水平的	shui ping de	1889
+需要我	xu yao wo	1881
+的路	de lu	1874
+年了	nian le	1874
+的命	de ming	1870
+完成的	wan cheng de	1863
+地球的	di qiu de	1852
+我们如何	wo men ru he	1850
+我们很	wo men hen	1841
+我会的	wo hui de	1837
+之后的	zhi hou de	1830
+个小	ge xiao	1828
+创造的	chuang zao de	1828
+选择的	xuan ze de	1823
+最高的	zui gao de	1819
+个小时	ge xiao shi	1815
+我一直在	wo yi zhi zai	1815
+在一起的	zai yi qi de	1815
+面对的	mian dui de	1812
+能力的	neng li de	1801
+来吗	lai ma	1799
+和政府	he zheng fu	1797
+教育和	jiao yu he	1793
+其中包括	qi zhong bao kuo	1788
+信息的	xin xi de	1786
+是通过	shi tong guo	1786
+他们来	ta men lai	1784
+和服务	he fu wu	1784
+做出的	zuo chu de	1782
+政治的	zheng zhi de	1779
+一个更	yi ge geng	1773
+的腿	de tui	1771
+知道我们	zhi dao wo men	1766
+方式来	fang shi lai	1764
+当地的	dang di de	1760
+潜在的	qian zai de	1755
+我们为	wo men wei	1753
+以来的	yi lai de	1753
+强烈的	qiang lie de	1751
+的过程	de guo cheng	1751
+听到的	ting dao de	1749
+丰富的	feng fu de	1746
+也同样	ye tong yang	1735
+政府在	zheng fu zai	1735
+呆在	dai zai	1733
+在对	zai dui	1731
+的眼睛	de yan jing	1731
+现有的	xian you de	1731
+时期的	shi qi de	1731
+和国家	he guo jia	1731
+以上的	yi shang de	1727
+最新的	zui xin de	1722
+普通的	pu tong de	1722
+其在	qi zai	1722
+对经济	dui jing ji	1718
+疫情的	yi qing de	1718
+一定的	yi ding de	1713
+我们正	wo men zheng	1711
+事吗	shi ma	1711
+取得的	qu de de	1711
+来说是	lai shuo shi	1709
+家庭的	jia ting de	1709
+收入的	shou ru de	1705
+他们能	ta men neng	1702
+做到的	zuo dao de	1702
+企业和	qi ye he	1702
+了那	le na	1700
+权力的	quan li de	1696
+真是的	zhen shi de	1694
+的你	de ni	1691
+事件的	shi jian de	1691
+可行的	ke xing de	1691
+是来自	shi lai zi	1680
+我们没	wo men mei	1680
+国家也	guo jia ye	1678
+长期的	chang qi de	1674
+事的	shi de	1665
+过来的	guo lai de	1665
+了一场	le yi chang	1663
+会发现	hui fa xian	1656
+我们和	wo men he	1652
+政策和	zheng ce he	1652
+太可能	tai ke neng	1647
+债务的	zhai wu de	1647
+中最	zhong zui	1645
+去吗	qu ma	1636
+联盟的	lian meng de	1636
+的命令	de ming ling	1634
+类型的	lei xing de	1634
+和投资	he tou zi	1634
+故事的	gu shi de	1632
+的脚	de jiao	1630
+知道他们	zhi dao ta men	1630
+个人的	ge ren de	1628
+环境的	huan jing de	1628
+国家在	guo jia zai	1628
+委员会的	wei yuan hui de	1628
+民众的	min zhong de	1628
+研究表明	yan jiu biao ming	1621
+说他们	shuo ta men	1617
+不能在	bu neng zai	1614
+全球化的	quan qiu hua de	1614
+留下的	liu xia de	1612
+林宫	lin gong	1610
+主义的	zhu yi de	1608
+和全球	he quan qiu	1608
+和印度	he yin du	1608
+危机中	wei ji zhong	1606
+开放的	kai fang de	1603
+了大量	le da liang	1599
+需求的	xu qiu de	1595
+州的	zhou de	1592
+的设计	de she ji	1592
+引发的	yin fa de	1588
+繁荣的	fan rong de	1586
+独特的	du te de	1584
+和平的	he ping de	1581
+程度的	cheng du de	1581
+了中国	le zhong guo	1581
+所以他们	suo yi ta men	1579
+着一个	zhe yi ge	1579
+全球的	quan qiu de	1575
+听著	ting zhu	1573
+你们有	ni men you	1573
+学校的	xue xiao de	1570
+了在	le zai	1568
+科学的	ke xue de	1568
+产品的	chan pin de	1564
+内部的	nei bu de	1555
+认为我们	ren wei wo men	1553
+女性的	nv xing de	1553
+力量的	li liang de	1551
+做你	zuo ni	1548
+会杀	hui sha	1544
+了其	le qi	1544
+增加的	zeng jia de	1542
+今年的	jin nian de	1542
+的都	de dou	1540
+来解决	lai jie jue	1537
+在很大	zai hen da	1535
+先生的	xian sheng de	1533
+希望的	xi wang de	1529
+其它的	qi ta de	1524
+的一种	de yi zhong	1524
+的死	de si	1522
+的梦想	de meng xiang	1522
+看著	kan zhu	1520
+理解的	li jie de	1520
+对全球	dui quan qiu	1520
+特定的	te ding de	1515
+了这样	le zhe yang	1511
+人们在	ren men zai	1511
+从一个	cong yi ge	1511
+文化的	wen hua de	1511
+的每	de mei	1509
+所有国家	suo you guo jia	1507
+法国的	fa guo de	1507
+更广泛	geng guang fan	1507
+一个在	yi ge zai	1502
+了全球	le quan qiu	1502
+在新	zai xin	1500
+后就	hou jiu	1496
+想这	xiang zhe	1496
+的信	de xin	1493
+经济中	jing ji zhong	1493
+和欧盟	he ou meng	1493
+挑战的	tiao zhan de	1491
+告诉我你	gao su wo ni	1489
+对欧洲	dui ou zhou	1489
+让它们	rang ta men	1487
+的这些	de zhe xie	1487
+虽然我	sui ran wo	1485
+的错	de cuo	1482
+个很	ge hen	1482
+你们会	ni men hui	1482
+安全和	an quan he	1478
+具体的	ju ti de	1478
+化的	hua de	1476
+出生的	chu sheng de	1474
+之外的	zhi wai de	1474
+和日本	he ri ben	1474
+了一项	le yi xiang	1474
+了一下	le yi xia	1471
+中了	zhong le	1471
+因此我	yin ci wo	1471
+组织和	zu zhi he	1471
+西方的	xi fang de	1471
+决定的	jue ding de	1467
+方案的	fang an de	1465
+完整的	wan zheng de	1460
+社区的	she qu de	1460
+的不是	de bu shi	1458
+形成的	xing cheng de	1452
+用这个	yong zhe ge	1449
+可不想	ke bu xiang	1443
+一些国家	yi xie guo jia	1441
+了就	le jiu	1438
+身上的	shen shang de	1438
+的部分	de bu fen	1438
+的一天	de yi tian	1436
+和对	he dui	1434
+过她	guo ta	1434
+规则的	gui ze de	1434
+的经历	de jing li	1434
+的意思	de yi si	1432
+引起的	yin qi de	1432
+的组织	de zu zhi	1432
+如何在	ru he zai	1430
+用我	yong wo	1427
+时候都	shi hou dou	1427
+印度和	yin du he	1427
+和技术	he ji shu	1427
+在和	zai he	1425
+附近的	fu jin de	1425
+我们给	wo men gei	1423
+一个重要	yi ge zhong yao	1423
+你们想	ni men xiang	1423
+过去十年	guo qu shi nian	1421
+欧元的	ou yuan de	1419
+他们去	ta men qu	1416
+他们做	ta men zuo	1412
+生产的	sheng chan de	1412
+上我	shang wo	1410
+的公司	de gong si	1408
+美国对	mei guo dui	1405
+全面的	quan mian de	1403
+国内的	guo nei de	1401
+从这个	cong zhe ge	1399
+不断的	bu duan de	1399
+发布的	fa bu de	1399
+塔尼亚胡	ta ni ya hu	1399
+了好	le hao	1397
+没有在	mei you zai	1394
+模式的	mo shi de	1394
+改变的	gai bian de	1390
+里面的	li mian de	1388
+确定的	que ding de	1388
+个例子	ge li zi	1386
+创新的	chuang xin de	1386
+的母亲	de mu qin	1383
+可以的	ke yi de	1381
+退欧	tui ou	1381
+的歌	de ge	1379
+的内容	de nei rong	1377
+这个项目	zhe ge xiang mu	1375
+讨论的	tao lun de	1372
+数据的	shu ju de	1370
+贫困的	pin kun de	1370
+将他们	jiang ta men	1366
+威胁的	wei xie de	1366
+俄罗斯和	e luo si he	1366
+内塔尼亚	nei ta ni ya	1364
+这儿的	zhe er de	1361
+经历的	jing li de	1361
+著我	zhu wo	1359
+出色的	chu se de	1350
+所在的	suo zai de	1348
+和英国	he ying guo	1348
+他们都是	ta men dou shi	1346
+伊拉克的	yi la ke de	1346
+贸易的	mao yi de	1344
+的速度	de su du	1344
+而美国	er mei guo	1342
+原来的	yuan lai de	1339
+它们会	ta men hui	1339
+德国和	de guo he	1337
+谈判的	tan pan de	1335
+价格的	jia ge de	1333
+了两个	le liang ge	1331
+宇宙中	yu zhou zhong	1328
+爆发的	bao fa de	1326
+有足够的	you zu gou de	1324
+投资和	tou zi he	1324
+他可能	ta ke neng	1322
+会从	hui cong	1322
+这和	zhe he	1322
+但美国	dan mei guo	1322
+而他们	er ta men	1320
+政权的	zheng quan de	1320
+是那么	shi na me	1317
+了更	le geng	1317
+一个有	yi ge you	1315
+货币的	huo bi de	1315
+银行和	yin hang he	1313
+到来的	dao lai de	1313
+所产生的	suo chan sheng de	1313
+的血	de xie	1311
+的一样	de yi yang	1311
+去跟	qu gen	1306
+希望你们	xi wang ni men	1306
+亚洲的	ya zhou de	1306
+相对较	xiang dui jiao	1304
+过这	guo zhe	1302
+岁了	sui le	1302
+不好的	bu hao de	1302
+指出的	zhi chu de	1302
+该计划	gai ji hua	1300
+而且你	er qie ni	1300
+它们也	ta men ye	1298
+了那些	le na xie	1295
+这些数据	zhe xie shu ju	1295
+以及对	yi ji dui	1295
+媒体的	mei ti de	1293
+的项目	de xiang mu	1293
+和不	he bu	1291
+各国的	ge guo de	1291
+资源的	zi yuan de	1291
+英国脱	ying guo tuo	1291
+的这	de zhe	1289
+他们被	ta men bei	1287
+比以往	bi yi wang	1287
+选举的	xuan ju de	1287
+的生物	de sheng wu	1287
+地位的	di wei de	1282
+说吗	shuo ma	1280
+国家中	guo jia zhong	1280
+措施的	cuo shi de	1280
+其对	qi dui	1276
+学习的	xue xi de	1273
+能听到	neng ting dao	1271
+的女性	de nv xing	1271
+他们从	ta men cong	1269
+一种新	yi zhong xin	1269
+领导人的	ling dao ren de	1269
+是去	shi qu	1267
+了那个	le na ge	1265
+宇宙的	yu zhou de	1265
+冠疫情	guan yi qing	1265
+的工具	de gong ju	1265
+的社区	de she qu	1265
+代表的	dai biao de	1262
+普京的	pu jing de	1262
+的这个	de zhe ge	1262
+他们想要	ta men xiang yao	1260
+最初的	zui chu de	1258
+钱了	qian le	1256
+得像	de xiang	1256
+事情的	shi qing de	1256
+建立的	jian li de	1256
+结果的	jie guo de	1256
+他们给	ta men gei	1254
+和就业	he jiu ye	1254
+小时的	xiao shi de	1251
+法国和	fa guo he	1251
+健康和	jian kang he	1249
+没有得到	mei you de dao	1247
+这样我	zhe yang wo	1247
+想到的	xiang dao de	1247
+她吗	ta ma	1245
+但仍	dan reng	1245
+大家的	da jia de	1245
+回家的	hui jia de	1245
+和俄罗斯	he e luo si	1245
+欧元区的	ou yuan qu de	1245
+的概念	de gai nian	1245
+是为什么	shi wei shen me	1243
+你们能	ni men neng	1243
+起的	qi de	1243
+他们中	ta men zhong	1238
+会和	hui he	1238
+人们都	ren men dou	1238
+斯的	si de	1238
+也许我们	ye xu wo men	1238
+对未来	dui wei lai	1234
+和世界	he shi jie	1234
+额外的	e wai de	1232
+大脑的	da nao de	1232
+进步的	jin bu de	1229
+身体的	shen ti de	1227
+卡梅	ka mei	1227
+人们会	ren men hui	1227
+资产的	zi chan de	1227
+因此我们	yin ci wo men	1225
+和安全	he an quan	1225
+削弱了	xue ruo le	1223
+处的	chu de	1221
+邪恶的	xie e de	1221
+奥巴马的	ao ba ma de	1221
+着它	zhe ta	1218
+标准的	biao zhun de	1218
+多年的	duo nian de	1218
+机会的	ji hui de	1216
+成员国的	cheng yuan guo de	1216
+时间和	shi jian he	1214
+暴力的	bao li de	1214
+好消息是	hao xiao xi shi	1214
+我们可能	wo men ke neng	1212
+着她	zhe ta	1212
+了人	le ren	1210
+说对	shuo dui	1210
+动物的	dong wu de	1210
+范围的	fan wei de	1210
+是人	shi ren	1207
+前就	qian jiu	1207
+了这种	le zhe zhong	1207
+移民的	yi min de	1205
+和更	he geng	1205
+的文化	de wen hua	1205
+但中国	dan zhong guo	1203
+当人们	dang ren men	1201
+发明了	fa ming le	1201
+提到的	ti dao de	1201
+影响力的	ying xiang li de	1201
+上也	shang ye	1199
+们都	men dou	1199
+然后他们	ran hou ta men	1199
+所以当	suo yi dang	1199
+和新	he xin	1196
+事情是	shi qing shi	1196
+到这里来	dao zhe li lai	1196
+负责任的	fu ze ren de	1194
+遇到的	yu dao de	1192
+而且我们	er qie wo men	1192
+公平的	gong ping de	1192
+而中国	er zhong guo	1192
+数量的	shu liang de	1190
+它们都	ta men dou	1188
+预测的	yu ce de	1188
+和企业	he qi ye	1188
+的存在	de cun zai	1188
+做我	zuo wo	1185
+治疗的	zhi liao de	1185
+争议的	zheng yi de	1185
+的基因	de ji yin	1185
+很长的	hen chang de	1183
+该地区的	gai di qu de	1183
+正恩	zheng en	1183
+日的	ri de	1181
+他们只是	ta men zhi shi	1179
+大部分人	da bu fen ren	1179
+结束的	jie shu de	1179
+能源的	neng yuan de	1179
+熟悉的	shu xi de	1179
+了下来	le xia lai	1177
+了一次	le yi ci	1177
+死我	si wo	1174
+过这个	guo zhe ge	1170
+联系的	lian xi de	1170
+了人们	le ren men	1170
+的空间	de kong jian	1168
+他一定	ta yi ding	1166
+得更好	de geng hao	1166
+国家政府	guo jia zheng fu	1166
+最棒的	zui bang de	1166
+从根本	cong gen ben	1166
+的语言	de yu yan	1166
+时就	shi jiu	1163
+就象	jiu xiang	1161
+上讲	shang jiang	1161
+人被	ren bei	1161
+深远的	shen yuan de	1161
+了没	le mei	1159
+正在发生	zheng zai fa sheng	1159
+贫穷的	pin qiong de	1159
+了整个	le zheng ge	1157
+这可不是	zhe ke bu shi	1157
+感染的	gan ran de	1157
+是欧洲	shi ou zhou	1157
+昂贵的	ang gui de	1155
+你们还	ni men hai	1152
+日本和	ri ben he	1152
+一观点	yi guan dian	1152
+还是不	hai shi bu	1150
+承诺的	cheng nuo de	1150
+平衡的	ping heng de	1150
+我们了	wo men le	1148
+的系统	de xi tong	1148
+那些在	na xie zai	1146
+都是在	dou shi zai	1146
+没关系的	mei guan xi de	1146
+不够的	bu gou de	1146
+他们必须	ta men bi xu	1144
+是世界	shi shi jie	1144
+不一样的	bu yi yang de	1141
+在危机	zai wei ji	1141
+和环境	he huan jing	1141
+朋友的	peng you de	1139
+这需要	zhe xu yao	1139
+过一个	guo yi ge	1137
+睡不	shui bu	1137
+最糟糕的	zui zao gao de	1137
+他们正在	ta men zheng zai	1135
+还是我	hai shi wo	1135
+商品和	shang pin he	1133
+说话的	shuo hua de	1130
+对于那些	dui yu na xie	1130
+酷的	ku de	1130
+的反应	de fan ying	1130
+会没事的	hui mei shi de	1128
+成本的	cheng ben de	1126
+看来你	kan lai ni	1124
+他们不是	ta men bu shi	1122
+可以了	ke yi le	1122
+是么	shi me	1119
+塞俄	sai e	1119
+俄比亚	e bi ya	1119
+他还是	ta hai shi	1117
+然后是	ran hou shi	1117
+它们可以	ta men ke yi	1117
+者和	zhe he	1117
+一切的	yi qie de	1115
+流行的	liu xing de	1115
+激烈的	ji lie de	1115
+还有别的	hai you bie de	1113
+到这个	dao zhe ge	1113
+对世界	dui shi jie	1113
+管理的	guan li de	1111
+相应的	xiang ying de	1111
+那时我	na shi wo	1108
+于是我们	yu shi wo men	1108
+一个简单	yi ge jian dan	1106
+英国和	ying guo he	1106
+以及在	yi ji zai	1106
+如今的	ru jin de	1106
+这些措施	zhe xie cuo shi	1106
+人认为	ren ren wei	1104
+计画	ji hua	1102
+外的	wai de	1102
+了经济	le jing ji	1102
+我们这样	wo men zhe yang	1100
+同样也	tong yang ye	1100
+思想的	si xiang de	1097
+它们就	ta men jiu	1095
+这样了	zhe yang le	1093
+或许会	huo xu hui	1093
+保护的	bao hu de	1093
+学生的	xue sheng de	1093
+他们用	ta men yong	1091
+年开始	nian kai shi	1091
+尔的	er de	1091
+的团队	de tuan dui	1091
+人对	ren dui	1089
+作用的	zuo yong de	1089
+是错误	shi cuo wu	1089
+人要	ren yao	1086
+你们了	ni men le	1086
+认为他们	ren wei ta men	1086
+区的	qu de	1086
+的意义	de yi yi	1086
+他们可能	ta men ke neng	1082
+还以为你	hai yi wei ni	1082
+就是我的	jiu shi wo de	1082
+对一个	dui yi ge	1080
+妈妈的	ma ma de	1080
+战略的	zhan lve de	1080
+的改变	de gai bian	1080
+和文化	he wen hua	1078
+它已经	ta yi jing	1075
+为这	wei zhe	1075
+钱都	qian dou	1075
+秩序的	zhi xu de	1075
+中国对	zhong guo dui	1075
+会找到	hui zhao dao	1073
+一点的	yi dian de	1073
+人生的	ren sheng de	1073
+制造的	zhi zao de	1073
+交易的	jiao yi de	1071
+和公共	he gong gong	1071
+也因此	ye yin ci	1071
+的事物	de shi wu	1071
+有很	you hen	1069
+现在正在	xian zai zheng zai	1069
+这里了	zhe li le	1069
+状况的	zhuang kuang de	1067
+了一条	le yi tiao	1064
+其经济	qi jing ji	1064
+会增加	hui zeng jia	1062
+是和	shi he	1060
+很多的	hen duo de	1060
+个新	ge xin	1060
+将让	jiang rang	1058
+自由和	zi you he	1058
+希腊的	xi la de	1058
+们在	men zai	1056
+什么我	shen me wo	1056
+市场和	shi chang he	1056
+是与	shi yu	1056
+发表的	fa biao de	1053
+可以和	ke yi he	1051
+法律的	fa lv de	1051
+我们让	wo men rang	1049
+正在做	zheng zai zuo	1049
+石油和	shi you he	1049
+信任的	xin ren de	1049
+地将	di jiang	1049
+那边的	na bian de	1047
+宝贵的	bao gui de	1047
+和教育	he jiao yu	1047
+为美国	wei mei guo	1045
+活力的	huo li de	1045
+是全球	shi quan qiu	1045
+这个吗	zhe ge ma	1040
+漫长的	man chang de	1040
+之一是	zhi yi shi	1040
+克的	ke de	1038
+事是	shi shi	1038
+为了我	wei le wo	1038
+认为的	ren wei de	1038
+机构和	ji gou he	1038
+是这里	shi zhe li	1036
+她死	ta si	1036
+家里的	jia li de	1036
+是其	shi qi	1036
+公众的	gong zhong de	1034
+对人类	dui ren lei	1031
+这样我们	zhe yang wo men	1031
+实际的	shi ji de	1031
+地在	di zai	1031
+红色的	hong se de	1031
+集团的	ji tuan de	1031
+我们中	wo men zhong	1029
+到美国	dao mei guo	1029
+灾难性的	zai nan xing de	1029
+这场危机	zhe chang wei ji	1025
+了你们	le ni men	1023
+他吧	ta ba	1023
+公民的	gong min de	1023
+规模的	gui mo de	1023
+惊讶的	jing ya de	1023
+资金的	zi jin de	1023
+更像是	geng xiang shi	1020
+政府将	zheng fu jiang	1020
+下降的	xia jiang de	1020
+你们这	ni men zhe	1018
+公司和	gong si he	1018
+任务是	ren wu shi	1016
+文明的	wen ming de	1016
+这个的	zhe ge de	1014
+欧盟和	ou meng he	1014
+的产品	de chan pin	1014
+这样你	zhe yang ni	1012
+都死	dou si	1012
+付出的	fu chu de	1012
+后来我	hou lai wo	1012
+这的	zhe de	1009
+的话就	de hua jiu	1009
+听到吗	ting dao ma	1009
+年全球	nian quan qiu	1009
+来我	lai wo	1007
+不是来	bu shi lai	1007
+不到的	bu dao de	1005
+的不同	de bu tong	1005
+他想要	ta xiang yao	1001
+政府对	zheng fu dui	998
+注意的	zhu yi de	998
+研究中	yan jiu zhong	998
+罗姆	luo mu	996
+但这个	dan zhe ge	996
+父亲的	fu qin de	996
+设计了	she ji le	996
+他们很	ta men hen	994
+想要我	xiang yao wo	994
+发展和	fa zhan he	994
+年金融	nian jin rong	994
+个男人	ge nan ren	992
+钱给	qian gei	992
+老布	lao bu	992
+但这样	dan zhe yang	992
+网络的	wang luo de	992
+规定的	gui ding de	990
+了一系列	le yi xi lie	990
+了没有	le mei you	987
+加入我们	jia ru wo men	987
+同时也是	tong shi ye shi	987
+阿富汗的	a fu han de	987
+世界其他	shi jie qi ta	987
+一定很	yi ding hen	985
+件事	jian shi	985
+地球上的	di qiu shang de	985
+开始在	kai shi zai	983
+早期的	zao qi de	983
+能带来	neng dai lai	983
+在疫情	zai yi qing	983
+闭症	bi zheng	981
+用这	yong zhe	979
+没有我	mei you wo	979
+腐败的	fu bai de	979
+利斯	li si	976
+看看这	kan kan zhe	974
+准确的	zhun que de	974
+叙利亚的	xu li ya de	974
+个百分点	ge bai fen dian	974
+得这么	de zhe me	972
+多么的	duo me de	972
+其中一些	qi zhong yi xie	972
+债券的	zhai quan de	972
+和德国	he de guo	972
+和伊朗	he yi lang	972
+死定	si ding	970
+他们只	ta men zhi	970
+文化和	wen hua he	970
+是大	shi da	968
+可能需要	ke neng xu yao	968
+你们不	ni men bu	968
+该国的	gai guo de	968
+了很大	le hen da	965
+排放的	pai fang de	965
+了出来	le chu lai	963
+工人的	gong ren de	963
+尔及	er ji	961
+会议的	hui yi de	961
+观点的	guan dian de	961
+他人的	ta ren de	959
+乌克兰的	wu ke lan de	959
+中被	zhong bei	957
+里了	li le	957
+安全了	an quan le	957
+人员的	ren yuan de	957
+稳定和	wen ding he	957
+是朋友	shi peng you	954
+说在	shuo zai	954
+层面的	ceng mian de	954
+这真的	zhe zhen de	952
+它让	ta rang	952
+有人来	you ren lai	952
+达成的	da cheng de	952
+了一点	le yi dian	950
+对于我们	dui yu wo men	950
+主导的	zhu dao de	950
+当时在	dang shi zai	950
+过程的	guo cheng de	950
+号的	hao de	950
+十年中	shi nian zhong	950
+以色列和	yi se lie he	950
+和货币	he huo bi	950
+这个小	zhe ge xiao	948
+它可能	ta ke neng	948
+年在	nian zai	948
+这个系统	zhe ge xi tong	946
+问题了	wen ti le	946
+意大利的	yi da li de	946
+收入和	shou ru he	946
+条件的	tiao jian de	946
+疫苗的	yi miao de	943
+我们是否	wo men shi fou	943
+来帮助	lai bang zhu	943
+在的	zai de	941
+出去的	chu qu de	941
+最快的	zui kuai de	941
+甚至可能	shen zhi ke neng	941
+特朗普在	te lang pu zai	941
+地方的	di fang de	939
+着吧	zhe ba	939
+时间了	shi jian le	939
+不过他	bu guo ta	939
+富有的	fu you de	939
+不到你	bu dao ni	937
+运作的	yun zuo de	937
+在美国的	zai mei guo de	935
+母亲的	mu qin de	935
+这儿有	zhe er you	932
+能够让	neng gou rang	932
+很高兴你	hen gao xing ni	932
+国家将	guo jia jiang	932
+再见到	zai jian dao	932
+成熟的	cheng shu de	932
+贾德	jia de	932
+时我	shi wo	930
+但实际上	dan shi ji shang	930
+参与的	can yu de	930
+我们看	wo men kan	928
+只要我们	zhi yao wo men	928
+精神的	jing shen de	928
+对伊朗	dui yi lang	928
+等我们	deng wo men	926
+上面的	shang mian de	926
+传播的	chuan bo de	926
+核武器的	he wu qi de	926
+香港的	xiang gang de	924
+贷款的	dai kuan de	924
+要我们	yao wo men	921
+将如何	jiang ru he	921
+你们来	ni men lai	921
+层面上	ceng mian shang	921
+是唯一的	shi wei yi de	917
+他们了	ta men le	917
+中也	zhong ye	917
+队的	dui de	917
+在亚洲	zai ya zhou	917
+该组织	gai zu zhi	917
+本身的	ben shen de	915
+严肃的	yan su de	915
+对欧盟	dui ou meng	915
+这次的	zhe ci de	913
+一年的	yi nian de	913
+和政策	he zheng ce	913
+如果美国	ru guo mei guo	913
+希望我们	xi wang wo men	910
+当今的	dang jin de	910
+干部要	gan bu yao	910
+怎么来	zen me lai	908
+而且他们	er qie ta men	908
+梅伦	mei lun	908
+震惊的	zhen jing de	908
+看到它	kan dao ta	906
+你们中	ni men zhong	906
+正是我	zheng shi wo	906
+普遍的	pu bian de	906
+们也	men ye	904
+政府也	zheng fu ye	904
+世界上的	shi jie shang de	904
+一事实	yi shi shi	904
+但问题	dan wen ti	902
+展示的	zhan shi de	902
+看到他们	kan dao ta men	899
+听到你	ting dao ni	899
+特的	te de	899
+患者的	huan zhe de	899
+经验的	jing yan de	899
+严峻的	yan jun de	899
+财政和	cai zheng he	899
+一趋势	yi qu shi	899
+他们开始	ta men kai shi	897
+和在	he zai	897
+过这样	guo zhe yang	897
+这样一种	zhe yang yi zhong	897
+艾利	ai li	897
+都非常	dou fei chang	895
+生存的	sheng cun de	895
+和财政	he cai zheng	895
+小允	xiao yun	893
+政府必须	zheng fu bi xu	893
+法律和	fa lv he	893
+每个人的	mei ge ren de	893
+崩溃的	beng kui de	891
+他一起	ta yi qi	886
+他们让	ta men rang	886
+美国将	mei guo jiang	886
+上升的	shang sheng de	886
+应有的	ying you de	886
+危机后	wei ji hou	886
+得那么	de na me	884
+监管的	jian guan de	884
+进程的	jin cheng de	884
+一个由	yi ge you	884
+两个国家	liang ge guo jia	882
+现在不	xian zai bu	880
+看见的	kan jian de	880
+朝鲜的	chao xian de	880
+了一切	le yi qie	877
+及利亚	ji li ya	877
+伊朗和	yi lang he	877
+了起来	le qi lai	875
+消费的	xiao fei de	875
+了欧洲	le ou zhou	875
+我会说	wo hui shuo	873
+不过这	bu guo zhe	873
+在阿富汗	zai a fu han	873
+告诉我的	gao su wo de	871
+直接的	zhi jie de	871
+温和的	wen he de	871
+资本的	zi ben de	871
+与俄罗斯	yu e luo si	871
+他们为	ta men wei	869
+为什么在	wei shen me zai	869
+了解我	liao jie wo	869
+话要	hua yao	869
+中东的	zhong dong de	869
+执政的	zhi zheng de	869
+开发的	kai fa de	869
+一过程	yi guo cheng	869
+我们快	wo men kuai	866
+我们吗	wo men ma	866
+儿童的	er tong de	866
+这就像	zhe jiu xiang	864
+有这	you zhe	862
+人们可以	ren men ke yi	862
+从我们	cong wo men	862
+最近在	zui jin zai	862
+未来几年	wei lai ji nian	862
+十年的	shi nian de	862
+挑战是	tiao zhan shi	862
+暖的	nuan de	862
+去和	qu he	860
+下去的	xia qu de	860
+大选中	da xuan zhong	860
+去不	qu bu	858
+会认为	hui ren wei	858
+一个很	yi ge hen	858
+其他一些	qi ta yi xie	858
+家庭和	jia ting he	858
+选民的	xuan min de	858
+经济表现	jing ji biao xian	858
+他回来	ta hui lai	855
+他们没	ta men mei	855
+给的	gei de	855
+国家之间	guo jia zhi jian	855
+报告中	bao gao zhong	855
+军队的	jun dui de	855
+得真	de zhen	853
+认为它	ren wei ta	853
+解决这些	jie jue zhe xie	853
+家了	jia le	853
+对方的	dui fang de	853
+公众对	gong zhong dui	853
+美联储的	mei lian chu de	853
+什么让	shen me rang	851
+极端的	ji duan de	851
+它只是	ta zhi shi	849
+美国也	mei guo ye	849
+了近	le jin	849
+了超过	le chao guo	849
+的精神	de jing shen	849
+会感到	hui gan dao	847
+一个关于	yi ge guan yu	847
+著你	zhu ni	847
+发出的	fa chu de	847
+愤怒的	fen nu de	847
+我们只能	wo men zhi neng	844
+这我	zhe wo	844
+身边的	shen bian de	844
+而这种	er zhe zhong	844
+和医疗	he yi liao	844
+还有呢	hai you ne	842
+外面的	wai mian de	842
+之后我	zhi hou wo	842
+我们这里	wo men zhe li	840
+中国也	zhong guo ye	840
+理性的	li xing de	840
+变革的	bian ge de	840
+在叙利亚	zai xu li ya	840
+阻止了	zu zhi le	838
+以往任何	yi wang ren he	838
+和家庭	he jia ting	838
+到什么	dao shen me	836
+灾难的	zai nan de	836
+这项技术	zhe xiang ji shu	836
+统治的	tong zhi de	836
+金融和	jin rong he	836
+去年的	qu nian de	836
+货币和	huo bi he	836
+在经历了	zai jing li le	836
+和西班牙	he xi ban ya	836
+崛起的	jue qi de	836
+等什么	deng shen me	833
+事我	shi wo	833
+想要你	xiang yao ni	833
+时会	shi hui	833
+埃及的	ai ji de	833
+阻碍了	zu ai le	833
+竞争力的	jing zheng li de	833
+他们能够	ta men neng gou	833
+我们与	wo men yu	833
+能提供	neng ti gong	831
+结构的	jie gou de	831
+不停的	bu ting de	831
+全球性的	quan qiu xing de	831
+是这些	shi zhe xie	831
+全部的	quan bu de	829
+问题就	wen ti jiu	829
+安排的	an pai de	829
+责任的	ze ren de	829
+民主和	min zhu he	829
+东西的	dong xi de	827
+天的	tian de	827
+时间不	shi jian bu	827
+美国国家	mei guo guo jia	827
+如果一个	ru guo yi ge	825
+调查的	diao cha de	825
+和私人	he si ren	825
+科齐	ke qi	825
+到那	dao na	822
+英里的	ying li de	822
+和地区	he di qu	822
+我们人类	wo men ren lei	822
+人还	ren hai	820
+我们并不	wo men bing bu	820
+他们希望	ta men xi wang	818
+笑的	xiao de	818
+见到的	jian dao de	818
+市的	shi de	818
+驱动的	qu dong de	818
+中获益	zhong huo yi	818
+峰会上	feng hui shang	818
+是那	shi na	816
+以及我们	yi ji wo men	816
+支出的	zhi chu de	816
+和创新	he chuang xin	816
+这些政策	zhe xie zheng ce	816
+症的	zheng de	814
+财富的	cai fu de	814
+复苏的	fu su de	814
+是那样	shi na yang	811
+后面的	hou mian de	811
+会这么	hui zhe me	811
+纯粹的	chun cui de	811
+危机前	wei ji qian	811
+做是	zuo shi	809
+其他许多	qi ta xu duo	809
+所以如果	suo yi ru guo	809
+情况的	qing kuang de	809
+今天就	jin tian jiu	809
+援助的	yuan zhu de	809
+不足的	bu zu de	809
+召开的	zhao kai de	809
+国家来说	guo jia lai shuo	809
+就业的	jiu ye de	809
+他到	ta dao	807
+他们却	ta men que	807
+裔美国人	yi mei guo ren	807
+专业的	zhuan ye de	807
+到这些	dao zhe xie	805
+下你	xia ni	805
+而如果	er ru guo	805
+我们怎么	wo men zen me	803
+请让	qing rang	803
+它必须	ta bi xu	803
+尽管这	jin guan zhe	803
+了世界	le shi jie	803
+并因此	bing yin ci	803
+但就	dan jiu	800
+思考的	si kao de	800
+希塔	xi ta	800
+表明了	biao ming le	800
+结构改革	jie gou gai ge	800
+人一样	ren yi yang	798
+真的会	zhen de hui	798
+烦我	fan wo	798
+目前还	mu qian hai	798
+美国人的	mei guo ren de	798
+能力和	neng li he	798
+年将	nian jiang	798
+西尔	xi er	796
+矛盾的	mao dun de	796
+报告的	bao gao de	794
+居住的	ju zhu de	794
+决策的	jue ce de	794
+了它们	le ta men	794
+中国将	zhong guo jiang	794
+看到我们	kan dao wo men	792
+着他们	zhe ta men	792
+艾比	ai bi	792
+年新	nian xin	792
+对新	dui xin	789
+它不会	ta bu hui	789
+上面有	shang mian you	789
+每年都	mei nian dou	789
+南克	nan ke	789
+出口的	chu kou de	789
+就业和	jiu ye he	789
+区域的	qu yu de	787
+是阿	shi a	785
+避免的	bi mian de	785
+同时还	tong shi hai	785
+旁边的	pang bian de	783
+投资者的	tou zi zhe de	783
+语言的	yu yan de	783
+观点是	guan dian shi	783
+斗争的	dou zheng de	783
+机制的	ji zhi de	783
+有他	you ta	781
+将无法	jiang wu fa	781
+创造就业	chuang zao jiu ye	781
+任务的	ren wu de	781
+你到底在	ni dao di zai	781
+去那	qu na	778
+和一些	he yi xie	778
+没有的	mei you de	778
+得越	de yue	778
+工作和	gong zuo he	778
+于美国	yu mei guo	778
+什么事吗	shen me shi ma	778
+内贾	nei jia	778
+在同一	zai tong yi	776
+后我	hou wo	776
+下面的	xia mian de	776
+非常简单	fei chang jian dan	774
+身份的	shen fen de	774
+你的家人	ni de jia ren	774
+妇女和	fu nv he	774
+和平与	he ping yu	774
+我与	wo yu	774
+疫情期间	yi qing qi jian	774
+这里吗	zhe li ma	772
+发明的	fa ming de	772
+原教	yuan jiao	772
+联合国的	lian he guo de	772
+对这种	dui zhe zhong	770
+里去	li qu	770
+完全的	wan quan de	770
+绿色的	lv se de	770
+来跟	lai gen	767
+过要	guo yao	767
+可能比	ke neng bi	767
+预计将	yu ji jiang	767
+能源和	neng yuan he	767
+和法国	he fa guo	767
+和地方	he di fang	767
+受到的	shou dao de	765
+实力的	shi li de	765
+和意大利	he yi da li	765
+融资的	rong zi de	765
+一天的	yi tian de	763
+这个了	zhe ge le	763
+它没有	ta mei you	763
+空间的	kong jian de	763
+富裕的	fu yu de	763
+预见的	yu jian de	763
+伊拉克和	yi la ke he	761
+强劲的	qiang jing de	761
+来应对	lai ying dui	761
+了大	le da	759
+不会死	bu hui si	759
+白色的	bai se de	759
+东西了	dong xi le	759
+似乎也	si hu ye	759
+伯南	bo nan	759
+发挥了	fa hui le	759
+因素的	yin su de	759
+阿拉伯之	a la bo zhi	759
+利率的	li lv de	759
+他们又	ta men you	756
+我们刚	wo men gang	756
+但如果你	dan ru guo ni	756
+和市场	he shi chang	756
+现在他们	xian zai ta men	754
+一旦你	yi dan ni	754
+拍摄的	pai she de	754
+一个关键	yi ge guan jian	754
+了这么	le zhe me	752
+他一个	ta yi ge	752
+用这些	yong zhe xie	752
+科尼	ke ni	752
+时候你	shi hou ni	752
+尼的	ni de	752
+心中的	xin zhong de	752
+药物的	yao wu de	752
+理论的	li lun de	752
+了不	le bu	750
+他什么	ta shen me	750
+年美国	nian mei guo	750
+怎样了	zen yang le	750
+一下你	yi xia ni	750
+成长的	cheng zhang de	750
+他们一起	ta men yi qi	748
+就杀	jiu sha	748
+猜你	cai ni	748
+建造的	jian zao de	748
+和民主	he min zhu	748
+压力的	ya li de	745
+万的	wan de	745
+收入不	shou ru bu	745
+我们就是	wo men jiu shi	743
+明天的	ming tian de	743
+比赛的	bi sai de	743
+知道在	zhi dao zai	743
+那么这	na me zhe	743
+国家所	guo jia suo	743
+知识和	zhi shi he	743
+讽刺的	feng ci de	743
+流动的	liu dong de	743
+很小的	hen xiao de	743
+听到我	ting dao wo	741
+绝对的	jue dui de	741
+可能会在	ke neng hui zai	741
+干部的	gan bu de	741
+到它	dao ta	739
+对社会	dui she hui	739
+从那	cong na	739
+不相信我	bu xiang xin wo	739
+全世界最	quan shi jie zui	739
+基金的	ji jin de	739
+调整的	tiao zheng de	739
+了钱	le qian	737
+麻烦的	ma fan de	737
+政府都	zheng fu dou	737
+遗憾的	yi han de	737
+随后的	sui hou de	737
+美国国债	mei guo guo zhai	737
+是经济	shi jing ji	737
+还我	hai wo	734
+告诉你的	gao su ni de	734
+前我	qian wo	734
+格尔	ge er	734
+苏联的	su lian de	734
+房子的	fang zi de	734
+成立的	cheng li de	734
+和天然气	he tian ran qi	734
+又指	you zhi	734
+做不	zuo bu	732
+保护我们	bao hu wo men	732
+武器的	wu qi de	732
+无法在	wu fa zai	732
+科学和	ke xue he	732
+父母的	fu mu de	732
+特朗普和	te lang pu he	732
+跟著	gen zhu	730
+正如我	zheng ru wo	730
+作出的	zuo chu de	730
+信仰的	xin yang de	730
+如果这些	ru guo zhe xie	728
+其他任何	qi ta ren he	728
+点事	dian shi	728
+跟一个	gen yi ge	728
+甚至更	shen zhi geng	728
+高昂的	gao ang de	728
+对俄罗斯	dui e luo si	728
+我们更	wo men geng	728
+等国家	deng guo jia	728
+消费者的	xiao fei zhe de	728
+他们才	ta men cai	726
+袭击的	xi ji de	726
+宽松的	kuan song de	726
+他们并不	ta men bing bu	723
+尽管在	jin guan zai	723
+追求的	zhui qiu de	723
+持久的	chi jiu de	723
+但特朗普	dan te lang pu	723
+一数字	yi shu zi	723
+创新和	chuang xin he	723
+他们走	ta men zou	721
+我们找到	wo men zhao dao	721
+事吧	shi ba	721
+明白的	ming bai de	721
+公司在	gong si zai	721
+方式的	fang shi de	721
+方式是	fang shi shi	721
+政府应该	zheng fu ying gai	721
+考特	kao te	721
+协定的	xie ding de	721
+在特朗普	zai te lang pu	721
+和韩国	he han guo	721
+来保护	lai bao hu	719
+训练的	xun lian de	719
+地区和	di qu he	719
+赤字的	chi zi de	719
+已经从	yi jing cong	717
+你们现在	ni men xian zai	717
+却无法	que wu fa	717
+这个我	zhe ge wo	715
+可以对	ke yi dui	715
+德的	de de	715
+这项工作	zhe xiang gong zuo	715
+分裂的	fen lie de	715
+信息和	xin xi he	715
+他们和	ta men he	712
+就等	jiu deng	712
+存在了	cun zai le	712
+等的	deng de	710
+让那些	rang na xie	710
+描述了	miao shu le	710
+和可	he ke	710
+他们来说	ta men lai shuo	708
+在楼上	zai lou shang	708
+现在所	xian zai suo	708
+将带来	jiang dai lai	708
+一个被	yi ge bei	708
+见的	jian de	708
+并且我	bing qie wo	708
+大陆的	da lu de	708
+这些新	zhe xie xin	706
+就你	jiu ni	706
+就是它	jiu shi ta	706
+棘手的	ji shou de	706
+建设的	jian she de	706
+就像这样	jiu xiang zhe yang	704
+不能就	bu neng jiu	704
+我会帮	wo hui bang	704
+到底怎么	dao di zen me	704
+他们不能	ta men bu neng	701
+拉吉	la ji	701
+汽车的	qi che de	701
+梦想的	meng xiang de	701
+每个国家	mei ge guo jia	701
+限制的	xian zhi de	701
+困境的	kun jing de	701
+支付的	zhi fu de	701
+和支持	he zhi chi	701
+了严重	le yan zhong	701
+了三个	le san ge	699
+科奇	ke qi	699
+她一定	ta yi ding	699
+你们怎么	ni men zen me	699
+巴西的	ba xi de	699
+安倍晋	an bei jin	699
+动荡的	dong dang de	699
+都别	dou bie	697
+爸的	ba de	697
+呆着	dai zhe	697
+要面对	yao mian dui	695
+到你们	dao ni men	695
+到自己	dao zi ji	695
+只是要	zhi shi yao	695
+不是想	bu shi xiang	695
+别傻	bie sha	695
+可能不会	ke neng bu hui	695
+全世界都	quan shi jie dou	695
+急需的	ji xu de	695
+在选举	zai xuan ju	695
+了与	le yu	695
+所指出	suo zhi chu	695
+市场国家	shi chang guo jia	695
+他为什么	ta wei shen me	693
+只有我们	zhi you wo men	693
+他杀了	ta sha le	693
+从他们	cong ta men	693
+永恒的	yong heng de	693
+持续下去	chi xu xia qu	693
+或者在	huo zhe zai	693
+为自己的	wei zi ji de	693
+通过的	tong guo de	693
+地把	di ba	693
+奇妙的	qi miao de	693
+局的	ju de	693
+损失的	sun shi de	693
+灵活的	ling huo de	693
+了啦	le la	690
+现在却	xian zai que	690
+说自己	shuo zi ji	690
+人做	ren zuo	690
+型的	xing de	690
+着去	zhe qu	690
+规则和	gui ze he	690
+研究和	yan jiu he	690
+恶化的	e hua de	690
+学到的	xue dao de	690
+了这里	le zhe li	688
+一个能	yi ge neng	688
+马杜	ma du	688
+时所	shi suo	688
+那么它	na me ta	688
+它们将	ta men jiang	688
+俄国的	e guo de	688
+游戏的	you xi de	688
+音乐的	yin yue de	688
+商品的	shang pin de	688
+是艾	shi ai	686
+上他	shang ta	686
+过去几年	guo qu ji nian	686
+燃料的	ran liao de	686
+成员的	cheng yuan de	686
+例子是	li zi shi	686
+那些被	na xie bei	684
+这些公司	zhe xie gong si	684
+过这种	guo zhe zhong	684
+得到一个	de dao yi ge	684
+问题不	wen ti bu	684
+问题和	wen ti he	684
+最终将	zui zhong jiang	684
+和土耳其	he tu er qi	684
+和以色列	he yi se lie	684
+我们出去	wo men chu qu	682
+一个可以	yi ge ke yi	682
+你们看到	ni men kan dao	682
+改变我们	gai bian wo men	682
+不过了	bu guo le	682
+紧密的	jin mi de	682
+将不得不	jiang bu de bu	679
+所采取	suo cai qu	679
+意大利和	yi da li he	679
+看在	kan zai	677
+么呢	me ne	677
+一次的	yi ci de	677
+生产和	sheng chan he	677
+官员的	guan yuan de	677
+一个事实	yi ge shi shi	677
+去他	qu ta	675
+去寻找	qu xun zhao	675
+以后的	yi hou de	675
+带来更	dai lai geng	675
+解释的	jie shi de	675
+势力的	shi li de	675
+原因在于	yuan yin zai yu	675
+核不	he bu	675
+从而让	cong er rang	675
+他这样	ta zhe yang	673
+这些的	zhe xie de	673
+一个我	yi ge wo	673
+它应该	ta ying gai	673
+可以解释	ke yi jie shi	673
+这种说法	zhe zhong shuo fa	673
+比美国	bi mei guo	673
+西班牙和	xi ban ya he	673
+领袖的	ling xiu de	673
+作的	zuo de	673
+各地的	ge di de	673
+千年发展	qian nian fa zhan	673
+要一个	yao yi ge	671
+使人们	shi ren men	671
+破坏的	po huai de	671
+继续在	ji xu zai	671
+但今天	dan jin tian	671
+美国是	mei guo shi	671
+资源和	zi yuan he	671
+和贸易	he mao yi	671
+了嘛	le ma	668
+要你们	yao ni men	668
+将需要	jiang xu yao	668
+想他们	xiang ta men	668
+缺陷的	que xian de	668
+美国与	mei guo yu	668
+和个人	he ge ren	668
+就不再	jiu bu zai	666
+要找到	yao zhao dao	666
+直到你	zhi dao ni	666
+没有比	mei you bi	666
+们会	men hui	666
+可能将	ke neng jiang	666
+计划在	ji hua zai	666
+或在	huo zai	666
+发现你	fa xian ni	666
+要告诉你	yao gao su ni	666
+墨西哥的	mo xi ge de	666
+今次	jin ci	666
+之一的	zhi yi de	666
+扩大的	kuo da de	666
+深层次的	shen ceng ci de	666
+美国企业	mei guo qi ye	666
+我们找	wo men zhao	664
+这些照片	zhe xie zhao pian	664
+一个错误	yi ge cuo wu	664
+带著	dai zhu	664
+她可能	ta ke neng	664
+年和	nian he	664
+方面都	fang mian dou	664
+中国已经	zhong guo yi jing	664
+不对的	bu dui de	664
+能实现	neng shi xian	664
+他跑	ta pao	662
+来是	lai shi	662
+这些地方	zhe xie di fang	662
+好你	hao ni	662
+已经超过	yi jing chao guo	662
+进来吗	jin lai ma	662
+路克	lu ke	662
+希望他们	xi wang ta men	662
+感到非常	gan dao fei chang	662
+方法的	fang fa de	662
+因此也	yin ci ye	662
+如此的	ru ci de	662
+大脑中	da nao zhong	662
+将进一步	jiang jin yi bu	662
+改革和	gai ge he	662
+中就	zhong jiu	660
+拿著	na zhu	660
+人们就	ren men jiu	660
+看起来就	kan qi lai jiu	660
+后果的	hou guo de	660
+得出的	de chu de	660
+大小的	da xiao de	660
+记录了	ji lu le	660
+市场中	shi chang zhong	660
