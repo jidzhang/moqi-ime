@@ -152,5 +152,8 @@ func reloadCloudClipboardServiceFromDisk() {
 
 // UploadCloudClipboardFromLauncher handles clipboard uploads from MoqiLauncher.
 func UploadCloudClipboardFromLauncher(text string) {
+	if !requireOutbound() {
+		return
+	}
 	globalCloudClipboardService().UploadFromRequest(text)
 }

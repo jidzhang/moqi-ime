@@ -42,6 +42,12 @@ func (s *userDictSyncState) end() {
 }
 
 func (ime *IME) syncUserDataCommand(resp *imecore.Response) bool {
+	if !requireOutbound() {
+		if resp != nil {
+			resp.TrayNotification = trayNotification(outboundBlockedMessage, imecore.TrayNotificationIconError)
+		}
+		return false
+	}
 	if ime.backend == nil {
 		if resp != nil {
 			resp.TrayNotification = trayNotification("用户词库同步失败：Rime 后端不可用", imecore.TrayNotificationIconError)

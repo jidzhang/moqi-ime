@@ -57,6 +57,12 @@ func resetSchemeSetDownloadStateForTest() {
 }
 
 func (ime *IME) downloadSchemeSetAsync(req *imecore.Request, resp *imecore.Response) bool {
+	if !requireOutbound() {
+		if resp != nil {
+			resp.TrayNotification = trayNotification(outboundBlockedMessage, imecore.TrayNotificationIconError)
+		}
+		return false
+	}
 	sharedSchemeSetDownloadState.mu.Lock()
 	if sharedSchemeSetDownloadState.running {
 		sharedSchemeSetDownloadState.mu.Unlock()

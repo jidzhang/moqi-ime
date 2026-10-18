@@ -72,6 +72,9 @@ func (c *aiClient) GenerateReviewCandidates(input aiGenerateRequest) ([]string, 
 	if c == nil {
 		return nil, fmt.Errorf("AI client is not configured")
 	}
+	if !requireOutbound() {
+		return nil, fmt.Errorf(outboundBlockedMessage)
+	}
 	input = normalizeAIGenerateRequest(input)
 	if input.PreviousCommit == "" && input.Composition == "" && len(input.Candidates) == 0 {
 		return nil, fmt.Errorf("AI input is empty")

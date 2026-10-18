@@ -59,6 +59,11 @@ func (ime *IME) onCloudClipboardUpload(req *imecore.Request, resp *imecore.Respo
 		resp.ReturnValue = 0
 		return resp
 	}
+	if !requireOutbound() {
+		resp.TrayNotification = cloudClipboardTrayNotification(outboundBlockedMessage, imecore.TrayNotificationIconError)
+		resp.ReturnValue = 0
+		return resp
+	}
 	globalCloudClipboardService().UploadFromRequest(text)
 	resp.ReturnValue = 1
 	return resp

@@ -185,7 +185,7 @@ func TestAIHotkeyShowsGeneratedCandidates(t *testing.T) {
 		if len(input.Candidates) != 1 || input.Candidates[0] != "咖啡机" {
 			t.Fatalf("unexpected AI candidates: %#v", input.Candidates)
 		}
-		if !strings.Contains(input.Prompt, "{{candidate_1}}") {
+		if !strings.Contains(input.Prompt, "{{composition}}") {
 			t.Fatalf("expected configured prompt template, got %q", input.Prompt)
 		}
 		started <- struct{}{}
@@ -669,7 +669,11 @@ func TestAIHotkeyFailureFallsBackToOriginalComposition(t *testing.T) {
 		},
 	}
 	ime := newTestIMEWithBackend(backend)
+	// mock 生成器在 onKeyDown 完成前不返回：否则错误结果可能抢在 onKeyDown
+	// 之前被 consumeAIAsyncResult 消费掉 pending 状态，导致断言时序竞态。
+	releaseGenerator := make(chan struct{})
 	ime.SetAIReviewGenerator(func(input aiGenerateRequest) ([]string, error) {
+		<-releaseGenerator
 		return nil, errors.New("mock AI failure")
 	})
 
@@ -692,6 +696,7 @@ func TestAIHotkeyFailureFallsBackToOriginalComposition(t *testing.T) {
 	if keyResp.CompositionString != "咖啡机" || !keyResp.ShowCandidates || len(keyResp.CandidateList) != 2 {
 		t.Fatalf("expected backend candidates to remain visible while AI is pending, got %#v", keyResp)
 	}
+	close(releaseGenerator)
 	waitForAIAsyncCompletion(t, ime)
 	keyUpResp := ime.HandleRequest(&imecore.Request{
 		Method:  "onKeyUp",
