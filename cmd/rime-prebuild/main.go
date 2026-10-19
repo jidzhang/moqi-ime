@@ -42,6 +42,9 @@ func main() {
 		if err := patchSlashDirectCommit(*dataDir); err != nil {
 			log.Printf("斜杠直通补丁失败（继续）: %v", err)
 		}
+		if err := patchCandidateMarksLua(*dataDir); err != nil {
+			log.Printf("候选标记 lua 改写失败（继续）: %v", err)
+		}
 		if err := patchDisableRadicalLookup(*dataDir); err != nil {
 			log.Printf("特殊模式禁用补丁失败（继续）: %v", err)
 		}
@@ -219,6 +222,53 @@ func patchSlashDirectCommit(dataDir string) error {
 		return nil
 	}
 	return nil
+}
+
+// patchCandidateMarksLua 重写打包数据的 lua/is_in_user_dict.lua：
+// 上游给用户词加 * 、整句候选加 ∞ 的自造标记对普通用户是视觉噪声
+// （用户实报）。改为默认不加标记，仅当 schema 配置 debug/show_candidate_marks
+// 为 true（由 Go 侧在 MoqiLauncher 日志档=debug/trace 时下发）才显示，
+// 供排查用户词典/组句来源时用。幂等：lua 已含新标记头则跳过。
+func patchCandidateMarksLua(dataDir string) error {
+	path := filepath.Join(dataDir, "lua", "is_in_user_dict.lua")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	const head = "-- moqi-prebuild: 标记仅调试配置显示（debug/show_candidate_marks）"
+	if strings.Contains(string(body), head) {
+		return nil
+	}
+	replacement := head + `
+-- 默认不显示 * / ∞ 标记；调试档（Go 侧下发 show_candidate_marks）恢复上游行为。
+local M = {}
+
+function M.init(env)
+    local config = env.engine.schema.config
+    M.show_marks = config:get_bool("debug/show_candidate_marks") or false
+end
+
+function M.func(input, env)
+    if not M.show_marks then
+        for cand in input:iter() do
+            yield(cand)
+        end
+        return
+    end
+    for cand in input:iter() do
+        if cand.type == "user_phrase" then
+            cand.comment = '*'
+        end
+        if cand.type == 'sentence' then
+            cand.comment = '∞'
+        end
+        yield(cand)
+    end
+end
+
+return M
+`
+	return os.WriteFile(path, []byte(replacement), 0o644)
 }
 
 // patchPageSizeDefault 把 default.yaml 的 menu/page_size 从上游默认 8 对齐为 9。

@@ -93,6 +93,11 @@ func buildFrostCustomPatch(cfg localBehaviorConfig, sharedDir string) string {
 		emit("engine/translators/-: table_translator@frost_aux")
 		emit("engine/filters/-: lua_filter@*aux_lookup_filter")
 	}
+	if isDebugLoggingEnabled() {
+		// 调试档恢复候选 * / ∞ 来源标记（默认对用户隐藏；见 rime-prebuild
+		// patchCandidateMarksLua 与上游 lua/is_in_user_dict.lua）
+		emit(`"debug/show_candidate_marks": true`)
+	}
 	if lang := resolveGrammarLanguage(sharedDir, cfg); lang != "" {
 		emit("grammar/language: " + lang)
 		emit(`"translator/contextual_suggestions": true`)
