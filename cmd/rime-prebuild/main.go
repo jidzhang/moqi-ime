@@ -14,6 +14,7 @@
 package main
 
 import (
+	"io/fs"
 	"strings"
 
 	"flag"
@@ -64,6 +65,17 @@ func main() {
 		if err := patchDefaultShiftR(*dataDir); err != nil {
 			log.Printf("右 Shift 配置对齐失败（继续预编译）: %v", err)
 		}
+		if err := patchSwitcherHotkey(*dataDir); err != nil {
+			log.Printf("方案选单快捷键补丁失败（继续预编译）: %v", err)
+		}
+		if err := patchMeltEngT9Include(*dataDir); err != nil {
+			log.Printf("melt_eng_t9 include 收窄失败（继续预编译）: %v", err)
+		}
+	}
+	// 全部补丁落盘后、部署开始前，把 yaml 源文件 mtime 向下截到偶数秒
+	// （根因见 normalizeYamlMtimes：librime 秒级 == 比对 + Inno 2 秒粒度取整，不截齐则装机后必判 source file changed、首切逐个重编）。
+	if err := normalizeYamlMtimes(*dataDir); err != nil {
+		log.Printf("yaml 时间戳对齐失败（继续预编译）: %v", err)
 	}
 	if !*deploy {
 		return
@@ -163,6 +175,7 @@ func patchDefaultShiftR(dataDir string) error {
 //     标点处理器永远接管不到该键；
 //  3. recognizer/patterns/punct 覆写为 "$^"（'/xx' 符号查表模式彻底关闭，
 //     在 patchDisableRadicalLookup 里做）。
+//
 // 组字框有待选内容时的标准标点语义保持：先上屏组字内容（有效拼音转汉字、
 // 无候选字母串按原文），再立即输出 '/'。幂等：已是目标形态则跳过。
 func patchSlashDirectCommit(dataDir string) error {
@@ -302,6 +315,110 @@ func patchPageSizeDefault(dataDir string) error {
 	return nil
 }
 
+// patchSwitcherHotkey 清空 default.yaml 的方案选单快捷键（hotkeys: []）。
+// 根因：Control+grave 劫持 VS/VSCode 的集成终端快捷键 Ctrl+`；换绑 F4 又
+// 撞 Total Commander。方案选单没有无冲突的全局键可用，产品形态上切换走
+// 托盘菜单"切换方案集"（保留），快捷键一律不提供。
+// 幂等：hotkeys 已为空列表则跳过。
+func patchSwitcherHotkey(dataDir string) error {
+	path := filepath.Join(dataDir, "default.yaml")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	lines := strings.Split(string(body), "\n")
+	hotkeysIdx := -1
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if !strings.HasPrefix(trimmed, "hotkeys:") {
+			continue
+		}
+		// 只动 switcher 下的 hotkeys（default.yaml 里该键唯一，仍校验缩进
+		// 归属：switcher: 行之后、下一个同级键之前）。
+		for j := i - 1; j >= 0; j-- {
+			if strings.HasPrefix(lines[j], "switcher:") {
+				hotkeysIdx = i
+				break
+			}
+			trimmedJ := strings.TrimRight(lines[j], " \t")
+			if trimmedJ != "" && !strings.HasPrefix(trimmedJ, "#") && !strings.HasPrefix(trimmedJ, " ") && !strings.HasPrefix(trimmedJ, "\t") {
+				break // 到达上一个同级键，说明不在 switcher 块内
+			}
+		}
+		if hotkeysIdx >= 0 {
+			break
+		}
+	}
+	if hotkeysIdx < 0 {
+		return nil
+	}
+	// 已是空列表（hotkeys: []）：幂等出口。
+	if strings.TrimSpace(strings.SplitN(strings.TrimSpace(lines[hotkeysIdx]), "#", 2)[0]) == "hotkeys: []" {
+		return nil
+	}
+	// 找到 hotkeys 块的缩进与列表项范围。
+	indent := lines[hotkeysIdx][:len(lines[hotkeysIdx])-len(strings.TrimLeft(lines[hotkeysIdx], " \t"))]
+	end := hotkeysIdx + 1
+	for ; end < len(lines); end++ {
+		trimmed := strings.TrimSpace(lines[end])
+		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+			continue // 空行/注释行不算块结束，但也不搬运
+		}
+		if strings.HasPrefix(lines[end], indent+"  ") || strings.HasPrefix(lines[end], indent+"\t") {
+			continue // 列表项或其后续行
+		}
+		break
+	}
+	// 替换为空列表：hotkeys: []，丢弃 grave/F4 行；紧邻的纯注释行一并
+	// 删除（避免留下无主的 "# - Alt+grave"）。后续块（save_options）
+	// 原样保留。
+	replacement := indent + "hotkeys: []  # 不提供全局快捷键（与常用软件冲突），切换走托盘菜单（prebuild）"
+	newLines := append([]string{}, lines[:hotkeysIdx]...)
+	newLines = append(newLines, replacement)
+	// 找下一个实质内容行（跳过空行与紧邻注释）
+	k := end
+	for k < len(lines) {
+		trimmed := strings.TrimSpace(lines[k])
+		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+			k++
+			continue
+		}
+		break
+	}
+	newLines = append(newLines, lines[k:]...)
+	fmt.Printf("[prebuild] switcher hotkeys cleared (no global hotkey)\n")
+	return os.WriteFile(path, []byte(strings.Join(newLines, "\n")), 0o644)
+}
+
+// patchMeltEngT9Include 把 melt_eng_t9.schema.yaml 的整树 include 收窄到
+// engine 段。根因：__include: melt_eng.schema.yaml:/ 拉入整棵 melt_eng 树，
+// 而 melt_eng 自身又有本文件内的 algebra include 链；librime
+// HasCircularDependencies 对同资源多次展开按前缀匹配误判为循环依赖
+// （config_compiler.cc:527 刷屏），每次部署对 melt_eng/radical_pinyin 反复
+// 重试，单 schema 3~7 秒——装机后首切 ~10-24s 的主体（探针实测 config 编译
+// 17.4s / deploy 17.6s）。t9 自带 schema/translator/speller 覆盖，缺的只有
+// engine 骨架，收窄到 /engine 后环断、t9 语义不变。
+// 幂等：已是 /engine 则跳过。
+func patchMeltEngT9Include(dataDir string) error {
+	path := filepath.Join(dataDir, "melt_eng_t9.schema.yaml")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	// 只匹配行尾是 ":/" 的整树引用，天然幂等（/engine 行不会被再匹配）。
+	const oldLine = "__include: melt_eng.schema.yaml:/\n"
+	const newLine = "__include: melt_eng.schema.yaml:/engine\n"
+	if !strings.Contains(string(body), oldLine) {
+		return nil
+	}
+	patched := strings.Replace(string(body), oldLine, newLine, 1)
+	fmt.Printf("[prebuild] melt_eng_t9 include narrowed to /engine (breaks deploy loop)\n")
+	return os.WriteFile(path, []byte(patched), 0o644)
+}
+
 // patchDisableRadicalLookup 默认禁用全部字母/符号触发的特殊模式（对齐微软
 // 拼音设计原则：特殊模式用 Shift+字母触发、有开关、默认禁用；用户反馈
 // 输入 u 稍停顿就误入〔拆字〕，直接字母触发违反打字预期）。
@@ -312,6 +429,7 @@ func patchPageSizeDefault(dataDir string) error {
 //   - unicode        "^U[a-f0-9]+"  Unicode 输入（U）
 //   - number         "^R[0-9]+..."  数字金额大写（R）
 //   - gregorian_to_lunar "^N..."    公历转农历（N）
+//
 // 同时删除 engine/segmentors 的 affix_segmentor@radical_lookup 挂载（双保险）。
 // 恢复任一模式：用户目录 rime_frost.custom.yaml 里 patch 对应 recognizer
 // 模式回原值即可（即开关）。后续待办：产品设置界面开关 + Shift+字母触发。
@@ -425,7 +543,6 @@ func installBigramDict(src, dataDir string) error {
 	return os.WriteFile(dictPath, []byte(strings.Join(lines, "\n")), 0o644)
 }
 
-
 // mergeJianpinPatch 把简拼高频组合补丁合并进打包数据目录的
 // custom_phrase.txt（幂等：已合并过则跳过）。
 // 补丁来源 input_methods/rime/patches/jianpin_phrases.txt，生成方法见其头部注释。
@@ -475,4 +592,51 @@ func readNonCommentLines(path string) ([]string, error) {
 		out = append(out, l)
 	}
 	return out, nil
+}
+
+// normalizeYamlMtimes 把 dataDir 下全部 yaml 源文件的 mtime 向下截到偶数秒。
+// 跳过 build/ 目录（产物内容时间戳由部署写入），不动非 yaml 文件。
+//
+// 根因：librime ConfigNeedsUpdate 用 (int)last_write_time 做秒级 == 比对，
+// 差 1 秒即判 source file changed，逐个 schema 重走部署；
+// 而 Inno Setup 按 DOS 时间 2 秒粒度向下取整写入文件时间。
+// 打包机上的奇数秒时间戳装机后必对不上，首切逐个重编 ~10s。
+// 只截到整秒不够：必须偶数秒 +0.5s 中置，躲开 librime 时钟换算抖动。
+// 幂等：同输入恒得同输出（内容无关，只动 mtime）。
+func normalizeYamlMtimes(dataDir string) error {
+	count := 0
+	err := filepath.WalkDir(dataDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			if d.Name() == "build" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(strings.ToLower(d.Name()), ".yaml") {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		// 先向下截到偶数秒（对齐 Inno 的 DOS 时间 2 秒粒度），再 +0.5s 落在
+		// [偶数, 偶数+1) 窗口正中：librime 的 file_clock→system_clock 换算有毫秒级
+		// 抖动，整秒（如 9204.0000）会被抖到 9203.99x 再被 (int) 截成 9203
+		// 而误判 changed；+0.5s 后抖动两边都碰不到整数界。floor2(9204.5)=9204，
+		// 装机取整后依然一致。int() 与 floor2() 在此窗口内恒得偶数值。
+		t := info.ModTime().Truncate(2 * time.Second).Add(500 * time.Millisecond)
+		if err := os.Chtimes(path, t, t); err != nil {
+			return err
+		}
+		count++
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	fmt.Println("[prebuild] yaml mtimes normalized:", count, "file(s)")
+	return nil
 }
