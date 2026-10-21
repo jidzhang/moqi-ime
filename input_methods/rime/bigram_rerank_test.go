@@ -148,3 +148,13 @@ func TestMixedPairRerankSwapsOnStrongPair(t *testing.T) {
 		t.Fatal("关闭时不应换位")
 	}
 }
+
+func TestDefaultMixedPairRerankOn(t *testing.T) {
+	cfg := defaultBigramRerankConfig()
+	if !cfg.MixedPair || cfg.PairRatio != 999 || cfg.PairFloor != 300 {
+		t.Fatalf("mixed pair rerank 默认应开（999/300），got %+v", cfg)
+	}
+	if cfg.Enabled {
+		t.Fatal("上文上下文版重排默认应保持关闭")
+	}
+}

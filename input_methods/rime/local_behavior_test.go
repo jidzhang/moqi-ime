@@ -24,6 +24,21 @@ func writeLocalBehaviorConfig(t *testing.T, body string) {
 	t.Cleanup(func() { _ = os.Remove(path) })
 }
 
+// disableMixedPairT 在隔离 APPDATA 下显式关闭 mixed 重排（默认已开），
+// 供验证"空 patch 语义"的测试使用。
+func disableMixedPairT(t *testing.T) {
+	t.Helper()
+	root := t.TempDir()
+	t.Setenv("APPDATA", root)
+	if err := os.MkdirAll(filepath.Join(root, "Moqi"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "Moqi", "contextual_lift.json"),
+		[]byte(`{ "bigram_rerank": { "mixed_pair": false } }`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestBuildFrostCustomPatchSlashOff(t *testing.T) {
 	off := true
 	patch := buildFrostCustomPatch(localBehaviorConfig{DisableSlashPunct: &off}, "")
@@ -52,12 +67,14 @@ func TestBuildFrostCustomPatchAuxLookupOff(t *testing.T) {
 }
 
 func TestBuildFrostCustomPatchEmptyWhenNoSwitch(t *testing.T) {
+	disableMixedPairT(t)
 	if got := buildFrostCustomPatch(localBehaviorConfig{}, ""); got != "" {
 		t.Fatalf("expected empty patch with no switches, got:\n%s", got)
 	}
 }
 
 func TestSyncFrostCustomPatchWritesAndRemovesManaged(t *testing.T) {
+	disableMixedPairT(t)
 	userDir := t.TempDir()
 	off := true
 	writeLocalBehaviorConfig(t, `{"disable_slash_punct": true, "disable_aux_lookup": true}`)
@@ -144,6 +161,7 @@ func TestBuildFrostCustomPatchSmallGrammarNoTuning(t *testing.T) {
 // 尚未落齐（gram 扫描扑空）。初始化路径（ensureFrostCustomPatch）此时
 // 必须不写也不删；删除语义只属于托盘「刷新配置」路径（syncFrostCustomPatch）。
 func TestEnsureFrostCustomPatchNeverDeletesExistingConfig(t *testing.T) {
+	disableMixedPairT(t)
 	user := t.TempDir()
 	shared := t.TempDir()
 	existing := frostCustomManagedMark + "\npatch:\n  grammar/language: keep-me\n"
@@ -184,6 +202,7 @@ func TestEnsureFrostCustomPatchWritesWhenGramPresent(t *testing.T) {
 }
 
 func TestSyncFrostCustomPatchDeletesManagedFileWhenEmpty(t *testing.T) {
+	disableMixedPairT(t)
 	user := t.TempDir()
 	existing := frostCustomManagedMark + "\npatch:\n  grammar/language: old\n"
 	if err := os.WriteFile(filepath.Join(user, frostCustomFileName), []byte(existing), 0o644); err != nil {

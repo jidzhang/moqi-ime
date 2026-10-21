@@ -33,11 +33,13 @@ type bigramRerankConfig struct {
 }
 
 func defaultBigramRerankConfig() bigramRerankConfig {
-	// 默认关闭：2026-10-17 全栈 A/B（2000 词对）与关闭档差 -0.05（噪声），
-	// essay gram + 用户词典已覆盖该信号。配置 bigram_rerank.enabled 可开。
+	// MixedPair 默认开（2026-10-22 定档）：仅混合组字（全拼+首字母尾巴，
+	// 音节切分门槛把关）、只替换"词表无据"的首名（PairRatio 999 语义）、
+	// 频次 ≥300。d3 dedup 64.3→82.3（含学习治理），守卫全达标（见 report
+	// 2026-10-22）。上方 Enabled 是"上一句上下文版"重排，维持默认关。
 	return bigramRerankConfig{
 		Enabled: false, Ratio: 1.6, FloorCount: 30,
-		MixedPair: false, PairRatio: 1.3, PairFloor: 50, PairMaxLen: 4,
+		MixedPair: true, PairRatio: 999, PairFloor: 300, PairMaxLen: 4,
 	}
 }
 
