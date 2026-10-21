@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/gaboolic/moqi-ime/eval"
+	rime "github.com/gaboolic/moqi-ime/input_methods/rime"
 )
 
 func main() {
@@ -29,6 +30,7 @@ func main() {
 	triple := flag.Bool("triple", false, "burst: use chained 3-word pairs")
 	burstTopN := flag.Int("burstTopN", 2000, "top-N bigram pairs for burst eval")
 	mixedTop := flag.Bool("mixedTop", false, "mixed: also report hit@3/hit@page (ime stack, slow path)")
+	debugLog := flag.Bool("debugLog", false, "enable rime debugLogf to stderr (diagnose rerank execution)")
 	noFastPath := flag.Bool("noFastPath", false, "disable fast-path typing so Go-side rerank/lift run (A/B Go pipeline features)")
 	burstDedupInput := flag.Bool("burstDedupInput", false, "burst: drop later pairs whose d3 input (W1 full pinyin + W2 initial) collides with an earlier pair; same-input golds cap top-2000 at 62.25%")
 	flag.Parse()
@@ -128,6 +130,9 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Printf("burst pairs=%d mode=%s stack=%s\n", len(pairs), *burstMode, *stack)
+		if *debugLog {
+			rime.SetDebugLoggingEnabled(true)
+		}
 		if *burstMode == "continuation" || *noFastPath {
 			// d4 延续依赖 Go 管线的提交后处理（短窗 lift）；--noFastPath
 			// 供 Go 侧特性（如 mixed pair rerank）A/B，快路径会绕过它们。

@@ -130,7 +130,7 @@ func TestMixedPairRerankSwapsOnStrongPair(t *testing.T) {
 		},
 	}
 	cands := []candidateItem{{Text: "时代"}, {Text: "是的"}, {Text: "使得"}}
-	got, cursor, changed := ime.applyMixedPairRerank(cands, 0)
+	got, cursor, changed := ime.applyMixedPairRerank(cands, 0, "shid")
 	if !changed || got[0].Text != "是的" {
 		t.Fatalf("期望 是的 提前: changed=%t first=%q", changed, got[0].Text)
 	}
@@ -139,12 +139,12 @@ func TestMixedPairRerankSwapsOnStrongPair(t *testing.T) {
 	}
 	// 弱对（低于 floor）不换位
 	cands2 := []candidateItem{{Text: "是的"}, {Text: "时代"}, {Text: "使得"}}
-	if _, _, changed := ime.applyMixedPairRerank(cands2, 0); changed {
+	if _, _, changed := ime.applyMixedPairRerank(cands2, 0, "shid"); changed {
 		t.Fatal("弱对不应换位")
 	}
 	// 开关关闭不动作
 	ime.contextualCfg.BigramRerank.MixedPair = false
-	if _, _, changed := ime.applyMixedPairRerank(cands, 0); changed {
+	if _, _, changed := ime.applyMixedPairRerank(cands, 0, "shid"); changed {
 		t.Fatal("关闭时不应换位")
 	}
 }

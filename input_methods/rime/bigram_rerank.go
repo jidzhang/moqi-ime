@@ -225,6 +225,10 @@ func applyBigramRerankFileConfig(cfg *bigramRerankConfig, body []byte) {
 			Enabled    *bool    `json:"enabled"`
 			Ratio      *float64 `json:"ratio"`
 			FloorCount *int     `json:"floor_count"`
+			MixedPair  *bool    `json:"mixed_pair"`
+			PairRatio  *float64 `json:"pair_ratio"`
+			PairFloor  *int     `json:"pair_floor"`
+			PairMaxLen *int     `json:"pair_max_len"`
 		} `json:"bigram_rerank"`
 	}
 	if err := json.Unmarshal(body, &wrapper); err != nil || wrapper.BigramRerank == nil {
@@ -239,6 +243,466 @@ func applyBigramRerankFileConfig(cfg *bigramRerankConfig, body []byte) {
 	if wrapper.BigramRerank.FloorCount != nil && *wrapper.BigramRerank.FloorCount > 0 {
 		cfg.FloorCount = *wrapper.BigramRerank.FloorCount
 	}
+	if wrapper.BigramRerank.MixedPair != nil {
+		cfg.MixedPair = *wrapper.BigramRerank.MixedPair
+	}
+	if wrapper.BigramRerank.PairRatio != nil && *wrapper.BigramRerank.PairRatio > 1 {
+		cfg.PairRatio = *wrapper.BigramRerank.PairRatio
+	}
+	if wrapper.BigramRerank.PairFloor != nil && *wrapper.BigramRerank.PairFloor > 0 {
+		cfg.PairFloor = *wrapper.BigramRerank.PairFloor
+	}
+	if wrapper.BigramRerank.PairMaxLen != nil && *wrapper.BigramRerank.PairMaxLen >= 2 {
+		cfg.PairMaxLen = *wrapper.BigramRerank.PairMaxLen
+	}
+}
+
+// pinyinSyllableSet 标准无调拼音音节表（含 lv/nv/lve/nve 变体）。
+// 用于判定组字串是否"整串可切分为完整音节"——全拼组字（d1/d2 场景）
+// 不做配对重排，只有带首字母尾巴的混合组字（d3 场景）才启用。
+var pinyinSyllableSet = map[string]bool{
+	"a":      true,
+	"ai":     true,
+	"an":     true,
+	"ang":    true,
+	"ao":     true,
+	"e":      true,
+	"ei":     true,
+	"en":     true,
+	"eng":    true,
+	"er":     true,
+	"o":      true,
+	"ou":     true,
+	"ba":     true,
+	"bai":    true,
+	"ban":    true,
+	"bang":   true,
+	"bao":    true,
+	"bei":    true,
+	"ben":    true,
+	"beng":   true,
+	"bi":     true,
+	"bian":   true,
+	"biao":   true,
+	"bie":    true,
+	"bin":    true,
+	"bing":   true,
+	"bo":     true,
+	"bu":     true,
+	"ca":     true,
+	"cai":    true,
+	"can":    true,
+	"cang":   true,
+	"cao":    true,
+	"ce":     true,
+	"cen":    true,
+	"ceng":   true,
+	"cha":    true,
+	"chai":   true,
+	"chan":   true,
+	"chang":  true,
+	"chao":   true,
+	"che":    true,
+	"chen":   true,
+	"cheng":  true,
+	"chi":    true,
+	"chong":  true,
+	"chou":   true,
+	"chu":    true,
+	"chua":   true,
+	"chuai":  true,
+	"chuan":  true,
+	"chuang": true,
+	"chui":   true,
+	"chun":   true,
+	"chuo":   true,
+	"ci":     true,
+	"cong":   true,
+	"cou":    true,
+	"cu":     true,
+	"cuan":   true,
+	"cui":    true,
+	"cun":    true,
+	"cuo":    true,
+	"da":     true,
+	"dai":    true,
+	"dan":    true,
+	"dang":   true,
+	"dao":    true,
+	"de":     true,
+	"dei":    true,
+	"den":    true,
+	"deng":   true,
+	"di":     true,
+	"dia":    true,
+	"dian":   true,
+	"diao":   true,
+	"die":    true,
+	"ding":   true,
+	"diu":    true,
+	"dong":   true,
+	"dou":    true,
+	"du":     true,
+	"duan":   true,
+	"dui":    true,
+	"dun":    true,
+	"duo":    true,
+	"fa":     true,
+	"fan":    true,
+	"fang":   true,
+	"fei":    true,
+	"fen":    true,
+	"feng":   true,
+	"fo":     true,
+	"fou":    true,
+	"fu":     true,
+	"ga":     true,
+	"gai":    true,
+	"gan":    true,
+	"gang":   true,
+	"gao":    true,
+	"ge":     true,
+	"gei":    true,
+	"gen":    true,
+	"geng":   true,
+	"gong":   true,
+	"gou":    true,
+	"gu":     true,
+	"gua":    true,
+	"guai":   true,
+	"guan":   true,
+	"guang":  true,
+	"gui":    true,
+	"gun":    true,
+	"guo":    true,
+	"ha":     true,
+	"hai":    true,
+	"han":    true,
+	"hang":   true,
+	"hao":    true,
+	"he":     true,
+	"hei":    true,
+	"hen":    true,
+	"heng":   true,
+	"hong":   true,
+	"hou":    true,
+	"hu":     true,
+	"hua":    true,
+	"huai":   true,
+	"huan":   true,
+	"huang":  true,
+	"hui":    true,
+	"hun":    true,
+	"huo":    true,
+	"ji":     true,
+	"jia":    true,
+	"jian":   true,
+	"jiang":  true,
+	"jiao":   true,
+	"jie":    true,
+	"jin":    true,
+	"jing":   true,
+	"jiong":  true,
+	"jiu":    true,
+	"ju":     true,
+	"juan":   true,
+	"jue":    true,
+	"jun":    true,
+	"ka":     true,
+	"kai":    true,
+	"kan":    true,
+	"kang":   true,
+	"kao":    true,
+	"ke":     true,
+	"kei":    true,
+	"ken":    true,
+	"keng":   true,
+	"kong":   true,
+	"kou":    true,
+	"ku":     true,
+	"kua":    true,
+	"kuai":   true,
+	"kuan":   true,
+	"kuang":  true,
+	"kui":    true,
+	"kun":    true,
+	"kuo":    true,
+	"la":     true,
+	"lai":    true,
+	"lan":    true,
+	"lang":   true,
+	"lao":    true,
+	"le":     true,
+	"lei":    true,
+	"leng":   true,
+	"li":     true,
+	"lia":    true,
+	"lian":   true,
+	"liang":  true,
+	"liao":   true,
+	"lie":    true,
+	"lin":    true,
+	"ling":   true,
+	"liu":    true,
+	"lo":     true,
+	"long":   true,
+	"lou":    true,
+	"lu":     true,
+	"luan":   true,
+	"lun":    true,
+	"luo":    true,
+	"lv":     true,
+	"lve":    true,
+	"ma":     true,
+	"mai":    true,
+	"man":    true,
+	"mang":   true,
+	"mao":    true,
+	"me":     true,
+	"mei":    true,
+	"men":    true,
+	"meng":   true,
+	"mi":     true,
+	"mian":   true,
+	"miao":   true,
+	"mie":    true,
+	"min":    true,
+	"ming":   true,
+	"miu":    true,
+	"mo":     true,
+	"mou":    true,
+	"mu":     true,
+	"na":     true,
+	"nai":    true,
+	"nanang": true,
+	"nao":    true,
+	"ne":     true,
+	"nei":    true,
+	"nen":    true,
+	"neng":   true,
+	"ni":     true,
+	"nian":   true,
+	"niang":  true,
+	"niao":   true,
+	"nie":    true,
+	"nin":    true,
+	"ning":   true,
+	"niu":    true,
+	"nong":   true,
+	"nou":    true,
+	"nu":     true,
+	"nuan":   true,
+	"nuo":    true,
+	"nv":     true,
+	"nve":    true,
+	"pa":     true,
+	"pai":    true,
+	"pan":    true,
+	"pang":   true,
+	"pao":    true,
+	"pei":    true,
+	"pen":    true,
+	"peng":   true,
+	"pi":     true,
+	"pian":   true,
+	"piao":   true,
+	"pie":    true,
+	"pin":    true,
+	"ping":   true,
+	"po":     true,
+	"pou":    true,
+	"pu":     true,
+	"qi":     true,
+	"qian":   true,
+	"qiang":  true,
+	"qiao":   true,
+	"qie":    true,
+	"qin":    true,
+	"qing":   true,
+	"qiong":  true,
+	"qiu":    true,
+	"qu":     true,
+	"quan":   true,
+	"que":    true,
+	"qun":    true,
+	"ran":    true,
+	"rang":   true,
+	"rao":    true,
+	"re":     true,
+	"ren":    true,
+	"reng":   true,
+	"ri":     true,
+	"rong":   true,
+	"rou":    true,
+	"ru":     true,
+	"rua":    true,
+	"ruan":   true,
+	"rui":    true,
+	"run":    true,
+	"ruo":    true,
+	"sa":     true,
+	"sai":    true,
+	"san":    true,
+	"sang":   true,
+	"sao":    true,
+	"se":     true,
+	"sen":    true,
+	"seng":   true,
+	"sha":    true,
+	"shai":   true,
+	"shan":   true,
+	"shang":  true,
+	"shao":   true,
+	"she":    true,
+	"shei":   true,
+	"shen":   true,
+	"sheng":  true,
+	"shi":    true,
+	"shou":   true,
+	"shu":    true,
+	"shua":   true,
+	"shuai":  true,
+	"shuan":  true,
+	"shuang": true,
+	"shui":   true,
+	"shun":   true,
+	"shuo":   true,
+	"si":     true,
+	"song":   true,
+	"sou":    true,
+	"su":     true,
+	"suan":   true,
+	"sui":    true,
+	"sun":    true,
+	"suo":    true,
+	"ta":     true,
+	"tai":    true,
+	"tan":    true,
+	"tang":   true,
+	"tao":    true,
+	"te":     true,
+	"teng":   true,
+	"ti":     true,
+	"tian":   true,
+	"tiao":   true,
+	"tie":    true,
+	"ting":   true,
+	"tong":   true,
+	"tou":    true,
+	"tu":     true,
+	"tuan":   true,
+	"tui":    true,
+	"tun":    true,
+	"tuo":    true,
+	"wa":     true,
+	"wai":    true,
+	"wan":    true,
+	"wang":   true,
+	"wei":    true,
+	"wen":    true,
+	"weng":   true,
+	"wo":     true,
+	"wu":     true,
+	"xi":     true,
+	"xia":    true,
+	"xian":   true,
+	"xiang":  true,
+	"xiao":   true,
+	"xie":    true,
+	"xin":    true,
+	"xing":   true,
+	"xiong":  true,
+	"xiu":    true,
+	"xu":     true,
+	"xuan":   true,
+	"xue":    true,
+	"xun":    true,
+	"ya":     true,
+	"yan":    true,
+	"yang":   true,
+	"yao":    true,
+	"ye":     true,
+	"yi":     true,
+	"yin":    true,
+	"ying":   true,
+	"yo":     true,
+	"yong":   true,
+	"you":    true,
+	"yu":     true,
+	"yuan":   true,
+	"yue":    true,
+	"yun":    true,
+	"za":     true,
+	"zai":    true,
+	"zan":    true,
+	"zang":   true,
+	"zao":    true,
+	"ze":     true,
+	"zei":    true,
+	"zen":    true,
+	"zeng":   true,
+	"zha":    true,
+	"zhai":   true,
+	"zhan":   true,
+	"zhang":  true,
+	"zhao":   true,
+	"zhe":    true,
+	"zhen":   true,
+	"zheng":  true,
+	"zhi":    true,
+	"zhong":  true,
+	"zhou":   true,
+	"zhu":    true,
+	"zhua":   true,
+	"zhuai":  true,
+	"zhuan":  true,
+	"zhuang": true,
+	"zhui":   true,
+	"zhun":   true,
+	"zhuo":   true,
+	"zi":     true,
+	"zong":   true,
+	"zou":    true,
+	"zu":     true,
+	"zuan":   true,
+	"zui":    true,
+	"zun":    true,
+	"zuo":    true,
+}
+
+// fullyPinyinSegmentable 报告 s 是否为全拼组字：按空白分段（d1/d2 的
+// 输入用空格分隔音节，如 "wo de ren"），每段都必须能完全切分为拼音
+// 音节（DP，音节最长 6）。任一段切不开（如 d3 的首字母尾巴 "shid"）
+// 即混合组字。
+func fullyPinyinSegmentable(s string) bool {
+	toks := strings.Fields(s)
+	if len(toks) == 0 {
+		return false
+	}
+	for _, tok := range toks {
+		if !segmentable(tok) {
+			return false
+		}
+	}
+	return true
+}
+
+func segmentable(tok string) bool {
+	n := len(tok)
+	if n == 0 {
+		return false
+	}
+	dp := make([]bool, n+1)
+	dp[0] = true
+	for j := 1; j <= n; j++ {
+		for i := j - 1; i >= 0 && j-i <= 6; i-- {
+			if dp[i] && pinyinSyllableSet[tok[i:j]] {
+				dp[j] = true
+				break
+			}
+		}
+	}
+	return dp[n]
 }
 
 // pairScore 用完整词对频次给候选打分：对所有切分点取
@@ -266,9 +730,12 @@ func pairScore(pairs map[string]map[string]int, text string, maxLen int) int {
 // applyMixedPairRerank 组字串内部配对重排（无上文版）：前 3 候选按词对
 // 频次打分，显著强者（≥PairRatio×首名 且 ≥PairFloor）提到首位。
 // 只在前 3 都不超 PairMaxLen 字时参与打分竞争，换位规则与上文版一致。
-func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int) ([]candidateItem, int, bool) {
+func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int, composition string) ([]candidateItem, int, bool) {
 	cfg := ime.contextualConfigSnapshot().BigramRerank
-	if !cfg.MixedPair || len(candidates) < 2 {
+	// 只作用于混合组字（全拼前缀+首字母尾巴）：整串可完整切分为音节的
+	// 全拼组字（两词/三词连打）引擎排序已最优，词对先验越权会砸长句
+	// 候选（d2 实测 80.3→30.7 的教训）。
+	if !cfg.MixedPair || len(candidates) < 2 || fullyPinyinSegmentable(composition) {
 		return candidates, cursor, false
 	}
 	_, pairs := ime.bigramTableSnapshotFull()
@@ -279,18 +746,17 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int) ([]
 	if maxLen < 2 {
 		maxLen = 2
 	}
-	scores := make([]int, 0, 3)
-	for i := 0; i < len(candidates) && i < 3; i++ {
-		scores = append(scores, pairScore(pairs, candidates[i].Text, maxLen))
-	}
-	first := scores[0]
+	// v2：全列表打分（不只前 3）——d3 的 gold 常在第 4~9 位（显微镜：
+	// shid 的「是的」#9），top-3 窗口捞不到。换位仍保守：频次 ≥floor 且
+	// ≥ratio×首名分才提到首位，其余顺位下移。
+	first := pairScore(pairs, candidates[0].Text, maxLen)
 	bestIdx := -1
-	for i := 1; i < len(scores); i++ {
-		s := scores[i]
-		if s >= cfg.PairFloor && (first == 0 || float64(s) >= cfg.PairRatio*float64(first)) {
-			if bestIdx < 0 || s > scores[bestIdx] {
-				bestIdx = i
-			}
+	bestScore := 0
+	for i := 1; i < len(candidates); i++ {
+		s := pairScore(pairs, candidates[i].Text, maxLen)
+		if s >= cfg.PairFloor && (first == 0 || float64(s) >= cfg.PairRatio*float64(first)) && s > bestScore {
+			bestScore = s
+			bestIdx = i
 		}
 	}
 	if bestIdx < 0 {
@@ -303,6 +769,8 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int) ([]
 	if cursor == bestIdx {
 		cursor = 0
 	}
-	debugLogf("mixed pair rerank: %q(%d) 超过 %q(%d) 提前", winner.Text, scores[bestIdx], candidates[0].Text, first)
+	// 记录显示首选的引擎位次，供空格提交对齐（见 processKey）。
+	ime.mixedPairSwapIndex = bestIdx
+	debugLogf("mixed pair rerank: compo=%q %q(%d) 超过 %q(%d) 提前至#%d", composition, winner.Text, bestScore, candidates[0].Text, first, bestIdx+1)
 	return reordered, cursor, true
 }

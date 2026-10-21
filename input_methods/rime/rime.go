@@ -222,6 +222,9 @@ type IME struct {
 	sharedInputStateNeedsApply bool
 	syncedOptions              map[string]bool
 	syncedSchemaID             string
+	// mixedPairSwapIndex：组字串配对重排后，显示首选在引擎候选中的原始
+	// 位次（-1=未换位）。空格提交时改发数字键选它，保证上屏=显示首选。
+	mixedPairSwapIndex         int
 	syncedSchemaBySchemeSet    map[string]string
 	syncedSettingsNeedsApply   bool
 	activationUIRefreshPending bool
@@ -1208,6 +1211,17 @@ func (ime *IME) processKey(req *imecore.Request, isUp bool) bool {
 	}
 	translatedKeyCode := translateKeyCode(req)
 	modifiers := translateModifiers(req, isUp)
+	// 配对重排的提交对齐：显示首位是重排提前的候选时，空格改发数字键
+	// 选它上屏（引擎空格只认引擎自己的首位，否则显示与上屏分裂）。
+	if !isUp && modifiers == 0 && req.KeyCode == 0x20 && ime.keyComposing &&
+		ime.mixedPairSwapIndex >= 1 && ime.mixedPairSwapIndex < ime.candidateCount() {
+		idx := ime.mixedPairSwapIndex
+		req.KeyCode = int('1') + idx
+		req.CharCode = req.KeyCode
+		translatedKeyCode = translateKeyCode(req)
+		debugLogf("mixed pair rerank: 空格→数字%d 对齐显示首选", idx+1)
+		ime.mixedPairSwapIndex = -1
+	}
 	backendStart := time.Now()
 	backendRet := ime.backend.ProcessKey(req, translatedKeyCode, modifiers)
 	logRimeSlow("backend.ProcessKey", backendStart, "key=%d translated=%d modifiers=%d ret=%v", req.KeyCode, translatedKeyCode, modifiers, backendRet)
@@ -2327,6 +2341,7 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 		state.Candidates = append([]candidateItem(nil), state.Candidates[:remainingCandidateCount]...)
 	}
 	// 短窗连贯：上一句刚上屏时，对接续首字候选做稳定提升（含光标重映射）。
+	ime.mixedPairSwapIndex = -1
 	if len(state.Candidates) > 0 {
 		if reordered, newCursor, changed := ime.applyContextualLift(state.Candidates, state.CandidateCursor); changed {
 			state.Candidates = reordered
@@ -2338,7 +2353,7 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 			state.CandidateCursor = newCursor
 		}
 		// 组字串内部配对精修（无上文）：d3 混合连打同输入竞争的口语频次先验。
-		if reordered, newCursor, changed := ime.applyMixedPairRerank(state.Candidates, state.CandidateCursor); changed {
+		if reordered, newCursor, changed := ime.applyMixedPairRerank(state.Candidates, state.CandidateCursor, state.Composition); changed {
 			state.Candidates = reordered
 			state.CandidateCursor = newCursor
 		}

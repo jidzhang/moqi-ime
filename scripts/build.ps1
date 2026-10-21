@@ -317,6 +317,13 @@ try {
     Copy-Item -LiteralPath $sourceAppearanceThemes -Destination $packageAppearanceThemesData -Force
     Write-Host "[INFO] Copied appearance_themes.json into packaged Rime runtime"
 
+    $sourceBigramTable = Join-Path $RimeDir "zh-bigram.tsv"
+    if (-not (Test-Path -LiteralPath $sourceBigramTable)) {
+        throw "Missing mixed-pair rerank table: `"$sourceBigramTable`""
+    }
+    Copy-Item -LiteralPath $sourceBigramTable -Destination (Join-Path $PackageRimeDataDir "zh-bigram.tsv") -Force
+    Write-Host "[INFO] Copied zh-bigram.tsv into packaged Rime runtime"
+
     $pathsToRemove = @(
         @{ Path = Join-Path $PackageDir "input_methods\rime\data\others"; Label = "rime shared data others directory" },
         @{ Path = Join-Path $PackageDir "input_methods\rime\icons\icons"; Label = "nested icons directory" }
