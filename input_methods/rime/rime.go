@@ -188,48 +188,48 @@ type rimeBackend interface {
 type IME struct {
 	mu sync.Mutex
 	*imecore.TextServiceBase
-	iconDir                      string
-	style                        Style
-	selectKeys                   string
-	lastKeyDownCode              int
-	lastKeySkip                  int
-	lastKeyDownRet               bool
-	lastKeyUpCode                int
-	lastKeyUpRet                 bool
-	keyComposing                 bool
-	backend                      rimeBackend
-	aiEnabled                    bool
-	aiActive                     bool
-	aiPending                    bool
-	aiPrompt                     string
-	aiCandidates                 []string
-	aiCandidateCursor            int
-	aiError                      string
-	aiTriggerPending             bool
-	aiConsumeKeyUpCode           int
-	aiPreviousCommit             string
-	aiActions                    []aiAction
-	aiCurrentAction              *aiAction
-	aiReviewGenerator            func(aiGenerateRequest) ([]string, error)
-	aiResultCh                   chan aiAsyncResult
-	asyncResponseSender          func(*imecore.Response)
-	aiRequestSeq                 uint64
-	appearanceVersion            uint64
-	schemeSetVersion             uint64
-	autoPairRulesVersion         uint64
-	inputStateShared             bool
-	sharedOptions                map[string]bool
-	sharedInputStateNeedsApply   bool
-	syncedOptions                map[string]bool
-	syncedSchemaID               string
-	syncedSchemaBySchemeSet      map[string]string
-	syncedSettingsNeedsApply     bool
-	activationUIRefreshPending   bool
+	iconDir                    string
+	style                      Style
+	selectKeys                 string
+	lastKeyDownCode            int
+	lastKeySkip                int
+	lastKeyDownRet             bool
+	lastKeyUpCode              int
+	lastKeyUpRet               bool
+	keyComposing               bool
+	backend                    rimeBackend
+	aiEnabled                  bool
+	aiActive                   bool
+	aiPending                  bool
+	aiPrompt                   string
+	aiCandidates               []string
+	aiCandidateCursor          int
+	aiError                    string
+	aiTriggerPending           bool
+	aiConsumeKeyUpCode         int
+	aiPreviousCommit           string
+	aiActions                  []aiAction
+	aiCurrentAction            *aiAction
+	aiReviewGenerator          func(aiGenerateRequest) ([]string, error)
+	aiResultCh                 chan aiAsyncResult
+	asyncResponseSender        func(*imecore.Response)
+	aiRequestSeq               uint64
+	appearanceVersion          uint64
+	schemeSetVersion           uint64
+	autoPairRulesVersion       uint64
+	inputStateShared           bool
+	sharedOptions              map[string]bool
+	sharedInputStateNeedsApply bool
+	syncedOptions              map[string]bool
+	syncedSchemaID             string
+	syncedSchemaBySchemeSet    map[string]string
+	syncedSettingsNeedsApply   bool
+	activationUIRefreshPending bool
 	// 进程内缓存的中英/全半角状态：供 onActivate 立即推送语言栏徽标，
 	// 避免为读选项而同步创建会话（会话仍延迟到首键，保住切换速度）。
-	cachedASCII     bool
-	cachedFullShape bool
-	modeCacheValid  bool
+	cachedASCII                  bool
+	cachedFullShape              bool
+	modeCacheValid               bool
 	autoPairQuotes               bool
 	semicolonSelectSecond        bool
 	rawInputTracked              string
@@ -392,6 +392,9 @@ func (ime *IME) HandleRequest(req *imecore.Request) *imecore.Response {
 func (ime *IME) onActivate(req *imecore.Request, resp *imecore.Response) *imecore.Response {
 	debugLogf("RIME 输入法已激活")
 	ime.activationUIRefreshPending = true
+	// 激活瞬间按方案集应用记录的方案（微软拼音行为：切到哪个应用，
+	// 方案就位到哪个应用，不等首键建会话）。
+	ime.applySyncedSettingsToBackend()
 	// 切换瞬间就显示中/英徽标（与微软拼音一致的体验）：
 	// 用缓存状态立即加按钮，不建会话；首键 flush 再校准真实状态。
 	ime.addButtons(resp)

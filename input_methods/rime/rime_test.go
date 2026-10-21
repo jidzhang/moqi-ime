@@ -2431,11 +2431,11 @@ func TestBuildMenuIncludesCandidateLayoutSubmenus(t *testing.T) {
 	}
 
 	commentFontItems, ok := commentFontMenu["submenu"].([]map[string]interface{})
-	if !ok || len(commentFontItems) != 5 {
-		t.Fatalf("expected 5 comment font items, got %#v", commentFontMenu["submenu"])
+	if !ok || len(commentFontItems) != 12 {
+		t.Fatalf("expected 12 comment font items, got %#v", commentFontMenu["submenu"])
 	}
-	if checked, _ := commentFontItems[2]["checked"].(bool); !checked {
-		t.Fatalf("expected comment font 18 checked, got %#v", commentFontItems[2])
+	if checked, _ := commentFontItems[5]["checked"].(bool); !checked {
+		t.Fatalf("expected comment font 18 checked, got %#v", commentFontItems[5])
 	}
 }
 
@@ -2621,7 +2621,7 @@ func TestBuildMenuIncludesInputSettingsSubmenu(t *testing.T) {
 	if checked, _ := submenu[0]["checked"].(bool); checked {
 		t.Fatalf("expected auto pair quotes disabled by default, got %#v", submenu[0])
 	}
-	if text, _ := submenu[1]["text"].(string); text != "成对符号" {
+	if text, _ := submenu[1]["text"].(string); text != "打开成对符号设置" {
 		t.Fatalf("unexpected second input settings item: %#v", submenu[1])
 	}
 	if text, _ := submenu[2]["text"].(string); text != "分号键次选" {
@@ -4056,8 +4056,8 @@ func TestLoadAppearancePrefsCreatesDefaultConfigWhenMissing(t *testing.T) {
 	if got := persisted["candidate_comment_font_face"]; got != "Consolas" {
 		t.Fatalf("expected persisted candidate_comment_font_face Consolas, got %#v", got)
 	}
-	if got := persisted["candidate_comment_font_point"]; got != float64(18) {
-		t.Fatalf("expected persisted candidate_comment_font_point 18, got %#v", got)
+	if got := persisted["candidate_comment_font_point"]; got != float64(14) {
+		t.Fatalf("expected persisted candidate_comment_font_point 14 (defaultStyle), got %#v", got)
 	}
 	if got := persisted["candidate_theme"]; got != "default" {
 		t.Fatalf("expected persisted candidate_theme default, got %#v", got)
