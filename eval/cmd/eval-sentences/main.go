@@ -28,6 +28,7 @@ func main() {
 	input := flag.String("input", "full", "input mode: full | jianpin")
 	triple := flag.Bool("triple", false, "burst: use chained 3-word pairs")
 	burstTopN := flag.Int("burstTopN", 2000, "top-N bigram pairs for burst eval")
+	mixedTop := flag.Bool("mixedTop", false, "mixed: also report hit@3/hit@page (ime stack, slow path)")
 	noFastPath := flag.Bool("noFastPath", false, "disable fast-path typing so Go-side rerank/lift run (A/B Go pipeline features)")
 	burstDedupInput := flag.Bool("burstDedupInput", false, "burst: drop later pairs whose d3 input (W1 full pinyin + W2 initial) collides with an earlier pair; same-input golds cap top-2000 at 62.25%")
 	flag.Parse()
@@ -168,6 +169,19 @@ func main() {
 			fmt.Printf("burst dedup: %d pairs remain (unique d3 inputs)\n", len(pairs))
 		}
 		var rep eval.BurstReport
+		if *burstMode == "mixed" && *mixedTop {
+			ij, ok := burstJudge.(*eval.IMEJudge)
+			if !ok {
+				fmt.Fprintln(os.Stderr, "--mixedTop requires --stack ime")
+				os.Exit(1)
+			}
+			rep, h3, hPage := ij.EvaluateMixedTop(pairs, readings)
+			fmt.Printf("mixedTop hit@1 %.2f%% (%d/%d) hit@3 %.2f%% (%d/%d) hit@page %.2f%% (%d/%d)\n",
+				100*float64(rep.FragmentOK)/float64(rep.Total), rep.FragmentOK, rep.Total,
+				100*float64(h3)/float64(rep.Total), h3, rep.Total,
+				100*float64(hPage)/float64(rep.Total), hPage, rep.Total)
+			return
+		}
 		if *burstMode == "mixed" {
 			rep = burstJudge.EvaluateMixed(pairs, readings)
 			fmt.Printf("mixed top-1 %.2f%% (%d/%d)\n",

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gaboolic/moqi-ime/imecore"
@@ -380,4 +381,53 @@ func (j *IMEJudge) MenuAfterKeys(keys [][2]int) (candidates []string, compositio
 		return resp.CandidateList, resp.CompositionString
 	}
 	return nil, ""
+}
+
+// EvaluateMixedTop 与 EvaluateMixed 同口径（逐键组字 + 空格提交），另记录
+// gold 出现在当前候选页内的最高位次，聚合出 hit@1/3/页——换位/翻页类
+// 机制的可达上限度量。要求慢路径（--noFastPath），否则 Go 管线不参与。
+func (j *IMEJudge) EvaluateMixedTop(pairs []BurstPair, readings CharReadings) (rep BurstReport, hit3, hitPage int) {
+	rep = BurstReport{}
+	for _, p := range pairs {
+		py1, ok1 := GoldToPinyin(p.W1, readings)
+		jp2, ok2 := GoldToJianpin(p.W2, readings)
+		if !ok1 || !ok2 || jp2 == "" {
+			continue
+		}
+		// 用诊断通道取候选页（逐键慢路径 + 状态拉取），避免逐键响应里
+		// 候选列表为空/中间态被误当最终页。
+		keys := make([][2]int, 0, len(py1)+len(jp2))
+		for _, ch := range py1 + jp2 {
+			keys = append(keys, [2]int{int(upper(byte(ch))), int(ch)})
+		}
+		top, _ := j.MenuAfterKeys(keys)
+		// 候选文本可能带来源标记（如组句自造词的 " ∞"），比较前剥掉。
+		strip := func(s string) string {
+			if i := strings.IndexByte(s, ' '); i > 0 {
+				s = s[:i]
+			}
+			return normalize(strings.TrimSpace(s))
+		}
+		rank := -1
+		gold := normalize(p.W1 + p.W2)
+		for i, cand := range top {
+			if strip(cand) == gold {
+				rank = i
+				break
+			}
+		}
+		rep.Total++
+		switch {
+		case rank == 0:
+			rep.FragmentOK++
+			hit3++
+			hitPage++
+		case rank > 0 && rank < 3:
+			hit3++
+			hitPage++
+		case rank >= 3:
+			hitPage++
+		}
+	}
+	return rep, hit3, hitPage
 }
