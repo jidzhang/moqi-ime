@@ -3360,16 +3360,16 @@ func TestFillResponseFromBackendStateRestoresDefaultSelectKeysWhenBackendOmitsTh
 		{Text: "为"},
 		{Text: "玩"},
 		{Text: "问"},
-		{Text: "外"},
 	}
 
 	resp := imecore.NewResponse(20, true)
 	ime.fillResponseFromBackendState(resp, false)
 
-	if resp.SetSelKeys != "12345678" {
+	// 默认总候选数 7：缺省选择键按可见候选数补齐。
+	if resp.SetSelKeys != "1234567" {
 		t.Fatalf("expected default select keys restored to candidate count, got %q", resp.SetSelKeys)
 	}
-	if ime.selectKeys != "12345678" {
+	if ime.selectKeys != "1234567" {
 		t.Fatalf("expected cached select keys restored, got %q", ime.selectKeys)
 	}
 }
@@ -4044,8 +4044,8 @@ func TestLoadAppearancePrefsCreatesDefaultConfigWhenMissing(t *testing.T) {
 	if got := persisted["candidate_per_row"]; got != float64(1) {
 		t.Fatalf("expected persisted candidate_per_row 1 for vertical default, got %#v", got)
 	}
-	if got := persisted["candidate_count"]; got != float64(9) {
-		t.Fatalf("expected persisted candidate_count 9, got %#v", got)
+	if got := persisted["candidate_count"]; got != float64(7) {
+		t.Fatalf("expected persisted candidate_count 7, got %#v", got)
 	}
 	if got := persisted["font_point"]; got != float64(16) {
 		t.Fatalf("expected persisted font_point 16 (defaultStyle), got %#v", got)

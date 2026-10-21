@@ -263,7 +263,7 @@ func defaultStyle() Style {
 		DisplayTrayIcon:                true,
 		CandidateFormat:                "{0} {1}",
 		CandidatePerRow:                1,
-		CandidateCount:                 9,
+		CandidateCount:                 7,
 		CandidateUseCursor:             true,
 		CandidateTheme:                 "default",
 		CandidateBackgroundColor:       "#ffffff",

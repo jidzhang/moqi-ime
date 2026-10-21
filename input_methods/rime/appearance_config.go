@@ -491,7 +491,8 @@ func (ime *IME) candidateCount() int {
 	case 3, 5, 7, 9:
 		return ime.style.CandidateCount
 	default:
-		return 9
+		// 默认总候选数 7（每行候选数另算，横向布局默认 9）。
+		return 7
 	}
 }
 
