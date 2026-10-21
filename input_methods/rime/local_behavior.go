@@ -63,6 +63,12 @@ func boolFlag(v *bool) bool {
 // 无任何开关开启时返回空（不写文件、不动用户现有文件）。
 // dirs 用于大 gram 自动检测（grammar_model=auto 时扫描，共享目录在前）。
 func buildFrostCustomPatch(cfg localBehaviorConfig, dirs ...string) string {
+	return buildFrostCustomPatchEx(cfg, loadContextualConfig().BigramRerank.MixedPair, dirs...)
+}
+
+// buildFrostCustomPatchEx 按开关拼出 rime_frost.custom.yaml 全文；
+// rerankMixed 联动 mixed 输入的用户词典禁用（见下方 emit 注释）。
+func buildFrostCustomPatchEx(cfg localBehaviorConfig, rerankMixed bool, dirs ...string) string {
 	var b strings.Builder
 	b.WriteString(frostCustomManagedMark + "\n")
 	b.WriteString("# 由 local_behavior.json 自动生成；手工改动请删掉首行标记后自行维护。\n")
@@ -97,6 +103,15 @@ func buildFrostCustomPatch(cfg localBehaviorConfig, dirs ...string) string {
 		// 调试档恢复候选 * / ∞ 来源标记（默认对用户隐藏；见 rime-prebuild
 		// patchCandidateMarksLua 与上游 lua/is_in_user_dict.lua）
 		emit(`"debug/show_candidate_marks": true`)
+	}
+	if rerankMixed {
+		// 混合输入（全拼+首字母尾巴）禁用用户词典查询与学习（2026-10-22
+		// 定档）：abbrev 提交学到的词会劫持后续同/跨输入的候选页（dedup
+		// −1.3、原口径 −1.8，逐对归因 58 失/21 得）。拼音音节结尾字母只有
+		// aeioungr，输入以其它辅音结尾即混合形态；librime 为全串
+		// regex_match，须带 .* 前缀。全拼输入（含空格分隔的 d1/d2 形态）
+		// 学习完整保留。不依赖 gram 是否在位。
+		emit(`"translator/disable_user_dict_for_patterns": [".*[bcdfhjklmpqstvwxyz]$"]`)
 	}
 	if lang := resolveGrammarLanguage(cfg, dirs...); lang != "" {
 		emit("grammar/language: " + lang)

@@ -31,6 +31,7 @@ func main() {
 	burstTopN := flag.Int("burstTopN", 2000, "top-N bigram pairs for burst eval")
 	mixedTop := flag.Bool("mixedTop", false, "mixed: also report hit@3/hit@page (ime stack, slow path)")
 	debugLog := flag.Bool("debugLog", false, "enable rime debugLogf to stderr (diagnose rerank execution)")
+	mixDump := flag.String("mixDump", "", "mixed: append per-pair results to this file")
 	noFastPath := flag.Bool("noFastPath", false, "disable fast-path typing so Go-side rerank/lift run (A/B Go pipeline features)")
 	burstDedupInput := flag.Bool("burstDedupInput", false, "burst: drop later pairs whose d3 input (W1 full pinyin + W2 initial) collides with an earlier pair; same-input golds cap top-2000 at 62.25%")
 	flag.Parse()
@@ -186,6 +187,9 @@ func main() {
 				100*float64(h3)/float64(rep.Total), h3, rep.Total,
 				100*float64(hPage)/float64(rep.Total), hPage, rep.Total)
 			return
+		}
+		if *mixDump != "" {
+			eval.SetMixedDump(*mixDump)
 		}
 		if *burstMode == "mixed" {
 			rep = burstJudge.EvaluateMixed(pairs, readings)

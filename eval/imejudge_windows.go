@@ -302,9 +302,19 @@ func (j *IMEJudge) Evaluate(golds []string, readings CharReadings, limit int) Re
 	return Summarize(results, 20)
 }
 
+var mixedDumpPath string
+
+// SetMixedDump 设置后 EvaluateMixed 逐对追加 "input<TAB>gold<TAB>got"。
+func SetMixedDump(path string) { mixedDumpPath = path }
+
 // EvaluateMixed 与 NativeJudge.EvaluateMixed 同口径（一次组字连打），走全栈管线。
 func (j *IMEJudge) EvaluateMixed(pairs []BurstPair, readings CharReadings) BurstReport {
 	rep := BurstReport{}
+	var dumpFile *os.File
+	if mixedDumpPath != "" {
+		dumpFile, _ = os.OpenFile(mixedDumpPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+		defer dumpFile.Close()
+	}
 	for _, p := range pairs {
 		py1, ok1 := GoldToPinyin(p.W1, readings)
 		jp2, ok2 := GoldToJianpin(p.W2, readings)
@@ -313,6 +323,10 @@ func (j *IMEJudge) EvaluateMixed(pairs []BurstPair, readings CharReadings) Burst
 		}
 		got, ok := j.Type(py1 + jp2)
 		rep.Total++
+		if dumpFile != nil {
+			hit := ok && normalize(got) == normalize(p.W1+p.W2)
+			fmt.Fprintf(dumpFile, "%s%s\t%s%s\t%s\t%v\n", py1, jp2, p.W1, p.W2, got, hit)
+		}
 		if ok && normalize(got) == normalize(p.W1+p.W2) {
 			rep.FragmentOK++
 		} else if len(rep.Samples) < 15 {

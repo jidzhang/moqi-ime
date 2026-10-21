@@ -197,3 +197,17 @@ func TestSyncFrostCustomPatchDeletesManagedFileWhenEmpty(t *testing.T) {
 		t.Fatal("expected managed file deleted")
 	}
 }
+
+// mixed 重排开启时，托管 patch 应联动禁用混合输入的用户词典（治理
+// 学习拖累：dedup −1.3 / 原口径 −1.8，2026-10-22）。
+func TestBuildPatchMixedUserDictPattern(t *testing.T) {
+	t.Setenv("APPDATA", t.TempDir()) // contextual_lift.json 缺省 → rerankMixed=false
+	patch := buildFrostCustomPatchEx(localBehaviorConfig{}, false)
+	if strings.Contains(patch, "disable_user_dict_for_patterns") {
+		t.Fatalf("rerank off 时不应禁用: %s", patch)
+	}
+	patchOn := buildFrostCustomPatchEx(localBehaviorConfig{}, true)
+	if !strings.Contains(patchOn, `".*[bcdfhjklmpqstvwxyz]$"`) {
+		t.Fatalf("rerank on 时应含禁用模式: %s", patchOn)
+	}
+}
