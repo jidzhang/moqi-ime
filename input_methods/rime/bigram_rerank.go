@@ -19,15 +19,26 @@ import (
 const bigramTableFileName = "zh-bigram.tsv"
 
 type bigramRerankConfig struct {
-	Enabled     bool    `json:"bigram_rerank"`
-	Ratio       float64 `json:"bigram_rerank_ratio"` // 2 名超 1 名的倍率阈值
-	FloorCount  int     `json:"bigram_rerank_floor"` // 后继质量下限，防低频抖动
+	Enabled    bool    `json:"bigram_rerank"`
+	Ratio      float64 `json:"bigram_rerank_ratio"` // 2 名超 1 名的倍率阈值
+	FloorCount int     `json:"bigram_rerank_floor"` // 后继质量下限，防低频抖动
+	// 组字串内部配对重排（d3 混合连打，2026-10-21）：无上文时用候选自身的
+	// 切分配对频次给前 3 打分——对的 gold 语料频次碾压书面词展开（是+的
+	// 29010 vs 是+时代 0），换位规则与上文版相同（ratio 倍率 + floor 下限）。
+	// 与 Enabled（上文版）独立开关，默认关。
+	MixedPair  bool    `json:"bigram_rerank_mixed_pair"`
+	PairRatio  float64 `json:"bigram_mixed_pair_ratio"`   // 候选配对频次超首名的倍率阈值
+	PairFloor  int     `json:"bigram_mixed_pair_floor"`   // 配对频次下限
+	PairMaxLen int     `json:"bigram_mixed_pair_max_len"` // 参与打分的候选最大字数
 }
 
 func defaultBigramRerankConfig() bigramRerankConfig {
 	// 默认关闭：2026-10-17 全栈 A/B（2000 词对）与关闭档差 -0.05（噪声），
-// essay gram + 用户词典已覆盖该信号。配置 bigram_rerank.enabled 可开。
-return bigramRerankConfig{Enabled: false, Ratio: 1.6, FloorCount: 30}
+	// essay gram + 用户词典已覆盖该信号。配置 bigram_rerank.enabled 可开。
+	return bigramRerankConfig{
+		Enabled: false, Ratio: 1.6, FloorCount: 30,
+		MixedPair: false, PairRatio: 1.3, PairFloor: 50, PairMaxLen: 4,
+	}
 }
 
 type bigramTable struct {
@@ -35,19 +46,28 @@ type bigramTable struct {
 	loaded bool
 	// head 词 → (后继首字 → 计数质量)
 	successorMass map[string]map[string]int
+	// head 词 → (完整后继词 → 计数)：组字串内部配对打分用
+	pairCounts map[string]map[string]int
 }
 
 var sharedBigramTable bigramTable
 
 // loadBigramTable 从 data 目录解析 TSV；文件缺失时返回空表（功能关闭）。
 func loadBigramTable(dataDir string) map[string]map[string]int {
+	table, _ := loadBigramTableFull(dataDir)
+	return table
+}
+
+// loadBigramTableFull 返回 (首字摘要表, 全词对频次表)。
+func loadBigramTableFull(dataDir string) (map[string]map[string]int, map[string]map[string]int) {
 	table := make(map[string]map[string]int)
+	pairs := make(map[string]map[string]int)
 	if dataDir == "" {
-		return table
+		return table, pairs
 	}
 	f, err := os.Open(filepath.Join(dataDir, bigramTableFileName))
 	if err != nil {
-		return table
+		return table, pairs
 	}
 	defer f.Close()
 	sc := bufio.NewScanner(f)
@@ -68,6 +88,11 @@ func loadBigramTable(dataDir string) map[string]map[string]int {
 			row = make(map[string]int, 8)
 			table[w1] = row
 		}
+		prow := pairs[w1]
+		if prow == nil {
+			prow = make(map[string]int, 8)
+			pairs[w1] = prow
+		}
 		for _, tok := range strings.Fields(line[t1+1+t2+1:]) {
 			i := strings.LastIndexByte(tok, ':')
 			if i <= 0 {
@@ -83,26 +108,34 @@ func loadBigramTable(dataDir string) map[string]map[string]int {
 			}
 			first := string([]rune(w2)[0])
 			row[first] += c
+			prow[w2] += c
 		}
 	}
-	return table
+	return table, pairs
 }
 
 func (ime *IME) bigramTableSnapshot() map[string]map[string]int {
+	t, _ := ime.bigramTableSnapshotFull()
+	return t
+}
+
+func (ime *IME) bigramTableSnapshotFull() (map[string]map[string]int, map[string]map[string]int) {
 	sharedBigramTable.mu.RLock()
 	if sharedBigramTable.loaded {
-		t := sharedBigramTable.successorMass
+		m := sharedBigramTable.successorMass
+		p := sharedBigramTable.pairCounts
 		sharedBigramTable.mu.RUnlock()
-		return t
+		return m, p
 	}
 	sharedBigramTable.mu.RUnlock()
 
-	t := loadBigramTable(ime.sharedDir())
+	m, p := loadBigramTableFull(ime.sharedDir())
 	sharedBigramTable.mu.Lock()
-	sharedBigramTable.successorMass = t
+	sharedBigramTable.successorMass = m
+	sharedBigramTable.pairCounts = p
 	sharedBigramTable.loaded = true
 	sharedBigramTable.mu.Unlock()
-	return t
+	return m, p
 }
 
 func resetBigramTableForTest() {
@@ -182,7 +215,7 @@ func (ime *IME) applyBigramRerank(candidates []candidateItem, cursor int) ([]can
 }
 
 // applyBigramRerankFileConfig 从 contextual_lift.json 原文解析重排子配置
-//（单独结构以便省略字段走默认）。
+// （单独结构以便省略字段走默认）。
 func applyBigramRerankFileConfig(cfg *bigramRerankConfig, body []byte) {
 	if len(body) == 0 {
 		return
@@ -206,4 +239,70 @@ func applyBigramRerankFileConfig(cfg *bigramRerankConfig, body []byte) {
 	if wrapper.BigramRerank.FloorCount != nil && *wrapper.BigramRerank.FloorCount > 0 {
 		cfg.FloorCount = *wrapper.BigramRerank.FloorCount
 	}
+}
+
+// pairScore 用完整词对频次给候选打分：对所有切分点取
+// max pairCounts[前段][后段]。候选 2..PairMaxLen 字才参与（词对候选；
+// 长句组词切分噪声大，不碰）。
+func pairScore(pairs map[string]map[string]int, text string, maxLen int) int {
+	runes := []rune(text)
+	if len(runes) < 2 || len(runes) > maxLen {
+		return 0
+	}
+	best := 0
+	for l := 1; l < len(runes); l++ {
+		head := string(runes[:l])
+		row, ok := pairs[head]
+		if !ok {
+			continue
+		}
+		if c := row[string(runes[l:])]; c > best {
+			best = c
+		}
+	}
+	return best
+}
+
+// applyMixedPairRerank 组字串内部配对重排（无上文版）：前 3 候选按词对
+// 频次打分，显著强者（≥PairRatio×首名 且 ≥PairFloor）提到首位。
+// 只在前 3 都不超 PairMaxLen 字时参与打分竞争，换位规则与上文版一致。
+func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int) ([]candidateItem, int, bool) {
+	cfg := ime.contextualConfigSnapshot().BigramRerank
+	if !cfg.MixedPair || len(candidates) < 2 {
+		return candidates, cursor, false
+	}
+	_, pairs := ime.bigramTableSnapshotFull()
+	if len(pairs) == 0 {
+		return candidates, cursor, false
+	}
+	maxLen := cfg.PairMaxLen
+	if maxLen < 2 {
+		maxLen = 2
+	}
+	scores := make([]int, 0, 3)
+	for i := 0; i < len(candidates) && i < 3; i++ {
+		scores = append(scores, pairScore(pairs, candidates[i].Text, maxLen))
+	}
+	first := scores[0]
+	bestIdx := -1
+	for i := 1; i < len(scores); i++ {
+		s := scores[i]
+		if s >= cfg.PairFloor && (first == 0 || float64(s) >= cfg.PairRatio*float64(first)) {
+			if bestIdx < 0 || s > scores[bestIdx] {
+				bestIdx = i
+			}
+		}
+	}
+	if bestIdx < 0 {
+		return candidates, cursor, false
+	}
+	reordered := append([]candidateItem(nil), candidates...)
+	winner := reordered[bestIdx]
+	copy(reordered[1:bestIdx+1], reordered[0:bestIdx])
+	reordered[0] = winner
+	if cursor == bestIdx {
+		cursor = 0
+	}
+	debugLogf("mixed pair rerank: %q(%d) 超过 %q(%d) 提前", winner.Text, scores[bestIdx], candidates[0].Text, first)
+	return reordered, cursor, true
 }

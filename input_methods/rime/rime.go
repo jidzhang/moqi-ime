@@ -2337,6 +2337,11 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 			state.Candidates = reordered
 			state.CandidateCursor = newCursor
 		}
+		// 组字串内部配对精修（无上文）：d3 混合连打同输入竞争的口语频次先验。
+		if reordered, newCursor, changed := ime.applyMixedPairRerank(state.Candidates, state.CandidateCursor); changed {
+			state.Candidates = reordered
+			state.CandidateCursor = newCursor
+		}
 	}
 	if len(state.Candidates) > 0 || len(customPhraseCandidates) > 0 {
 		resp.CandidateList = append(ime.formatCandidates(customPhraseCandidates), ime.formatCandidates(state.Candidates)...)

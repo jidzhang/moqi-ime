@@ -28,6 +28,7 @@ func main() {
 	input := flag.String("input", "full", "input mode: full | jianpin")
 	triple := flag.Bool("triple", false, "burst: use chained 3-word pairs")
 	burstTopN := flag.Int("burstTopN", 2000, "top-N bigram pairs for burst eval")
+	noFastPath := flag.Bool("noFastPath", false, "disable fast-path typing so Go-side rerank/lift run (A/B Go pipeline features)")
 	burstDedupInput := flag.Bool("burstDedupInput", false, "burst: drop later pairs whose d3 input (W1 full pinyin + W2 initial) collides with an earlier pair; same-input golds cap top-2000 at 62.25%")
 	flag.Parse()
 
@@ -126,8 +127,9 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Printf("burst pairs=%d mode=%s stack=%s\n", len(pairs), *burstMode, *stack)
-		if *burstMode == "continuation" {
-			// d4 延续依赖 Go 管线的提交后处理（短窗 lift），快路径会绕过
+		if *burstMode == "continuation" || *noFastPath {
+			// d4 延续依赖 Go 管线的提交后处理（短窗 lift）；--noFastPath
+			// 供 Go 侧特性（如 mixed pair rerank）A/B，快路径会绕过它们。
 			eval.EvalFastTypingOff()
 		}
 		var burstJudge eval.BurstEvaluator

@@ -90,3 +90,61 @@ func TestApplyBigramRerankMissingTable(t *testing.T) {
 		t.Fatal("missing table must disable rerank")
 	}
 }
+
+func TestPairScoreSplitsAndBounds(t *testing.T) {
+	pairs := map[string]map[string]int{
+		"是": {"的": 29010, "时代": 0},
+		"时": {"代": 12},
+		"我": {"要": 26860, "也": 16978},
+	}
+	if got := pairScore(pairs, "是的", 4); got != 29010 {
+		t.Fatalf("是的 = %d, want 29010", got)
+	}
+	if got := pairScore(pairs, "时代", 4); got != 12 {
+		t.Fatalf("时代 = %d, want 12", got)
+	}
+	// 长候选超上限不打分
+	if got := pairScore(pairs, "的时候啊呀", 4); got != 0 {
+		t.Fatalf("超长候选 = %d, want 0", got)
+	}
+	// 单字不打分
+	if got := pairScore(pairs, "的", 4); got != 0 {
+		t.Fatalf("单字 = %d, want 0", got)
+	}
+}
+
+func TestMixedPairRerankSwapsOnStrongPair(t *testing.T) {
+	resetBigramTableForTest()
+	sharedBigramTable.mu.Lock()
+	sharedBigramTable.pairCounts = map[string]map[string]int{
+		"是": {"的": 29010},
+		"时": {"代": 12},
+	}
+	sharedBigramTable.loaded = true
+	sharedBigramTable.mu.Unlock()
+
+	ime := newTestIME()
+	ime.contextualCfg = &contextualConfig{
+		BigramRerank: bigramRerankConfig{
+			MixedPair: true, PairRatio: 1.3, PairFloor: 50, PairMaxLen: 4,
+		},
+	}
+	cands := []candidateItem{{Text: "时代"}, {Text: "是的"}, {Text: "使得"}}
+	got, cursor, changed := ime.applyMixedPairRerank(cands, 0)
+	if !changed || got[0].Text != "是的" {
+		t.Fatalf("期望 是的 提前: changed=%t first=%q", changed, got[0].Text)
+	}
+	if cursor != 0 {
+		t.Fatalf("cursor 应保持 0, got %d", cursor)
+	}
+	// 弱对（低于 floor）不换位
+	cands2 := []candidateItem{{Text: "是的"}, {Text: "时代"}, {Text: "使得"}}
+	if _, _, changed := ime.applyMixedPairRerank(cands2, 0); changed {
+		t.Fatal("弱对不应换位")
+	}
+	// 开关关闭不动作
+	ime.contextualCfg.BigramRerank.MixedPair = false
+	if _, _, changed := ime.applyMixedPairRerank(cands, 0); changed {
+		t.Fatal("关闭时不应换位")
+	}
+}
