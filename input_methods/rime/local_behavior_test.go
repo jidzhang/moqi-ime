@@ -139,3 +139,61 @@ func TestBuildFrostCustomPatchSmallGrammarNoTuning(t *testing.T) {
 		t.Fatalf("小 gram 不应启用 abbrev_sentences:\n%s", patch)
 	}
 }
+
+// 2026-10-21 安装竞态回归：TSF DLL 在安装尾声按需拉起后端时共享目录可能
+// 尚未落齐（gram 扫描扑空）。初始化路径（ensureFrostCustomPatch）此时
+// 必须不写也不删；删除语义只属于托盘「刷新配置」路径（syncFrostCustomPatch）。
+func TestEnsureFrostCustomPatchNeverDeletesExistingConfig(t *testing.T) {
+	user := t.TempDir()
+	shared := t.TempDir()
+	existing := frostCustomManagedMark + "\npatch:\n  grammar/language: keep-me\n"
+	if err := os.WriteFile(filepath.Join(user, frostCustomFileName), []byte(existing), 0o644); err != nil {
+		t.Fatalf("write existing: %v", err)
+	}
+
+	if ensureFrostCustomPatch(user, shared) {
+		t.Fatal("expected no write when scan finds no gram")
+	}
+	body, err := os.ReadFile(filepath.Join(user, frostCustomFileName))
+	if err != nil {
+		t.Fatalf("read back: %v", err)
+	}
+	if string(body) != existing {
+		t.Fatalf("existing config must stay untouched, got:\n%s", body)
+	}
+}
+
+func TestEnsureFrostCustomPatchWritesWhenGramPresent(t *testing.T) {
+	user := t.TempDir()
+	shared := t.TempDir()
+	body := make([]byte, 100<<20)
+	if err := os.WriteFile(filepath.Join(shared, "zh-hans-t-essay-bgw.gram"), body, 0o644); err != nil {
+		t.Fatalf("write gram: %v", err)
+	}
+
+	if !ensureFrostCustomPatch(user, shared) {
+		t.Fatal("expected patch written when gram present")
+	}
+	data, err := os.ReadFile(filepath.Join(user, frostCustomFileName))
+	if err != nil {
+		t.Fatalf("read back: %v", err)
+	}
+	if !strings.Contains(string(data), "grammar/language: zh-hans-t-essay-bgw") {
+		t.Fatalf("expected grammar patch, got:\n%s", data)
+	}
+}
+
+func TestSyncFrostCustomPatchDeletesManagedFileWhenEmpty(t *testing.T) {
+	user := t.TempDir()
+	existing := frostCustomManagedMark + "\npatch:\n  grammar/language: old\n"
+	if err := os.WriteFile(filepath.Join(user, frostCustomFileName), []byte(existing), 0o644); err != nil {
+		t.Fatalf("write existing: %v", err)
+	}
+
+	if !syncFrostCustomPatch(user, t.TempDir()) {
+		t.Fatal("expected managed file removed on empty patch")
+	}
+	if _, err := os.Stat(filepath.Join(user, frostCustomFileName)); !os.IsNotExist(err) {
+		t.Fatal("expected managed file deleted")
+	}
+}

@@ -136,6 +136,22 @@ func buildFrostCustomPatch(cfg localBehaviorConfig, dirs ...string) string {
 }
 
 // syncFrostCustomPatch 在重部署前同步 custom.yaml；返回是否写入了文件。
+// ensureFrostCustomPatch 供引擎初始化路径调用：只在能生成非空 patch 时
+// 写入/更新，**绝不删除**已有配置。初始化可能撞上安装尾声的文件竞态
+// （TSF DLL 按需拉起后端时共享目录尚未落齐，2026-10-21 实测：gram 扫描
+// 扑空 → 空 patch → 旧逻辑删掉用户已生效的 gram 配置）。恢复上游默认
+// 的删除语义只保留在托盘「刷新配置」路径（用户主动触发，无竞态）。
+func ensureFrostCustomPatch(userDir, sharedDir string) bool {
+	if strings.TrimSpace(userDir) == "" {
+		return false
+	}
+	patch := buildFrostCustomPatch(loadLocalBehaviorConfig(), sharedDir, userDir)
+	if patch == "" {
+		return false
+	}
+	return writeFrostCustomPatch(userDir, patch)
+}
+
 func syncFrostCustomPatch(userDir, sharedDir string) bool {
 	if strings.TrimSpace(userDir) == "" {
 		return false
@@ -155,6 +171,13 @@ func syncFrostCustomPatch(userDir, sharedDir string) bool {
 		}
 		return false
 	}
+	return writeFrostCustomPatch(userDir, patch)
+}
+
+// writeFrostCustomPatch 仅在目标不存在或为本工具托管文件时写入；
+// 用户手工维护的同名文件不覆盖。
+func writeFrostCustomPatch(userDir, patch string) bool {
+	target := filepath.Join(userDir, frostCustomFileName)
 	if existing, err := os.ReadFile(target); err == nil {
 		if string(existing) == patch {
 			return false

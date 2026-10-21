@@ -115,6 +115,10 @@ func (b *nativeBackend) Initialize(sharedDir, userDir string, firstRun bool) boo
 		debugLogf("nativeBackend.Initialize 一次性初始化开始 firstRun=%t sharedDir=%q userDir=%q", firstRun, sharedDir, userDir)
 		// 日志目录体积兜底清理（正常不会触发，见 cleanupOversizedLogDir）。
 		cleanupOversizedLogDir(rimeLogDir())
+		// 首次部署前同步 local_behavior 生成的 patch（大语法模型等），
+		// 否则全新安装要手动托盘「刷新配置」一次才生效（2026-10-21 缺口）。
+		// 用 ensure 变体：初始化竞态下扫描无果时不落盘也绝不删除已有配置。
+		ensureFrostCustomPatch(userDir, sharedDir)
 		rimeInitOK = RimeInit(sharedDir, userDir, APP, APP_VERSION, firstRun)
 		debugLogf("nativeBackend.Initialize 一次性初始化完成 elapsed=%s success=%t", time.Since(onceStart), rimeInitOK)
 		if !rimeInitOK {
