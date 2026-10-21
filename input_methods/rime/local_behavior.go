@@ -61,8 +61,8 @@ func boolFlag(v *bool) bool {
 
 // buildFrostCustomPatch 按开关拼出 rime_frost.custom.yaml 全文；
 // 无任何开关开启时返回空（不写文件、不动用户现有文件）。
-// sharedDir 用于大 gram 自动检测（grammar_model=auto 时扫描）。
-func buildFrostCustomPatch(cfg localBehaviorConfig, sharedDir string) string {
+// dirs 用于大 gram 自动检测（grammar_model=auto 时扫描，共享目录在前）。
+func buildFrostCustomPatch(cfg localBehaviorConfig, dirs ...string) string {
 	var b strings.Builder
 	b.WriteString(frostCustomManagedMark + "\n")
 	b.WriteString("# 由 local_behavior.json 自动生成；手工改动请删掉首行标记后自行维护。\n")
@@ -98,7 +98,7 @@ func buildFrostCustomPatch(cfg localBehaviorConfig, sharedDir string) string {
 		// patchCandidateMarksLua 与上游 lua/is_in_user_dict.lua）
 		emit(`"debug/show_candidate_marks": true`)
 	}
-	if lang := resolveGrammarLanguage(sharedDir, cfg); lang != "" {
+	if lang := resolveGrammarLanguage(cfg, dirs...); lang != "" {
 		emit("grammar/language: " + lang)
 		emit(`"translator/contextual_suggestions": true`)
 		// 大语法模型就位时的产品调优（2026-10-18 实测定档）：
@@ -108,7 +108,7 @@ func buildFrostCustomPatch(cfg localBehaviorConfig, sharedDir string) string {
 		// 2) melt_eng 权重降到 0.01：中文可解析的输入不再被英文词劫持
 		//    （der→的人 而非英文 der）；纯英文输入不受影响（hello 照常首选）。
 		//    配对 A/B +0.33。显式配置小 gram 时不启用 1（守卫见 bigGrammarActive）。
-		if bigGrammarActive(sharedDir, lang) {
+		if bigGrammarActive(lang, dirs...) {
 			emit(`"translator/abbrev_sentences": true`)
 			emit(`"melt_eng/initial_quality": 0.01`)
 			// 上游自带的英文降位过滤器开全量模式：把"拼音前缀+尾字母"型
@@ -140,7 +140,7 @@ func syncFrostCustomPatch(userDir, sharedDir string) bool {
 	if strings.TrimSpace(userDir) == "" {
 		return false
 	}
-	patch := buildFrostCustomPatch(loadLocalBehaviorConfig(), sharedDir)
+	patch := buildFrostCustomPatch(loadLocalBehaviorConfig(), sharedDir, userDir)
 	target := filepath.Join(userDir, frostCustomFileName)
 	if patch == "" {
 		// 无开关开启：如果现有文件是我们之前生成的，删掉以恢复上游行为；
@@ -174,12 +174,21 @@ func syncFrostCustomPatch(userDir, sharedDir string) bool {
 	return true
 }
 
-// bigGrammarActive 判断指定语言的 gram 文件是否达到大模型门槛（64MB）。
-// abbrev_sentences 只应在大模型下启用（见 buildFrostCustomPatch 注释）。
-func bigGrammarActive(sharedDir, lang string) bool {
-	if sharedDir == "" || lang == "" {
+// bigGrammarActive 判断指定语言的 gram 文件是否达到大模型门槛（64MB），
+// 任一数据目录命中即为真。abbrev_sentences 只应在大模型下启用
+// （见 buildFrostCustomPatch 注释）。
+func bigGrammarActive(lang string, dirs ...string) bool {
+	if lang == "" {
 		return false
 	}
-	info, err := os.Stat(filepath.Join(sharedDir, lang+".gram"))
-	return err == nil && info.Size() >= minAutoGramBytes
+	for _, dir := range dirs {
+		if strings.TrimSpace(dir) == "" {
+			continue
+		}
+		info, err := os.Stat(filepath.Join(dir, lang+".gram"))
+		if err == nil && info.Size() >= minAutoGramBytes {
+			return true
+		}
+	}
+	return false
 }

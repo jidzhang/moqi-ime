@@ -15,7 +15,7 @@ func TestDetectAutoGrammarPicksLargest(t *testing.T) {
 			t.Fatalf("write %s: %v", name, err)
 		}
 	}
-	writeGram("zh-moqi.gram", 7<<20)              // 内置小模型，64MB 以下不选
+	writeGram("zh-moqi.gram", 7<<20)               // 内置小模型，64MB 以下不选
 	writeGram("zh-hans-t-essay-bgw.gram", 206<<20) // 大模型
 	writeGram("small2.gram", 1<<20)
 
@@ -30,20 +30,42 @@ func TestDetectAutoGrammarEmptyDir(t *testing.T) {
 	}
 }
 
+// 用户目录（%APPDATA% 下的 Moqi/Rime）也参与自动扫描：普通权限可放
+// gram，覆盖安装不会删（2026-10-21 定案，见 PACKAGES.md）。
+func TestDetectAutoGrammarScansUserDir(t *testing.T) {
+	shared := t.TempDir()
+	user := t.TempDir()
+	body := make([]byte, 100<<20)
+	if err := os.WriteFile(filepath.Join(user, "zh-hans-t-essay-bgw.gram"), body, 0o644); err != nil {
+		t.Fatalf("write user gram: %v", err)
+	}
+
+	if got := detectAutoGrammarLanguage(shared, user); got != "zh-hans-t-essay-bgw" {
+		t.Fatalf("expected user-dir gram picked, got %q", got)
+	}
+	patch := buildFrostCustomPatch(localBehaviorConfig{}, shared, user)
+	if !strings.Contains(patch, "grammar/language: zh-hans-t-essay-bgw") {
+		t.Fatalf("expected grammar patch from user dir, got %q", patch)
+	}
+	if !bigGrammarActive("zh-hans-t-essay-bgw", shared, user) {
+		t.Fatal("expected bigGrammarActive true via user dir")
+	}
+}
+
 func TestResolveGrammarLanguageModes(t *testing.T) {
 	dir := t.TempDir()
 	body := make([]byte, 100<<20)
 	_ = os.WriteFile(filepath.Join(dir, "my-model.gram"), body, 0o644)
 
-	if got := resolveGrammarLanguage(dir, localBehaviorConfig{}); got != "my-model" {
+	if got := resolveGrammarLanguage(localBehaviorConfig{}, dir); got != "my-model" {
 		t.Fatalf("auto should pick my-model, got %q", got)
 	}
 	off := "off"
-	if got := resolveGrammarLanguage(dir, localBehaviorConfig{GrammarModel: &off}); got != "" {
+	if got := resolveGrammarLanguage(localBehaviorConfig{GrammarModel: &off}, dir); got != "" {
 		t.Fatalf("off should disable, got %q", got)
 	}
 	named := " zh-custom.gram "
-	if got := resolveGrammarLanguage("", localBehaviorConfig{GrammarModel: &named}); got != "zh-custom" {
+	if got := resolveGrammarLanguage(localBehaviorConfig{GrammarModel: &named}); got != "zh-custom" {
 		t.Fatalf("explicit name should win, got %q", got)
 	}
 }

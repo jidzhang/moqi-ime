@@ -52,6 +52,12 @@ func main() {
 		if err := patchPageSizeDefault(*dataDir); err != nil {
 			log.Printf("候选数默认值对齐失败（继续）: %v", err)
 		}
+		if err := patchRemoveSmallGram(*dataDir); err != nil {
+			log.Printf("内置小 gram 移除失败（继续）: %v", err)
+		}
+		if err := installPlainNumberProcessor(*dataDir); err != nil {
+			log.Printf("数字直通处理器安装失败（继续）: %v", err)
+		}
 	}
 	if apply("bigram") {
 		if err := mergeJianpinPatch(*dataDir); err != nil {
@@ -315,6 +321,152 @@ func patchPageSizeDefault(dataDir string) error {
 	return nil
 }
 
+// patchRemoveSmallGram 删除内置的 7MB 小语法模型 zh-moqi.gram，并把各 schema
+// 里默认的 grammar/language: zh-moqi 引用一并摘掉。
+//
+// 依据：内置小 gram 统计太稀疏，实测对准确率没有提升（d5 59.92 -> 59.95，
+// 噪声级），却让每个安装包白白多背 7MB。用户明确要求"别打进安装包了"。
+// 大 gram（essay-bgw 196.8MB）不进安装包，由用户单独下载放进 data 目录，
+// 后端按 grammar/language 自动启用（见 input_methods/rime/grammar_model.go）。
+//
+// 必须连引用一起摘：octagram 插件按 grammar/language 去找 <language>.gram，
+// 留下悬空引用会每次部署刷错误日志。
+// 幂等：文件不在、引用已摘时直接返回。
+func patchRemoveSmallGram(dataDir string) error {
+	gramPath := filepath.Join(dataDir, "zh-moqi.gram")
+	if _, err := os.Stat(gramPath); err == nil {
+		if err := os.Remove(gramPath); err != nil {
+			return err
+		}
+		fmt.Println("[prebuild] removed built-in zh-moqi.gram (7MB, no accuracy gain)")
+	}
+
+	entries, err := os.ReadDir(dataDir)
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		name := e.Name()
+		if e.IsDir() || !strings.HasSuffix(name, ".schema.yaml") {
+			continue
+		}
+		path := filepath.Join(dataDir, name)
+		body, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		lines := strings.Split(string(body), "\n")
+		inGrammar := false
+		changed := false
+		for i, line := range lines {
+			trimmed := strings.TrimSpace(line)
+			if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+				continue
+			}
+			indent := len(line) - len(strings.TrimLeft(line, " \t"))
+			if indent == 0 {
+				inGrammar = trimmed == "grammar:"
+				continue
+			}
+			if !inGrammar || !strings.HasPrefix(trimmed, "language:") {
+				continue
+			}
+			value := strings.TrimSpace(strings.TrimPrefix(trimmed, "language:"))
+			if idx := strings.Index(value, "#"); idx >= 0 {
+				value = strings.TrimSpace(value[:idx])
+			}
+			if value != "zh-moqi" {
+				continue
+			}
+			lines[i] = "  # language: zh-moqi 已移除（内置 7MB 小 gram 无提效；大 gram 由 rime_frost.custom.yaml 指定）"
+			changed = true
+		}
+		if changed {
+			if err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
+				return err
+			}
+			fmt.Printf("[prebuild] grammar/language: zh-moqi removed from %s\n", name)
+		}
+	}
+	return nil
+}
+
+// installPlainNumberProcessor 安装"数字/小数点直通上屏"的 Lua 处理器，
+// 并挂进 frost 系 schema 的 engine/processors（ascii_composer 之后）。
+//
+// 背景（用户实报）：按 "4." 光标停在 "." 上、数字 4 被吞。根因是
+// speller/alphabet 不含数字，数字键既进不了组字框也没有 punctuator 规则，
+// 引擎直接丢弃；"." 则被 punctuator 收进组字框，要按空格才上屏。
+// 处理器把"无组字时的数字"和"紧跟数字的小数点"直接上屏，对齐微软拼音；
+// 组字中（有拼音/有候选）的数字仍由 selector 选候选，不影响选字。
+//
+// 幂等：lua 内容一致且 schema 已挂载时不动。
+func installPlainNumberProcessor(dataDir string) error {
+	src := filepath.Join("input_methods", "rime", "patches", "moqi_plain_number.lua")
+	body, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	dst := filepath.Join(dataDir, "lua", "moqi_plain_number.lua")
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		return err
+	}
+	if cur, err := os.ReadFile(dst); err != nil || string(cur) != string(body) {
+		if err := os.WriteFile(dst, body, 0o644); err != nil {
+			return err
+		}
+		fmt.Printf("[prebuild] plain-number lua installed -> %s\n", dst)
+	}
+
+	entries, err := os.ReadDir(dataDir)
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		name := e.Name()
+		if e.IsDir() || !strings.HasPrefix(name, "rime_frost") || !strings.HasSuffix(name, ".schema.yaml") {
+			continue
+		}
+		if strings.Contains(strings.ToLower(name), "t9") {
+			continue // T9 数字九宫格：数字是输入，不能接管
+		}
+		path := filepath.Join(dataDir, name)
+		body, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		text := string(body)
+		if strings.Contains(text, "lua_processor@*moqi_plain_number") {
+			continue // 已挂载
+		}
+		lines := strings.Split(text, "\n")
+		idx := -1
+		for i, line := range lines {
+			trimmed := strings.TrimSpace(line)
+			if trimmed == "- ascii_composer" {
+				if idx >= 0 {
+					idx = -1 // 出现多处，放弃自动挂载
+					break
+				}
+				idx = i
+			}
+		}
+		if idx < 0 {
+			fmt.Printf("[prebuild] skip %s (no unique ascii_composer anchor)\n", name)
+			continue
+		}
+		indent := lines[idx][:len(lines[idx])-len(strings.TrimLeft(lines[idx], " \t"))]
+		inserted := append([]string{}, lines[:idx+1]...)
+		inserted = append(inserted, indent+"- lua_processor@*moqi_plain_number   # 数字/小数点直通上屏（prebuild）")
+		inserted = append(inserted, lines[idx+1:]...)
+		if err := os.WriteFile(path, []byte(strings.Join(inserted, "\n")), 0o644); err != nil {
+			return err
+		}
+		fmt.Printf("[prebuild] plain-number processor hooked into %s\n", name)
+	}
+	return nil
+}
+
 // patchSwitcherHotkey 清空 default.yaml 的方案选单快捷键（hotkeys: []）。
 // 根因：Control+grave 劫持 VS/VSCode 的集成终端快捷键 Ctrl+`；换绑 F4 又
 // 撞 Total Commander。方案选单没有无冲突的全局键可用，产品形态上切换走
@@ -555,13 +707,14 @@ func mergeJianpinPatch(dataDir string) error {
 	if len(patchLines) == 0 {
 		return nil
 	}
-	marker := "\t的人\tdr\t"
 	target := filepath.Join(dataDir, "custom_phrase.txt")
 	existing, err := os.ReadFile(target)
 	if err != nil {
 		return err
 	}
-	if strings.Contains(string(existing), marker) {
+	// 幂等标记必须落在合并块里（老实现拿首条词当标记，一旦补丁首条变动
+	// 就会重复合并，custom_phrase 里出现重复词条）。
+	if strings.Contains(string(existing), jianpinMergeMarker) {
 		return nil // 已合并
 	}
 	f, err := os.OpenFile(target, os.O_APPEND|os.O_WRONLY, 0o644)
@@ -569,6 +722,9 @@ func mergeJianpinPatch(dataDir string) error {
 		return err
 	}
 	defer f.Close()
+	if _, err := f.WriteString(jianpinMergeMarker + "\n"); err != nil {
+		return err
+	}
 	for _, l := range patchLines {
 		if _, err := f.WriteString(l + "\n"); err != nil {
 			return err
@@ -577,6 +733,10 @@ func mergeJianpinPatch(dataDir string) error {
 	fmt.Printf("[prebuild] jianpin patch merged %d entries -> %s\n", len(patchLines), target)
 	return nil
 }
+
+// jianpinMergeMarker 标记 custom_phrase.txt 里已合入简拼补丁，
+// 供 mergeJianpinPatch 做幂等判断（补丁首条词会变，不能拿它当标记）。
+const jianpinMergeMarker = "# moqi-prebuild: jianpin-phrases merged"
 
 func readNonCommentLines(path string) ([]string, error) {
 	data, err := os.ReadFile(path)
