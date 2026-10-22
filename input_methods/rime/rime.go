@@ -224,7 +224,11 @@ type IME struct {
 	syncedSchemaID             string
 	// mixedPairSwapIndex：组字串配对重排后，显示首选在引擎候选中的原始
 	// 位次（-1=未换位）。空格提交时改发数字键选它，保证上屏=显示首选。
-	mixedPairSwapIndex         int
+	mixedPairSwapIndex int
+	// onActivate 应用门控：上次激活时应用过的方案集与 schema 记录，
+	// 未变化则跳过全量 apply（实测省 70~110ms/次切换）。
+	activationAppliedSchemeSet string
+	activationAppliedSyncID    string
 	syncedSchemaBySchemeSet    map[string]string
 	syncedSettingsNeedsApply   bool
 	activationUIRefreshPending bool
@@ -397,7 +401,20 @@ func (ime *IME) onActivate(req *imecore.Request, resp *imecore.Response) *imecor
 	ime.activationUIRefreshPending = true
 	// 激活瞬间按方案集应用记录的方案（微软拼音行为：切到哪个应用，
 	// 方案就位到哪个应用，不等首键建会话）。
-	ime.applySyncedSettingsToBackend()
+	// 门控：方案集与记录的 schema 都未变化时跳过（实测每次切换应用
+	// 全量 apply 需 70~110ms，纯属浪费）。配置/方案集/重部署变更会置位
+	// syncedSettingsNeedsApply，那时才真正执行。
+	if ime.activationAppliedSchemeSet != currentSchemeSetName() ||
+		ime.activationAppliedSyncID != ime.syncedSchemaIDForCurrentSchemeSet() ||
+		ime.syncedSettingsNeedsApply {
+		applyStart := time.Now()
+		ime.applySyncedSettingsToBackend()
+		ime.syncedSettingsNeedsApply = false
+		ime.activationAppliedSchemeSet = currentSchemeSetName()
+		ime.activationAppliedSyncID = ime.syncedSchemaIDForCurrentSchemeSet()
+		logRimeSlow("onActivate.applySyncedSettings", applyStart,
+			"schemeSet=%q syncID=%q needsApplyWas=%v", ime.activationAppliedSchemeSet, ime.activationAppliedSyncID, true)
+	}
 	// 切换瞬间就显示中/英徽标（与微软拼音一致的体验）：
 	// 用缓存状态立即加按钮，不建会话；首键 flush 再校准真实状态。
 	ime.addButtons(resp)
