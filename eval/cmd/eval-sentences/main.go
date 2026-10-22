@@ -34,6 +34,7 @@ func main() {
 	mixDump := flag.String("mixDump", "", "mixed: append per-pair results to this file")
 	noFastPath := flag.Bool("noFastPath", false, "disable fast-path typing so Go-side rerank/lift run (A/B Go pipeline features)")
 	burstDedupInput := flag.Bool("burstDedupInput", false, "burst: drop later pairs whose d3 input (W1 full pinyin + W2 initial) collides with an earlier pair; same-input golds cap top-2000 at 62.25%")
+	minLen := flag.Int("minLen", 5, "corpus minimum sentence length in runes")
 	flag.Parse()
 
 	if *pinyin == "" || *dataDir == "" || *userDir == "" || (*burstTSV == "" && *corpus == "") {
@@ -45,7 +46,7 @@ func main() {
 	var golds []string
 	if *corpus != "" {
 		var err error
-		golds, err = eval.LoadGoldSentences(*corpus, 5)
+		golds, err = eval.LoadGoldSentences(*corpus, *minLen)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "load corpus:", err)
 			os.Exit(1)
