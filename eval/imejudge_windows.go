@@ -445,3 +445,29 @@ func (j *IMEJudge) EvaluateMixedTop(pairs []BurstPair, readings CharReadings) (r
 	}
 	return rep, hit3, hitPage
 }
+
+// TypeDigits 输入 keys 后按数字键 idx（1-9）选择，返回上屏文本。
+// 用于验证"显示顺序重排后数字键仍然选到显示的那一位"。
+func (j *IMEJudge) TypeDigits(input string, idx int) (string, bool) {
+	keys := make([][2]int, 0, len(input))
+	for i := 0; i < len(input); i++ {
+		ch := input[i]
+		up := ch
+		if ch >= 'a' && ch <= 'z' {
+			up = ch - 32
+		}
+		keys = append(keys, [2]int{int(up), int(ch)})
+	}
+	if sid := j.ime.DebugSessionID(); sid != 0 {
+		rime.ClearComposition(sid)
+	}
+	for _, kc := range keys {
+		j.sendKey(kc[0], kc[1])
+	}
+	digit := int('0') + idx
+	resp := j.sendKey(digit, digit)
+	if resp != nil && resp.CommitString != "" {
+		return resp.CommitString, true
+	}
+	return "", false
+}

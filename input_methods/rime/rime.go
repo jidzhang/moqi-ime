@@ -225,6 +225,9 @@ type IME struct {
 	// mixedPairSwapIndex：组字串配对重排后，显示首选在引擎候选中的原始
 	// 位次（-1=未换位）。空格提交时改发数字键选它，保证上屏=显示首选。
 	mixedPairSwapIndex int
+	// displayPerm：显示位次 → 引擎位次（重排后重建；nil/同序=顺序一致）。
+	// 数字键选择必须经它换算，否则"显示第 2 名"会选中引擎第 2 名。
+	displayPerm []int
 	// onActivate 应用门控：上次激活时应用过的方案集与 schema 记录，
 	// 未变化则跳过全量 apply（实测省 70~110ms/次切换）。
 	activationAppliedSchemeSet string
@@ -1228,16 +1231,28 @@ func (ime *IME) processKey(req *imecore.Request, isUp bool) bool {
 	}
 	translatedKeyCode := translateKeyCode(req)
 	modifiers := translateModifiers(req, isUp)
-	// 配对重排的提交对齐：显示首位是重排提前的候选时，空格改发数字键
-	// 选它上屏（引擎空格只认引擎自己的首位，否则显示与上屏分裂）。
-	if !isUp && modifiers == 0 && req.KeyCode == 0x20 && ime.keyComposing &&
-		ime.mixedPairSwapIndex >= 1 && ime.mixedPairSwapIndex < ime.candidateCount() {
-		idx := ime.mixedPairSwapIndex
-		req.KeyCode = int('1') + idx
-		req.CharCode = req.KeyCode
-		translatedKeyCode = translateKeyCode(req)
-		debugLogf("mixed pair rerank: 空格→数字%d 对齐显示首选", idx+1)
-		ime.mixedPairSwapIndex = -1
+	// 重排后的索引换算：显示顺序与引擎顺序不一致时，用户按的"数字 N"
+	// 指显示第 N 名，必须换算成引擎索引再发给引擎（否则按 2 选中
+	// 引擎第 2 名——用户实报 k yi 显示[抗疫,可以]按 2 上屏抗疫）。
+	// 空格同理：显示首选 = 引擎 displayPerm[0]。
+	if !isUp && modifiers == 0 && ime.keyComposing && len(ime.displayPerm) > 0 {
+		var target int // 显示位次
+		isDigit := req.KeyCode >= '1' && req.KeyCode <= '9'
+		switch {
+		case req.KeyCode == 0x20:
+			target = 0
+		case isDigit:
+			target = req.KeyCode - '1'
+		}
+		if (req.KeyCode == 0x20 || isDigit) && target >= 0 && target < len(ime.displayPerm) {
+			engineIdx := ime.displayPerm[target]
+			if engineIdx != target && engineIdx >= 0 && engineIdx < ime.candidateCount() {
+				req.KeyCode = int('1') + engineIdx
+				req.CharCode = req.KeyCode
+				translatedKeyCode = translateKeyCode(req)
+				debugLogf("rerank 对齐: 显示第%d名 → 引擎第%d名", target+1, engineIdx+1)
+			}
+		}
 	}
 	backendStart := time.Now()
 	backendRet := ime.backend.ProcessKey(req, translatedKeyCode, modifiers)
@@ -1342,10 +1357,37 @@ func (ime *IME) handleAIKeyDownFilter(req *imecore.Request, resp *imecore.Respon
 		return false
 	}
 	ime.aiConsumeKeyUpCode = req.KeyCode
-	ime.triggerAIReview(action)
+	if !ime.triggerAIReview(action) {
+		// 没有组字也没有候选时 AI 无从下手：把按键放回去给宿主，
+		// 否则 Ctrl+Shift+X 会被静默吞掉，用户以为输入法卡了。
+		ime.aiConsumeKeyUpCode = 0
+		return false
+	}
 	ime.aiTriggerPending = true
 	resp.ReturnValue = 1
+	ime.showAIProgressHint(resp)
 	return true
+}
+
+// aiProgressComment 是等待 AI 结果期间挂在首个候选上的状态注释。
+// 非流式请求要等整段生成完才返回（实测 2~3 秒），期间界面完全静止会让用户
+// 以为没反应；注释不是可选项，不影响选择与上屏。
+const aiProgressComment = "AI 生成中…"
+
+func (ime *IME) showAIProgressHint(resp *imecore.Response) {
+	if resp == nil || ime.backend == nil {
+		return
+	}
+	ime.fillResponseFromBackendState(resp, false)
+}
+
+// annotateAIProgress 在候选首项挂上等待提示。按键释放会再次重建候选列表，
+// 所以提示必须挂在重建路径上，而不是只在触发那一刻写一次。
+func (ime *IME) annotateAIProgress(resp *imecore.Response) {
+	if resp == nil || !ime.aiPending || ime.aiActive || len(resp.CandidateEntries) == 0 {
+		return
+	}
+	resp.CandidateEntries[0].Comment = aiProgressComment
 }
 
 func (ime *IME) handleAIKeyUpFilter(req *imecore.Request, resp *imecore.Response) bool {
@@ -2337,21 +2379,22 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 			compositionLen = len(resp.CompositionString)
 		}
 		logRimeSlow("fillResponseFromBackendState", start, "allowCommit=%v candidates=%d commit=%d composition=%d", allowCommit, candidates, commitLen, compositionLen)
+		// 使用习惯日志：defer 时 resp 已填充完毕，记录组字串/候选页/上屏
+		// （debug 级开关控制；内容全部留在本机 Log 目录）。
+		if resp != nil && usageLogPath() != "" {
+			if len(resp.CandidateList) > 0 {
+				top := resp.CandidateList
+				if len(top) > 10 {
+					top = top[:10]
+				}
+				usageLogLine("cand", resp.CompositionString, strings.Join(top, "∥"), resp.CommitString)
+			} else if resp.CommitString != "" {
+				usageLogLine("commit", "", "", resp.CommitString)
+			}
+		}
 	}()
 	if resp == nil {
 		return true
-	}
-	// 使用习惯日志：有候选页或提交时记录一行（debug 级开关控制）。
-	if usageLogPath() != "" {
-		if len(resp.CandidateList) > 0 {
-			top := resp.CandidateList
-			if len(top) > 10 {
-				top = top[:10]
-			}
-			usageLogLine("cand", resp.CompositionString, strings.Join(top, "∥"), resp.CommitString)
-		} else if resp.CommitString != "" {
-			usageLogLine("commit", "", "", resp.CommitString)
-		}
 	}
 	state, ok := ime.currentVisibleBackendState()
 	if !ok {
@@ -2400,6 +2443,13 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 	}
 	// 短窗连贯：上一句刚上屏时，对接续首字候选做稳定提升（含光标重映射）。
 	ime.mixedPairSwapIndex = -1
+	// 重排前的引擎原始顺序快照：重排只改显示，而数字键选择走引擎索引——
+	// 必须留"显示位次→引擎位次"映射，否则按 2 选中的是引擎第 2 名
+	//（用户实报：k yi 显示[抗疫,可以]、按 2 上屏抗疫，2026-10-22）。
+	var engineOrder []candidateItem
+	if len(state.Candidates) > 0 {
+		engineOrder = append([]candidateItem(nil), state.Candidates...)
+	}
 	if len(state.Candidates) > 0 {
 		if reordered, newCursor, changed := ime.applyContextualLift(state.Candidates, state.CandidateCursor); changed {
 			state.Candidates = reordered
@@ -2416,6 +2466,7 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 			state.CandidateCursor = newCursor
 		}
 	}
+	ime.displayPerm = buildDisplayPerm(engineOrder, state.Candidates)
 	if len(state.Candidates) > 0 || len(customPhraseCandidates) > 0 {
 		resp.CandidateList = append(ime.formatCandidates(customPhraseCandidates), ime.formatCandidates(state.Candidates)...)
 		resp.CandidateEntries = append(ime.candidateEntries(customPhraseCandidates), ime.candidateEntries(state.Candidates)...)
@@ -2447,6 +2498,7 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 		resp.HasCandidateCursor = false
 		resp.ShowCandidates = false
 	}
+	ime.annotateAIProgress(resp)
 	ime.keyComposing = true
 	return true
 }

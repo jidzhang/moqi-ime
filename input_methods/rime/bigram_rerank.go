@@ -30,6 +30,11 @@ type bigramRerankConfig struct {
 	PairRatio  float64 `json:"bigram_mixed_pair_ratio"`   // 候选配对频次超首名的倍率阈值
 	PairFloor  int     `json:"bigram_mixed_pair_floor"`   // 配对频次下限
 	PairMaxLen int     `json:"bigram_mixed_pair_max_len"` // 参与打分的候选最大字数
+	// PairWordRatio：搭配证据必须 ≥ 首名"整词证据"×该倍率才换位。
+	// 判别原理：可以=整词 84137（搭配 0）vs 抗疫=整词 0（搭配 823）——
+	// 只看搭配会把整词误判为"无据"而挤掉（用户实报 k yi：按 2 上屏抗疫）。
+	// 1.0 = 搭配证据须压过首名整词证据。
+	PairWordRatio float64 `json:"bigram_mixed_pair_word_ratio"`
 }
 
 func defaultBigramRerankConfig() bigramRerankConfig {
@@ -40,6 +45,7 @@ func defaultBigramRerankConfig() bigramRerankConfig {
 	return bigramRerankConfig{
 		Enabled: false, Ratio: 1.6, FloorCount: 30,
 		MixedPair: true, PairRatio: 999, PairFloor: 300, PairMaxLen: 4,
+		PairWordRatio: 1.0,
 	}
 }
 
@@ -50,26 +56,31 @@ type bigramTable struct {
 	successorMass map[string]map[string]int
 	// head 词 → (完整后继词 → 计数)：组字串内部配对打分用
 	pairCounts map[string]map[string]int
+	// 词 → 语料整词质量（作为 head 的行和 + 作为后继的出现数）。
+	// 用于判别"真实整词"与"两字拼装"：可以=84137（整词），是的=0
+	// （靠 是+的 搭配 29010 成立）。重排闸门据此避免误伤整词。
+	wordMass map[string]int
 }
 
 var sharedBigramTable bigramTable
 
 // loadBigramTable 从 data 目录解析 TSV；文件缺失时返回空表（功能关闭）。
 func loadBigramTable(dataDir string) map[string]map[string]int {
-	table, _ := loadBigramTableFull(dataDir)
+	table, _, _ := loadBigramTableFull(dataDir)
 	return table
 }
 
-// loadBigramTableFull 返回 (首字摘要表, 全词对频次表)。
-func loadBigramTableFull(dataDir string) (map[string]map[string]int, map[string]map[string]int) {
+// loadBigramTableFull 返回 (首字摘要表, 全词对频次表, 整词质量表)。
+func loadBigramTableFull(dataDir string) (map[string]map[string]int, map[string]map[string]int, map[string]int) {
 	table := make(map[string]map[string]int)
 	pairs := make(map[string]map[string]int)
+	wordMass := make(map[string]int)
 	if dataDir == "" {
-		return table, pairs
+		return table, pairs, wordMass
 	}
 	f, err := os.Open(filepath.Join(dataDir, bigramTableFileName))
 	if err != nil {
-		return table, pairs
+		return table, pairs, wordMass
 	}
 	defer f.Close()
 	sc := bufio.NewScanner(f)
@@ -90,6 +101,7 @@ func loadBigramTableFull(dataDir string) (map[string]map[string]int, map[string]
 			row = make(map[string]int, 8)
 			table[w1] = row
 		}
+		rowTotal := 0
 		prow := pairs[w1]
 		if prow == nil {
 			prow = make(map[string]int, 8)
@@ -111,33 +123,38 @@ func loadBigramTableFull(dataDir string) (map[string]map[string]int, map[string]
 			first := string([]rune(w2)[0])
 			row[first] += c
 			prow[w2] += c
+			wordMass[w2] += c
+			rowTotal += c
 		}
+		wordMass[w1] += rowTotal
 	}
-	return table, pairs
+	return table, pairs, wordMass
 }
 
 func (ime *IME) bigramTableSnapshot() map[string]map[string]int {
-	t, _ := ime.bigramTableSnapshotFull()
+	t, _, _ := ime.bigramTableSnapshotFull()
 	return t
 }
 
-func (ime *IME) bigramTableSnapshotFull() (map[string]map[string]int, map[string]map[string]int) {
+func (ime *IME) bigramTableSnapshotFull() (map[string]map[string]int, map[string]map[string]int, map[string]int) {
 	sharedBigramTable.mu.RLock()
 	if sharedBigramTable.loaded {
 		m := sharedBigramTable.successorMass
 		p := sharedBigramTable.pairCounts
+		w := sharedBigramTable.wordMass
 		sharedBigramTable.mu.RUnlock()
-		return m, p
+		return m, p, w
 	}
 	sharedBigramTable.mu.RUnlock()
 
-	m, p := loadBigramTableFull(ime.sharedDir())
+	m, p, w := loadBigramTableFull(ime.sharedDir())
 	sharedBigramTable.mu.Lock()
 	sharedBigramTable.successorMass = m
 	sharedBigramTable.pairCounts = p
+	sharedBigramTable.wordMass = w
 	sharedBigramTable.loaded = true
 	sharedBigramTable.mu.Unlock()
-	return m, p
+	return m, p, w
 }
 
 func resetBigramTableForTest() {
@@ -224,13 +241,14 @@ func applyBigramRerankFileConfig(cfg *bigramRerankConfig, body []byte) {
 	}
 	var wrapper struct {
 		BigramRerank *struct {
-			Enabled    *bool    `json:"enabled"`
-			Ratio      *float64 `json:"ratio"`
-			FloorCount *int     `json:"floor_count"`
-			MixedPair  *bool    `json:"mixed_pair"`
-			PairRatio  *float64 `json:"pair_ratio"`
-			PairFloor  *int     `json:"pair_floor"`
-			PairMaxLen *int     `json:"pair_max_len"`
+			Enabled       *bool    `json:"enabled"`
+			Ratio         *float64 `json:"ratio"`
+			FloorCount    *int     `json:"floor_count"`
+			MixedPair     *bool    `json:"mixed_pair"`
+			PairRatio     *float64 `json:"pair_ratio"`
+			PairFloor     *int     `json:"pair_floor"`
+			PairMaxLen    *int     `json:"pair_max_len"`
+			PairWordRatio *float64 `json:"pair_word_ratio"`
 		} `json:"bigram_rerank"`
 	}
 	if err := json.Unmarshal(body, &wrapper); err != nil || wrapper.BigramRerank == nil {
@@ -256,6 +274,9 @@ func applyBigramRerankFileConfig(cfg *bigramRerankConfig, body []byte) {
 	}
 	if wrapper.BigramRerank.PairMaxLen != nil && *wrapper.BigramRerank.PairMaxLen >= 2 {
 		cfg.PairMaxLen = *wrapper.BigramRerank.PairMaxLen
+	}
+	if wrapper.BigramRerank.PairWordRatio != nil && *wrapper.BigramRerank.PairWordRatio >= 0 {
+		cfg.PairWordRatio = *wrapper.BigramRerank.PairWordRatio
 	}
 }
 
@@ -740,7 +761,7 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int, com
 	if !cfg.MixedPair || len(candidates) < 2 || fullyPinyinSegmentable(composition) {
 		return candidates, cursor, false
 	}
-	_, pairs := ime.bigramTableSnapshotFull()
+	_, pairs, wordMass := ime.bigramTableSnapshotFull()
 	if len(pairs) == 0 {
 		return candidates, cursor, false
 	}
@@ -751,12 +772,42 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int, com
 	// v2：全列表打分（不只前 3）——d3 的 gold 常在第 4~9 位（显微镜：
 	// shid 的「是的」#9），top-3 窗口捞不到。换位仍保守：频次 ≥floor 且
 	// ≥ratio×首名分才提到首位，其余顺位下移。
+	// 首名的"整词证据"：作为完整词在语料中的质量。高说明它是真实高频词
+	//（可以 84137），即便两字搭配为 0 也不该被挤掉；低说明它是拼装词
+	//（是的 整词 0、靠 是+的 29010 成立），此时搭配证据才是有效信号。
+	stripMarks := func(s string) string {
+		if i := strings.IndexByte(s, ' '); i > 0 {
+			s = s[:i]
+		}
+		return strings.TrimSpace(s)
+	}
 	first := pairScore(pairs, candidates[0].Text, maxLen)
+	// 每位的"整词证据"前缀最大值：候选 i 想被提前，它的搭配证据必须压过
+	// 排在它上面的所有候选里最强的整词证据。
+	// 教训（2026-10-22 用户实报 k yi）：只跟首名比不够——首名可能是组句
+	// 垃圾「看一∞」（整词 0），而真正的整词「可以」（整词 19516）排在第 3，
+	// 结果垃圾搭配「抗疫」被提上来、按 2 还选错。
+	wordMassAbove := 0
 	bestIdx := -1
 	bestScore := 0
 	for i := 1; i < len(candidates); i++ {
+		if i > 1 {
+			if m := wordMass[stripMarks(candidates[i-1].Text)]; m > wordMassAbove {
+				wordMassAbove = m
+			}
+		}
 		s := pairScore(pairs, candidates[i].Text, maxLen)
-		if s >= cfg.PairFloor && (first == 0 || float64(s) >= cfg.PairRatio*float64(first)) && s > bestScore {
+		if s < cfg.PairFloor {
+			continue
+		}
+		if first != 0 && float64(s) < cfg.PairRatio*float64(first) {
+			continue
+		}
+		// 闸门：搭配证据必须压过上方所有候选的整词证据（可配置倍率）。
+		if float64(s) < cfg.PairWordRatio*float64(wordMassAbove) {
+			continue
+		}
+		if s > bestScore {
 			bestScore = s
 			bestIdx = i
 		}
@@ -775,4 +826,38 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int, com
 	ime.mixedPairSwapIndex = bestIdx
 	debugLogf("mixed pair rerank: compo=%q %q(%d) 超过 %q(%d) 提前至#%d", composition, winner.Text, bestScore, candidates[0].Text, first, bestIdx+1)
 	return reordered, cursor, true
+}
+
+// buildDisplayPerm 由"引擎原始顺序 + 重排后顺序"构建
+// 显示位次 → 引擎位次 映射；顺序完全一致时返回 nil（零开销快路径）。
+// 候选文本可能重复（同词多码），用逐位贪心匹配保证双射。
+func buildDisplayPerm(engineOrder, display []candidateItem) []int {
+	if len(engineOrder) == 0 || len(display) == 0 || len(engineOrder) != len(display) {
+		return nil
+	}
+	perm := make([]int, len(display))
+	used := make([]bool, len(engineOrder))
+	sameOrder := true
+	for di := range display {
+		found := -1
+		for ei := range engineOrder {
+			if !used[ei] && engineOrder[ei].Text == display[di].Text {
+				found = ei
+				break
+			}
+		}
+		if found < 0 {
+			// 文本不完全对应（重排器可能替换了文本），退化为同序。
+			return nil
+		}
+		used[found] = true
+		perm[di] = found
+		if found != di {
+			sameOrder = false
+		}
+	}
+	if sameOrder {
+		return nil
+	}
+	return perm
 }

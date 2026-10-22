@@ -158,3 +158,66 @@ func TestDefaultMixedPairRerankOn(t *testing.T) {
 		t.Fatal("上文上下文版重排默认应保持关闭")
 	}
 }
+
+func TestBuildDisplayPerm(t *testing.T) {
+	mk := func(xs ...string) []candidateItem {
+		out := make([]candidateItem, len(xs))
+		for i, s := range xs {
+			out[i] = candidateItem{Text: s}
+		}
+		return out
+	}
+	// 同序 → nil（零开销）
+	if got := buildDisplayPerm(mk("可以", "抗疫"), mk("可以", "抗疫")); got != nil {
+		t.Fatalf("同序应返回 nil, got %v", got)
+	}
+	// 交换 → [1,0]
+	got := buildDisplayPerm(mk("可以", "抗疫", "刻意"), mk("抗疫", "可以", "刻意"))
+	if len(got) != 3 || got[0] != 1 || got[1] != 0 || got[2] != 2 {
+		t.Fatalf("交换映射错误: %v", got)
+	}
+	// 重复文本（同词多码）：双射不错位
+	got = buildDisplayPerm(mk("的", "的", "地"), mk("地", "的", "的"))
+	if len(got) != 3 || got[0] != 2 || got[1] != 0 || got[2] != 1 {
+		t.Fatalf("重复文本映射错误: %v", got)
+	}
+	// 长度不一致 → nil
+	if got := buildDisplayPerm(mk("a", "b"), mk("b")); got != nil {
+		t.Fatalf("长度不一致应返回 nil, got %v", got)
+	}
+}
+
+// 用户实报 bug 的回归测试：整词（可以 整词证据高）不能被垃圾搭配（抗疫）
+// 挤掉——即使首名是组句垃圾（整词 0）。and shid 这类真赢面仍要提前。
+func TestMixedPairRerankRespectsWordEvidence(t *testing.T) {
+	resetBigramTableForTest()
+	sharedBigramTable.mu.Lock()
+	sharedBigramTable.pairCounts = map[string]map[string]int{
+		"抗": {"疫": 823},   // 抗疫：搭配有据，整词无据
+		"是": {"的": 29010}, // 是的：搭配强
+	}
+	sharedBigramTable.wordMass = map[string]int{
+		"可以": 19516, // 真实高频整词
+		"时代": 7513,
+	}
+	sharedBigramTable.loaded = true
+	sharedBigramTable.mu.Unlock()
+
+	ime := newTestIME()
+	ime.contextualCfg = &contextualConfig{BigramRerank: bigramRerankConfig{
+		MixedPair: true, PairRatio: 999, PairFloor: 300, PairMaxLen: 4, PairWordRatio: 1.0,
+	}}
+
+	// k yi：首名组句垃圾（整词 0），可以 在第 2（整词 19516）→ 抗疫 不许提前
+	cands := []candidateItem{{Text: "看一 ∞"}, {Text: "可以"}, {Text: "抗疫"}}
+	got, _, changed := ime.applyMixedPairRerank(cands, 0, "k yi")
+	if changed || got[0].Text != "看一 ∞" {
+		t.Fatalf("抗疫 不应被提前（整词证据不足）: changed=%t first=%q", changed, got[0].Text)
+	}
+	// shi d：时代（整词 7513）在前，是的 搭配 29010 → 应提前
+	cands2 := []candidateItem{{Text: "时代"}, {Text: "是的"}, {Text: "使得"}}
+	got2, _, changed2 := ime.applyMixedPairRerank(cands2, 0, "shi d")
+	if !changed2 || got2[0].Text != "是的" {
+		t.Fatalf("是的 应提前: changed=%t first=%q", changed2, got2[0].Text)
+	}
+}
