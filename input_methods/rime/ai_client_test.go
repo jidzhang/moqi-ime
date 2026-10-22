@@ -170,6 +170,57 @@ func TestGenerateReviewCandidatesReturnsAPIError(t *testing.T) {
 	}
 }
 
+func TestGenerateReviewCandidatesFallsBackToMaxCompletionTokens(t *testing.T) {
+	var maxTokensCalls, completionCalls int
+	var completionHadLegacy bool
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]json.RawMessage
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Fatalf("decode request body: %v", err)
+		}
+		if _, ok := body["max_tokens"]; ok {
+			maxTokensCalls++
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(`{"error":{"message":"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.","param":"max_tokens"}}`))
+			return
+		}
+		if _, ok := body["max_completion_tokens"]; ok {
+			completionCalls++
+			_, _ = w.Write([]byte(`{"choices":[{"message":{"role":"assistant","content":"质量很好"}}]}`))
+			return
+		}
+		completionHadLegacy = true
+		t.Fatalf("expected a token limit parameter, got %#v", body)
+	}))
+	defer server.Close()
+
+	client := &aiClient{
+		baseURL:    server.URL,
+		apiKey:     "secret-key",
+		model:      "gpt-6-luna",
+		httpClient: server.Client(),
+	}
+	req := aiGenerateRequest{Composition: "咖啡机", Candidates: []string{"咖啡机"}, Prompt: defaultAIUserPromptTemplate()}
+
+	if _, err := client.GenerateReviewCandidates(req); err != nil {
+		t.Fatalf("expected fallback to succeed, got %v", err)
+	}
+	if maxTokensCalls != 1 || completionCalls != 1 {
+		t.Fatalf("expected one legacy + one completion call, got legacy=%d completion=%d", maxTokensCalls, completionCalls)
+	}
+
+	// 记住可用参数后，后续请求应直接走新参数，不再多打一次必然失败的请求。
+	if _, err := client.GenerateReviewCandidates(req); err != nil {
+		t.Fatalf("expected cached parameter to succeed, got %v", err)
+	}
+	if maxTokensCalls != 1 || completionCalls != 2 {
+		t.Fatalf("expected cached parameter reuse, got legacy=%d completion=%d", maxTokensCalls, completionCalls)
+	}
+	if completionHadLegacy {
+		t.Fatal("unexpected token parameter state")
+	}
+}
+
 func TestGenerateReviewCandidatesReturnsTimeoutError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(100 * time.Millisecond)
@@ -285,4 +336,22 @@ func TestGenerateReviewCandidatesWithRealAPI(t *testing.T) {
 		t.Fatal("expected at least one real AI candidate")
 	}
 	t.Logf("real AI candidates: %q", candidates)
+}
+
+func TestDefaultTokenParamForModel(t *testing.T) {
+	cases := map[string]string{
+		"gpt-6-luna":          aiTokenParamCompletion,
+		"gpt-5-nano":          aiTokenParamCompletion,
+		"o4-mini":             aiTokenParamCompletion,
+		"gpt-4.1-nano":        aiTokenParamLegacy,
+		"gpt-4o-mini":         aiTokenParamLegacy,
+		"deepseek-v4.1-flash": aiTokenParamLegacy,
+		"deepseek-chat":       aiTokenParamLegacy,
+		"  GPT-6-LUNA  ":      aiTokenParamCompletion,
+	}
+	for model, want := range cases {
+		if got := defaultTokenParamForModel(model); got != want {
+			t.Fatalf("model %q: expected %q, got %q", model, want, got)
+		}
+	}
 }

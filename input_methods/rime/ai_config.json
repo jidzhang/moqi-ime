@@ -1,29 +1,34 @@
 {
   "api": {
     "base_url": "https://api.chatanywhere.tech",
-    "api_key": "sk-cfJrCS95bdm6mE8h41SEl9NlvroW0OI5s89Z7rOxS6ktWKkj",
-    "model": "gpt-5-mini"
+    "api_key": "sk-zHZilNcig50DR2i5oZyTO7wjAd2ubeeEeTaHOBgTjsMIiOxw",
+    "model": "gpt-6-luna"
   },
   "actions": [
     {
       "name": "写好评",
       "hotkey": "Ctrl+Shift+G",
-      "prompt": "请围绕“{{candidate_1}}”生成最多 3 条适合直接发布的中文好评，每条 20 字左右。"
+      "prompt": "围绕「{{candidate_1}}」写 3 条可直接发布的中文好评，每条不超过 18 个字，口语化、不夸张，不用引号，不要编号。"
     },
     {
       "name": "优化整句",
       "hotkey": "Ctrl+Shift+O",
-      "prompt": "用户上一次输入是：{{previous_commit}}\n用户这一次原始输入拼音是：{{composition}}\n前三个候选词：\n{{candidates_top3}}\n请结合这些信息，严格遵循原始输入拼音来选字，只能在符合这串拼音的候选范围内优化整句，不要凭空改成不匹配拼音的字词。只输出 1 条最通顺、最自然的整句候选，不要解释。"
+      "prompt": "上文：{{previous_commit}}\n本次输入拼音：{{composition}}\n前三个候选：\n{{candidates_top3}}\n只在这串拼音对应的候选范围内选字，不要改成拼音不匹配的字词，不要添加原文没有的信息。只输出 1 条最通顺的整句，不加引号，不解释。"
     },
     {
       "name": "中译英",
       "hotkey": "Ctrl+Shift+E",
-      "prompt": "请把当前中文内容翻译成自然、地道的英文。 “{{candidate_1}}” 只输出 1 条英文翻译，不要解释。"
+      "prompt": "把「{{candidate_1}}」译成自然、地道的英文，保留专有名词和数字。只输出译文，不加引号，不解释。"
     },
     {
       "name": "问答",
       "hotkey": "Ctrl+Shift+Q",
-      "prompt": "用户询问： “{{candidate_1}}” 只输出 1 条答案，不要解释。"
+      "prompt": "回答「{{candidate_1}}」，先给结论，30 字以内，不解释推理过程。"
+    },
+    {
+      "name": "润色",
+      "hotkey": "Ctrl+Shift+R",
+      "prompt": "把「{{candidate_1}}」改写成更通顺得体的书面表达，保持原意。只输出改写结果，不加引号，不解释。"
     }
   ]
 }

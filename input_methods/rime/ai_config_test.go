@@ -1,6 +1,7 @@
 package rime
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -152,5 +153,90 @@ func TestCopyAIConfigIfMissingDoesNotOverwriteExistingFile(t *testing.T) {
 	}
 	if string(got) != "user-customized" {
 		t.Fatalf("expected existing config to stay unchanged, got %q", got)
+	}
+}
+
+func TestSyncAIConfigFromBundledMergesMissingActionsAndKeepsUserKey(t *testing.T) {
+	tmpDir := t.TempDir()
+	srcPath := filepath.Join(tmpDir, "bundle", aiConfigFileName)
+	dstPath := filepath.Join(tmpDir, "user", aiConfigFileName)
+	if err := os.MkdirAll(filepath.Dir(srcPath), 0o755); err != nil {
+		t.Fatalf("mkdir src dir: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(dstPath), 0o755); err != nil {
+		t.Fatalf("mkdir dst dir: %v", err)
+	}
+	bundled := `{"api":{"base_url":"https://bundled.test","api_key":"bundled-key","model":"bundled-model"},
+"actions":[{"name":"写好评","hotkey":"Ctrl+Shift+G","prompt":"bundled prompt"},
+{"name":"润色","hotkey":"Ctrl+Shift+R","prompt":"bundled polish"}]}`
+	user := `{"api":{"base_url":"https://user.test","api_key":"user-key","model":""},
+"actions":[{"name":"写好评","hotkey":"Ctrl+Shift+G","prompt":"user prompt"}]}`
+	if err := os.WriteFile(srcPath, []byte(bundled), 0o644); err != nil {
+		t.Fatalf("write src config: %v", err)
+	}
+	if err := os.WriteFile(dstPath, []byte(user), 0o644); err != nil {
+		t.Fatalf("write user config: %v", err)
+	}
+
+	if err := syncAIConfigFromBundled(dstPath, srcPath); err != nil {
+		t.Fatalf("expected merge to succeed, got %v", err)
+	}
+
+	data, err := os.ReadFile(dstPath)
+	if err != nil {
+		t.Fatalf("read merged config: %v", err)
+	}
+	var merged aiFileConfig
+	if err := json.Unmarshal(data, &merged); err != nil {
+		t.Fatalf("decode merged config: %v", err)
+	}
+	if merged.API.APIKey != "user-key" || merged.API.BaseURL != "https://user.test" {
+		t.Fatalf("user api must win, got %#v", merged.API)
+	}
+	if merged.API.Model != "bundled-model" {
+		t.Fatalf("expected empty model to be filled from bundle, got %q", merged.API.Model)
+	}
+	if len(merged.Actions) != 2 {
+		t.Fatalf("expected missing action to be appended, got %#v", merged.Actions)
+	}
+	if merged.Actions[0].Prompt != "user prompt" {
+		t.Fatalf("same-name action must not be overwritten, got %q", merged.Actions[0].Prompt)
+	}
+	if merged.Actions[1].Name != "润色" || merged.Actions[1].Prompt != "bundled polish" {
+		t.Fatalf("expected bundled polish action appended, got %#v", merged.Actions[1])
+	}
+}
+
+func TestSyncAIConfigFromBundledLeavesCompleteConfigUntouched(t *testing.T) {
+	tmpDir := t.TempDir()
+	srcPath := filepath.Join(tmpDir, "bundle", aiConfigFileName)
+	dstPath := filepath.Join(tmpDir, "user", aiConfigFileName)
+	if err := os.MkdirAll(filepath.Dir(srcPath), 0o755); err != nil {
+		t.Fatalf("mkdir src dir: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(dstPath), 0o755); err != nil {
+		t.Fatalf("mkdir dst dir: %v", err)
+	}
+	bundled := `{"api":{"base_url":"https://bundled.test","api_key":"bundled-key","model":"bundled-model"},
+"actions":[{"name":"写好评","hotkey":"Ctrl+Shift+G","prompt":"bundled prompt"}]}`
+	user := `{"api":{"base_url":"https://user.test","api_key":"user-key","model":"user-model"},
+"actions":[{"name":"写好评","hotkey":"Ctrl+Shift+G","prompt":"user prompt"}]}`
+	if err := os.WriteFile(srcPath, []byte(bundled), 0o644); err != nil {
+		t.Fatalf("write src config: %v", err)
+	}
+	if err := os.WriteFile(dstPath, []byte(user), 0o644); err != nil {
+		t.Fatalf("write user config: %v", err)
+	}
+
+	if err := syncAIConfigFromBundled(dstPath, srcPath); err != nil {
+		t.Fatalf("expected merge to succeed, got %v", err)
+	}
+
+	got, err := os.ReadFile(dstPath)
+	if err != nil {
+		t.Fatalf("read user config: %v", err)
+	}
+	if string(got) != user {
+		t.Fatalf("complete user config must stay byte-identical, got %q", got)
 	}
 }

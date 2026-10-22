@@ -108,7 +108,80 @@ func bundledAIConfigPath() string {
 }
 
 func ensureUserAIConfigCopied() error {
-	return copyAIConfigIfMissing(userAIConfigPath(), bundledAIConfigPath())
+	return syncAIConfigFromBundled(userAIConfigPath(), bundledAIConfigPath())
+}
+
+// syncAIConfigFromBundled 首次运行整份复制；已有用户配置时只做增量合并：
+// api 字段为空才补，同名 action 不覆盖，缺的 action 追加。
+// 这样升级后新增动作能到老用户手里，用户自定义的提示词与自有 key 不会被冲掉。
+func syncAIConfigFromBundled(dstPath, srcPath string) error {
+	if dstPath == "" || srcPath == "" {
+		return nil
+	}
+	if _, err := os.Stat(dstPath); os.IsNotExist(err) {
+		return copyAIConfigIfMissing(dstPath, srcPath)
+	} else if err != nil {
+		return fmt.Errorf("stat AI config %s: %w", dstPath, err)
+	}
+
+	srcData, err := os.ReadFile(srcPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("read bundled AI config %s: %w", srcPath, err)
+	}
+	var bundled aiFileConfig
+	if err := json.Unmarshal(srcData, &bundled); err != nil {
+		return nil // 内置配置坏了不该阻塞输入法启动
+	}
+	dstData, err := os.ReadFile(dstPath)
+	if err != nil {
+		return fmt.Errorf("read user AI config %s: %w", dstPath, err)
+	}
+	var user aiFileConfig
+	if err := json.Unmarshal(dstData, &user); err != nil {
+		return nil // 用户手改出了语法错，交给后续加载流程报错，不在这里重写文件
+	}
+
+	changed := false
+	if user.API.BaseURL == "" && bundled.API.BaseURL != "" {
+		user.API.BaseURL = bundled.API.BaseURL
+		changed = true
+	}
+	if user.API.APIKey == "" && bundled.API.APIKey != "" {
+		user.API.APIKey = bundled.API.APIKey
+		changed = true
+	}
+	if user.API.Model == "" && bundled.API.Model != "" {
+		user.API.Model = bundled.API.Model
+		changed = true
+	}
+	for _, action := range bundled.Actions {
+		found := false
+		for _, existing := range user.Actions {
+			if existing.Name == action.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			user.Actions = append(user.Actions, action)
+			changed = true
+		}
+	}
+	if !changed {
+		return nil
+	}
+
+	out, err := json.MarshalIndent(user, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encode AI config: %w", err)
+	}
+	if err := os.WriteFile(dstPath, append(out, '\n'), 0o644); err != nil {
+		return fmt.Errorf("write AI config %s: %w", dstPath, err)
+	}
+	return nil
 }
 
 func copyAIConfigIfMissing(dstPath, srcPath string) error {

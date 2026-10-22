@@ -3,26 +3,45 @@ package rime
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
 const aiRequestTimeout = 20 * time.Second
+
+// aiMaxOutputTokens 给生成结果设上界：候选文案是 1~3 行短句，128 token 足够；
+// 非流式调用必须等整段生成完才返回，不设上限时模型的啰嗦会直接变成用户等待。
+const aiMaxOutputTokens = 128
+
+// 输出上限的参数名两派并存：老模型（deepseek、gpt-4o 系）只认 max_tokens，
+// gpt-5/6 系明确拒绝它并要求 max_completion_tokens。先按老参数发，
+// 收到该 400 后改用新参数并记住，之后不再多打一次空请求。
+const (
+	aiTokenParamLegacy     = "max_tokens"
+	aiTokenParamCompletion = "max_completion_tokens"
+)
 
 type aiClient struct {
 	baseURL    string
 	apiKey     string
 	model      string
 	httpClient *http.Client
+
+	mu         sync.RWMutex
+	tokenParam string
 }
 
 type chatCompletionsRequest struct {
-	Model       string        `json:"model"`
-	Messages    []chatMessage `json:"messages"`
-	Temperature float64       `json:"temperature"`
+	Model               string        `json:"model"`
+	Messages            []chatMessage `json:"messages"`
+	Temperature         float64       `json:"temperature"`
+	MaxTokens           int           `json:"max_tokens,omitempty"`
+	MaxCompletionTokens int           `json:"max_completion_tokens,omitempty"`
 }
 
 type chatMessage struct {
@@ -55,13 +74,27 @@ func newAIClient(cfg *aiRuntimeConfig) *aiClient {
 		return nil
 	}
 	return &aiClient{
-		baseURL: baseURL,
-		apiKey:  apiKey,
-		model:   model,
+		baseURL:    baseURL,
+		apiKey:     apiKey,
+		model:      model,
+		tokenParam: defaultTokenParamForModel(model),
 		httpClient: &http.Client{
 			Timeout: aiRequestTimeout,
 		},
 	}
+}
+
+// defaultTokenParamForModel 按模型名先猜参数名，避免第一次调用先吃一个 400
+// 再重试（等于每次冷启动白花一个网络往返）。猜错仍由 isUnsupportedMaxTokens
+// 的自动回退兜住。
+func defaultTokenParamForModel(model string) string {
+	m := strings.ToLower(strings.TrimSpace(model))
+	for _, prefix := range []string{"gpt-5", "gpt-6", "o1", "o3", "o4", "o5"} {
+		if strings.HasPrefix(m, prefix) {
+			return aiTokenParamCompletion
+		}
+	}
+	return aiTokenParamLegacy
 }
 
 func newAIClientFromEnv() *aiClient {
@@ -94,7 +127,90 @@ func (c *aiClient) GenerateReviewCandidates(input aiGenerateRequest) ([]string, 
 		},
 		Temperature: 0.8,
 	}
+	c.applyTokenLimit(&payload)
 
+	respBody, err := c.postChatCompletions(payload)
+	if err != nil && isUnsupportedMaxTokens(err) {
+		c.setTokenParam(aiTokenParamCompletion)
+		c.applyTokenLimit(&payload)
+		retryBody, retryErr := c.postChatCompletions(payload)
+		if retryErr == nil {
+			respBody, err = retryBody, nil
+		} else {
+			err = retryErr
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	var parsed chatCompletionsResponse
+	if err := json.Unmarshal(respBody, &parsed); err != nil {
+		return nil, fmt.Errorf("decode AI response: %w", err)
+	}
+	if len(parsed.Choices) == 0 {
+		return nil, fmt.Errorf("AI API returned no choices")
+	}
+
+	candidates := parseReviewCandidates(parsed.Choices[0].Message.Content)
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("AI API returned empty review content")
+	}
+	return candidates, nil
+}
+
+func (c *aiClient) tokenParamName() string {
+	c.mu.RLock()
+	name := c.tokenParam
+	c.mu.RUnlock()
+	if name == "" {
+		return aiTokenParamLegacy
+	}
+	return name
+}
+
+func (c *aiClient) setTokenParam(name string) {
+	c.mu.Lock()
+	c.tokenParam = name
+	c.mu.Unlock()
+}
+
+func (c *aiClient) applyTokenLimit(payload *chatCompletionsRequest) {
+	if payload == nil {
+		return
+	}
+	if c.tokenParamName() == aiTokenParamCompletion {
+		payload.MaxTokens = 0
+		payload.MaxCompletionTokens = aiMaxOutputTokens
+		return
+	}
+	payload.MaxTokens = aiMaxOutputTokens
+	payload.MaxCompletionTokens = 0
+}
+
+type aiAPIError struct {
+	statusCode int
+	body       string
+}
+
+func (e *aiAPIError) Error() string {
+	return fmt.Sprintf("AI API returned %d: %s", e.statusCode, e.body)
+}
+
+// isUnsupportedMaxTokens 只针对"该模型不认 max_tokens"这一种 400，
+// 其它错误（401/402/429/超时）不重试，避免把额度花在注定失败的请求上。
+func isUnsupportedMaxTokens(err error) bool {
+	var apiErr *aiAPIError
+	if !errors.As(err, &apiErr) || apiErr.statusCode != http.StatusBadRequest {
+		return false
+	}
+	body := apiErr.body
+	return strings.Contains(body, aiTokenParamCompletion) ||
+		strings.Contains(body, "max_tokens' is not supported") ||
+		strings.Contains(body, "max_tokens is not supported")
+}
+
+func (c *aiClient) postChatCompletions(payload chatCompletionsRequest) ([]byte, error) {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("marshal AI request: %w", err)
@@ -118,22 +234,9 @@ func (c *aiClient) GenerateReviewCandidates(input aiGenerateRequest) ([]string, 
 		return nil, fmt.Errorf("read AI response: %w", err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("AI API returned %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
+		return nil, &aiAPIError{statusCode: resp.StatusCode, body: strings.TrimSpace(string(respBody))}
 	}
-
-	var parsed chatCompletionsResponse
-	if err := json.Unmarshal(respBody, &parsed); err != nil {
-		return nil, fmt.Errorf("decode AI response: %w", err)
-	}
-	if len(parsed.Choices) == 0 {
-		return nil, fmt.Errorf("AI API returned no choices")
-	}
-
-	candidates := parseReviewCandidates(parsed.Choices[0].Message.Content)
-	if len(candidates) == 0 {
-		return nil, fmt.Errorf("AI API returned empty review content")
-	}
-	return candidates, nil
+	return respBody, nil
 }
 
 func normalizeAIGenerateRequest(input aiGenerateRequest) aiGenerateRequest {
