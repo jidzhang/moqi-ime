@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/gaboolic/moqi-ime/imecore"
@@ -238,5 +239,53 @@ func TestSyncAIConfigFromBundledLeavesCompleteConfigUntouched(t *testing.T) {
 	}
 	if string(got) != user {
 		t.Fatalf("complete user config must stay byte-identical, got %q", got)
+	}
+}
+
+func TestBundledAIConfigDefaultsToAIDisabled(t *testing.T) {
+	data, err := os.ReadFile(aiConfigFileName)
+	if err != nil {
+		t.Fatalf("read bundled ai_config.json: %v", err)
+	}
+	_, err = parseAIConfigJSON(data)
+	if err == nil {
+		t.Fatal("bundled config must keep AI disabled until the user opts in")
+	}
+	if !strings.Contains(err.Error(), "删成「base_url」") {
+		t.Fatalf("expected opt-in guidance in error, got %v", err)
+	}
+}
+
+func TestSyncAIConfigFromBundledPreservesUnknownAPIKeys(t *testing.T) {
+	tmpDir := t.TempDir()
+	srcPath := filepath.Join(tmpDir, "bundle", aiConfigFileName)
+	dstPath := filepath.Join(tmpDir, "user", aiConfigFileName)
+	if err := os.MkdirAll(filepath.Dir(srcPath), 0o755); err != nil {
+		t.Fatalf("mkdir src dir: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(dstPath), 0o755); err != nil {
+		t.Fatalf("mkdir dst dir: %v", err)
+	}
+	bundled := `{"api":{"base_url删掉我即可用AI功能":"https://bundled.test","api_key":"bundled-key","model":"bundled-model"},
+"actions":[{"name":"写好评","hotkey":"Ctrl+Shift+G","prompt":"bundled prompt"}]}`
+	user := `{"api":{"base_url删掉我即可用AI功能":"https://bundled.test","api_key":"bundled-key","model":"bundled-model"},
+"actions":[{"name":"写好评","hotkey":"Ctrl+Shift+G","prompt":"user prompt"}]}`
+	if err := os.WriteFile(srcPath, []byte(bundled), 0o644); err != nil {
+		t.Fatalf("write src config: %v", err)
+	}
+	if err := os.WriteFile(dstPath, []byte(user), 0o644); err != nil {
+		t.Fatalf("write user config: %v", err)
+	}
+
+	if err := syncAIConfigFromBundled(dstPath, srcPath); err != nil {
+		t.Fatalf("expected merge to succeed, got %v", err)
+	}
+
+	got, err := os.ReadFile(dstPath)
+	if err != nil {
+		t.Fatalf("read user config: %v", err)
+	}
+	if string(got) != user {
+		t.Fatalf("opt-in key must survive merge and untouched config must stay identical, got %q", got)
 	}
 }

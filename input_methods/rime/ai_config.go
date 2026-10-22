@@ -2,8 +2,10 @@ package rime
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -112,8 +114,9 @@ func ensureUserAIConfigCopied() error {
 }
 
 // syncAIConfigFromBundled 首次运行整份复制；已有用户配置时只做增量合并：
-// api 字段为空才补，同名 action 不覆盖，缺的 action 追加。
-// 这样升级后新增动作能到老用户手里，用户自定义的提示词与自有 key 不会被冲掉。
+// api 三个键缺失或为空串才补，同名 action 不覆盖，缺的 action 追加。
+// 用通用 map 操作而不是结构体回写，用户的未知键（比如内置的选择性加入键
+// 「base_url删掉我即可用AI功能」）不会在重写时被静默丢掉。
 func syncAIConfigFromBundled(dstPath, srcPath string) error {
 	if dstPath == "" || srcPath == "" {
 		return nil
@@ -131,50 +134,32 @@ func syncAIConfigFromBundled(dstPath, srcPath string) error {
 		}
 		return fmt.Errorf("read bundled AI config %s: %w", srcPath, err)
 	}
-	var bundled aiFileConfig
-	if err := json.Unmarshal(srcData, &bundled); err != nil {
-		return nil // 内置配置坏了不该阻塞输入法启动
-	}
 	dstData, err := os.ReadFile(dstPath)
 	if err != nil {
 		return fmt.Errorf("read user AI config %s: %w", dstPath, err)
 	}
-	var user aiFileConfig
-	if err := json.Unmarshal(dstData, &user); err != nil {
+	srcRoot, ok := decodeJSONObject(srcData)
+	if !ok {
+		return nil // 内置配置坏了不该阻塞输入法启动
+	}
+	dstRoot, ok := decodeJSONObject(dstData)
+	if !ok {
 		return nil // 用户手改出了语法错，交给后续加载流程报错，不在这里重写文件
 	}
 
-	changed := false
-	if user.API.BaseURL == "" && bundled.API.BaseURL != "" {
-		user.API.BaseURL = bundled.API.BaseURL
-		changed = true
-	}
-	if user.API.APIKey == "" && bundled.API.APIKey != "" {
-		user.API.APIKey = bundled.API.APIKey
-		changed = true
-	}
-	if user.API.Model == "" && bundled.API.Model != "" {
-		user.API.Model = bundled.API.Model
-		changed = true
-	}
-	for _, action := range bundled.Actions {
-		found := false
-		for _, existing := range user.Actions {
-			if existing.Name == action.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			user.Actions = append(user.Actions, action)
-			changed = true
-		}
-	}
-	if !changed {
+	apiMerged, apiChanged := mergeAIAPI(srcRoot["api"], dstRoot["api"])
+	actionsMerged, actionsChanged := mergeAIActions(srcRoot["actions"], dstRoot["actions"])
+	if !apiChanged && !actionsChanged {
 		return nil
 	}
+	if apiChanged {
+		dstRoot["api"] = apiMerged
+	}
+	if actionsChanged {
+		dstRoot["actions"] = actionsMerged
+	}
 
-	out, err := json.MarshalIndent(user, "", "  ")
+	out, err := json.MarshalIndent(dstRoot, "", "  ")
 	if err != nil {
 		return fmt.Errorf("encode AI config: %w", err)
 	}
@@ -182,6 +167,103 @@ func syncAIConfigFromBundled(dstPath, srcPath string) error {
 		return fmt.Errorf("write AI config %s: %w", dstPath, err)
 	}
 	return nil
+}
+
+var aiAPIFillKeys = []string{"base_url", "api_key", "model"}
+
+// mergeAIAPI 只补用户侧缺失/空串的 api 键，其余键（含未知键）原样保留。
+func mergeAIAPI(bundledRaw, userRaw json.RawMessage) (json.RawMessage, bool) {
+	bundled, ok := decodeJSONObject(bundledRaw)
+	if !ok {
+		return nil, false
+	}
+	user, ok := decodeJSONObject(userRaw)
+	if !ok {
+		return nil, false
+	}
+	changed := false
+	for _, key := range aiAPIFillKeys {
+		srcVal, exists := bundled[key]
+		if !exists || isBlankJSONString(srcVal) {
+			continue
+		}
+		if curVal, exists := user[key]; exists && !isBlankJSONString(curVal) {
+			continue
+		}
+		user[key] = srcVal
+		changed = true
+	}
+	if !changed {
+		return nil, false
+	}
+	out, err := json.Marshal(user)
+	if err != nil {
+		return nil, false
+	}
+	return out, true
+}
+
+// mergeAIActions 按 name 追加用户缺的 action，同名的绝不覆盖。
+func mergeAIActions(bundledRaw, userRaw json.RawMessage) (json.RawMessage, bool) {
+	var bundled []aiActionFileSpec
+	if len(bundledRaw) == 0 || json.Unmarshal(bundledRaw, &bundled) != nil {
+		return nil, false
+	}
+	var user []json.RawMessage
+	if len(userRaw) > 0 {
+		_ = json.Unmarshal(userRaw, &user)
+	}
+	seen := make(map[string]bool, len(user))
+	for _, raw := range user {
+		var probe struct {
+			Name string `json:"name"`
+		}
+		_ = json.Unmarshal(raw, &probe)
+		seen[probe.Name] = true
+	}
+	changed := false
+	for _, action := range bundled {
+		if seen[action.Name] {
+			continue
+		}
+		encoded, err := json.Marshal(action)
+		if err != nil {
+			continue
+		}
+		user = append(user, encoded)
+		seen[action.Name] = true
+		changed = true
+	}
+	if !changed {
+		return nil, false
+	}
+	out, err := json.Marshal(user)
+	if err != nil {
+		return nil, false
+	}
+	return out, true
+}
+
+func decodeJSONObject(data []byte) (map[string]json.RawMessage, bool) {
+	obj := map[string]json.RawMessage{}
+	if len(data) == 0 {
+		return obj, true
+	}
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return nil, false
+	}
+	if obj == nil {
+		obj = map[string]json.RawMessage{}
+	}
+	return obj, true
+}
+
+func isBlankJSONString(raw json.RawMessage) bool {
+	var s string
+	if err := json.Unmarshal(raw, &s); err != nil {
+		return false // 非字符串（手改坏了）不当作空，避免被覆盖
+	}
+	return strings.TrimSpace(s) == ""
 }
 
 func copyAIConfigIfMissing(dstPath, srcPath string) error {
@@ -269,6 +351,13 @@ func parseAIConfigJSON(data []byte) (*aiRuntimeConfig, error) {
 		},
 	}
 	cfg.API = fillAIAPIConfigFromEnv(cfg.API)
+	if cfg.API.BaseURL == "" {
+		// 隐私默认：内置配置把键名写成「base_url删掉我即可用AI功能」，JSON 解析后
+		// base_url 为空 → AI 关闭、绝不联网。给用户一条能照着做的提示而不是参数报错。
+		if optIn := aiOptInKeyName(data); optIn != "" {
+			return nil, &aiOptInDisabledError{optInKey: optIn}
+		}
+	}
 	if cfg.API.BaseURL == "" || cfg.API.APIKey == "" || cfg.API.Model == "" {
 		return nil, fmt.Errorf("AI config requires api.base_url, api.api_key and api.model")
 	}
@@ -327,6 +416,46 @@ func defaultAIActions(cfg *aiRuntimeConfig) []aiAction {
 
 func defaultAIUserPromptTemplate() string {
 	return "请围绕“{{composition}}”生成最多 3 条适合直接发布的中文好评，每条 20 字左右。"
+}
+
+// aiOptInKeyName 找出 api 对象里「base_url 开头但不是 base_url」的键名（内置配置的
+// 选择性加入开关），没有则返回空串。
+// aiOptInDisabledError 表示"用户还没做选择性加入"，不是配置坏了：
+// 调用方应把它当日志噪音级别处理，不要每次都打 error。
+type aiOptInDisabledError struct {
+	optInKey string
+}
+
+func (e *aiOptInDisabledError) Error() string {
+	return fmt.Sprintf("AI 功能未启用：打开 ai_config.json，把键名「%s」删成「base_url」即可开启", e.optInKey)
+}
+
+func isAIOptInDisabled(err error) bool {
+	var target *aiOptInDisabledError
+	return errors.As(err, &target)
+}
+
+// aiOptInKeyName 找出 api 对象里「base_url 开头但不是 base_url」的键名（内置配置的
+// 选择性加入开关），没有则返回空串。多个候选时取字典序最小者以保证稳定。
+func aiOptInKeyName(data []byte) string {
+	root, ok := decodeJSONObject(data)
+	if !ok {
+		return ""
+	}
+	api, ok := decodeJSONObject(root["api"])
+	if !ok {
+		return ""
+	}
+	name := ""
+	for key := range api {
+		if key == "base_url" || !strings.HasPrefix(key, "base_url") {
+			continue
+		}
+		if name == "" || key < name {
+			name = key
+		}
+	}
+	return name
 }
 
 func parseAIHotkey(hotkey string) (aiAction, error) {
@@ -406,4 +535,14 @@ func (action aiAction) matches(req *imecore.Request) bool {
 	return req.KeyStates.IsKeyDown(vkControl) == action.Ctrl &&
 		req.KeyStates.IsKeyDown(vkMenu) == action.Alt &&
 		req.KeyStates.IsKeyDown(vkShift) == action.Shift
+}
+
+// logAIConfigError 把"用户尚未选择性加入"降为 debug 噪音：
+// 这是设计上的默认状态，不该每次启动都往 error 日志里写一条失败。
+func logAIConfigError(prefix string, err error) {
+	if isAIOptInDisabled(err) {
+		debugLogf("%s（AI 当前关闭，等待用户选择性加入）: %v", prefix, err)
+		return
+	}
+	log.Printf("%s: %v", prefix, err)
 }

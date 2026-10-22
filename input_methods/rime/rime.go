@@ -300,7 +300,7 @@ var openURLFunc = openWithDefaultApp
 func New(client *imecore.Client) imecore.TextService {
 	cfg, err := loadAIConfig()
 	if err != nil {
-		log.Printf("加载 AI 配置失败: %v", err)
+		logAIConfigError("加载 AI 配置失败", err)
 	}
 	generator := newConfiguredAIReviewGenerator(cfg)
 	actions := defaultAIActions(cfg)
@@ -2186,7 +2186,7 @@ func (ime *IME) redeploy(req *imecore.Request, resp *imecore.Response) bool {
 		return false
 	}
 	if err := ime.reloadAIConfig(); err != nil {
-		log.Printf("重新加载 AI 配置失败，将继续部署: %v", err)
+		logAIConfigError("重新加载 AI 配置失败，将继续部署", err)
 	}
 	ime.reloadContextualConfig()
 	syncFrostCustomPatch(userDir, sharedDir)
