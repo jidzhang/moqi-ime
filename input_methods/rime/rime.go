@@ -2327,10 +2327,9 @@ func (ime *IME) clearResponse(resp *imecore.Response) {
 	resp.ShowCandidates = false
 }
 
-// usageLogPath 当日使用习惯日志路径；空=未开启。需要调试日志开着，
-// 且配置里显式 "usageLog": true —— 单独的开关，避免开调试就记录输入内容。
+// usageLogPath 当日使用习惯日志路径；空=未开启（debug 级别关闭时）。
 func usageLogPath() string {
-	if !isUsageLoggingEnabled() {
+	if !isDebugLoggingEnabled() {
 		return ""
 	}
 	dir := rimeLogDir()
@@ -2340,7 +2339,7 @@ func usageLogPath() string {
 	return filepath.Join(dir, time.Now().Format("usage-2006-01-02.log"))
 }
 
-// usageLogLine 追加一行使用记录（组字串/候选页/上屏），受 usageLog 显式开关控制。
+// usageLogLine 追加一行使用记录（组字串/候选页/上屏），调试级开关控制。
 // 内容全部留在本机 %LOCALAPPDATA%\MoqiIM\Log，用于打字习惯分析与
 // 候选质量回放（gram 开/关对比等）。
 func usageLogLine(kind, composition, candidatesJoined, commit string) {
