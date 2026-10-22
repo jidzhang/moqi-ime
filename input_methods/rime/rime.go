@@ -1356,6 +1356,15 @@ func (ime *IME) handleAIKeyDownFilter(req *imecore.Request, resp *imecore.Respon
 	if action == nil {
 		return false
 	}
+	if ime.aiPending {
+		// 长按会按系统重复率连发 keydown，连点也会在结果回来前再触发。
+		// 每次触发都是一次真实计费请求，旧的还会被 seq 检查丢弃；
+		// 在途期间直接吞掉重复触发，保证同一时刻只有一个请求。
+		debugLogf("AI 请求进行中，忽略重复触发 action=%s key=%d", action.Name, req.KeyCode)
+		ime.aiConsumeKeyUpCode = req.KeyCode
+		resp.ReturnValue = 1
+		return true
+	}
 	ime.aiConsumeKeyUpCode = req.KeyCode
 	if !ime.triggerAIReview(action) {
 		// 没有组字也没有候选时 AI 无从下手：把按键放回去给宿主，
@@ -1365,29 +1374,7 @@ func (ime *IME) handleAIKeyDownFilter(req *imecore.Request, resp *imecore.Respon
 	}
 	ime.aiTriggerPending = true
 	resp.ReturnValue = 1
-	ime.showAIProgressHint(resp)
 	return true
-}
-
-// aiProgressComment 是等待 AI 结果期间挂在首个候选上的状态注释。
-// 非流式请求要等整段生成完才返回（实测 2~3 秒），期间界面完全静止会让用户
-// 以为没反应；注释不是可选项，不影响选择与上屏。
-const aiProgressComment = "AI 生成中…"
-
-func (ime *IME) showAIProgressHint(resp *imecore.Response) {
-	if resp == nil || ime.backend == nil {
-		return
-	}
-	ime.fillResponseFromBackendState(resp, false)
-}
-
-// annotateAIProgress 在候选首项挂上等待提示。按键释放会再次重建候选列表，
-// 所以提示必须挂在重建路径上，而不是只在触发那一刻写一次。
-func (ime *IME) annotateAIProgress(resp *imecore.Response) {
-	if resp == nil || !ime.aiPending || ime.aiActive || len(resp.CandidateEntries) == 0 {
-		return
-	}
-	resp.CandidateEntries[0].Comment = aiProgressComment
 }
 
 func (ime *IME) handleAIKeyUpFilter(req *imecore.Request, resp *imecore.Response) bool {
@@ -1617,7 +1604,7 @@ func (ime *IME) applyAIAsyncResult(result aiAsyncResult) bool {
 	ime.aiPending = false
 	if result.Err != nil {
 		ime.aiError = result.Err.Error()
-		log.Printf("AI 写好评失败: %v", result.Err)
+		log.Printf("AI 动作「%s」失败: %v", result.Action.Name, result.Err)
 		ime.resetAIState()
 		return false
 	}
@@ -2498,7 +2485,6 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 		resp.HasCandidateCursor = false
 		resp.ShowCandidates = false
 	}
-	ime.annotateAIProgress(resp)
 	ime.keyComposing = true
 	return true
 }

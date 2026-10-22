@@ -3,6 +3,7 @@ package rime
 import (
 	"errors"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -711,5 +712,52 @@ func TestAIHotkeyFailureFallsBackToOriginalComposition(t *testing.T) {
 	}
 	if ime.aiActive {
 		t.Fatal("expected AI mode to remain inactive on failure")
+	}
+}
+
+func TestAIHotkeySuppressesRepeatedTriggersWhilePending(t *testing.T) {
+	backend := &fakeBackend{
+		state: rimeState{
+			Composition: "咖啡机",
+			Candidates:  []candidateItem{{Text: "咖啡机"}},
+		},
+	}
+	ime := newTestIMEWithBackend(backend)
+	started := make(chan struct{}, 1)
+	release := make(chan struct{})
+	var calls atomic.Int32
+	ime.SetAIReviewGenerator(func(input aiGenerateRequest) ([]string, error) {
+		calls.Add(1)
+		started <- struct{}{}
+		<-release
+		return []string{"结果"}, nil
+	})
+
+	hotkeyReq := func(seq int) *imecore.Request {
+		return &imecore.Request{
+			Method:    "filterKeyDown",
+			SeqNum:    seq,
+			KeyCode:   aiHotkeyKeyCode,
+			KeyStates: keyStatesWithDown(vkControl, vkShift),
+		}
+	}
+
+	if resp := ime.HandleRequest(hotkeyReq(1)); resp.ReturnValue != 1 {
+		t.Fatalf("expected first hotkey to be handled, got %#v", resp)
+	}
+	<-started
+
+	// 连点与长按的自动重复都会在结果返回前再次触发，必须全部吞掉且不再发请求。
+	for seq := 2; seq <= 5; seq++ {
+		if resp := ime.HandleRequest(hotkeyReq(seq)); resp.ReturnValue != 1 {
+			t.Fatalf("expected repeated hotkey %d to be swallowed, got %#v", seq, resp)
+		}
+	}
+
+	close(release)
+	waitForAIAsyncCompletion(t, ime)
+
+	if got := calls.Load(); got != 1 {
+		t.Fatalf("expected exactly one AI request while pending, got %d", got)
 	}
 }
