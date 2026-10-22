@@ -26,7 +26,7 @@ func main() {
 	burstTSV := flag.String("burst", "", "bigram TSV(s), comma-separated: run burst eval instead of sentence eval")
 	burstMode := flag.String("burstMode", "fragment", "burst mode: fragment | continuation")
 	stack := flag.String("stack", "native", "judge stack: native (rime.dll direct) | ime (full Go pipeline)")
-	input := flag.String("input", "full", "input mode: full | jianpin")
+	input := flag.String("input", "full", "input mode: full | jianpin | shengmu")
 	triple := flag.Bool("triple", false, "burst: use chained 3-word pairs")
 	burstTopN := flag.Int("burstTopN", 2000, "top-N bigram pairs for burst eval")
 	mixedTop := flag.Bool("mixedTop", false, "mixed: also report hit@3/hit@page (ime stack, slow path)")

@@ -69,7 +69,8 @@ func levenshtein(a, b string) int {
 	return prev[len(br)]
 }
 
-// InputMode 输入方式：full=全拼，jianpin=超级简拼（每字首字母）。
+// InputMode 输入方式：full=全拼，jianpin=超级简拼（每字首字母），
+// shengmu=声母简拼（zh/ch/sh 取双字母，其余首字母）。
 // 评估工具全局开关（测量工具可接受；产品代码不用）。
 var InputMode = "full"
 
@@ -78,7 +79,29 @@ func KeysForGold(gold string, readings CharReadings) (string, bool) {
 	if InputMode == "jianpin" {
 		return GoldToJianpin(gold, readings)
 	}
+	if InputMode == "shengmu" {
+		return GoldToShengmu(gold, readings)
+	}
 	return GoldToPinyin(gold, readings)
+}
+
+// GoldToShengmu 声母简拼：zh/ch/sh 取双字母声母，其余取首字母
+// （zhang→zh、chi→ch、an→a）。歧义远小于单字母简拼。
+func GoldToShengmu(gold string, readings CharReadings) (string, bool) {
+	var b strings.Builder
+	for _, r := range gold {
+		ch := string(r)
+		py, ok := readings[ch]
+		if !ok || py == "" {
+			return "", false
+		}
+		if strings.HasPrefix(py, "zh") || strings.HasPrefix(py, "ch") || strings.HasPrefix(py, "sh") {
+			b.WriteString(py[:2])
+		} else {
+			b.WriteByte(py[0])
+		}
+	}
+	return b.String(), true
 }
 
 // SentenceResult 单句评估结果。
