@@ -1,6 +1,6 @@
 {
   "api": {
-    "base_url": "https://api.chatanywhere.tech",
+    "base_url删掉我即可用AI功能": "https://api.chatanywhere.tech",
     "api_key": "删除我和XYZ",
     "model": "gpt-6-luna"
   },
