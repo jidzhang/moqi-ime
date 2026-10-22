@@ -23,11 +23,16 @@ var debugLogState struct {
 	mu          sync.Mutex
 	lastRefresh time.Time
 	level       debugLogLevel
+	usageLog    bool
 	override    *debugLogLevel
 }
 
 type launcherDebugConfig struct {
 	LogLevel string `json:"logLevel"`
+	// UsageLog 是独立的显式开关：即使开了调试，也只有它为 true 才把
+	// 组字串/候选页/上屏写进本地 usage 日志。默认 false，避免"开调试"
+	// 顺带把用户打了什么字记下来。
+	UsageLog bool `json:"usageLog"`
 }
 
 func debugConfigPath() string {
@@ -63,12 +68,14 @@ func currentDebugLogLevel() debugLogLevel {
 	}
 
 	debugLogState.level = debugLogLevelOff
+	debugLogState.usageLog = false
 	path := debugConfigPath()
 	if path != "" {
 		if data, err := os.ReadFile(path); err == nil {
 			var cfg launcherDebugConfig
 			if json.Unmarshal(data, &cfg) == nil {
 				debugLogState.level = parseDebugLogLevel(cfg.LogLevel)
+				debugLogState.usageLog = cfg.UsageLog
 			}
 		}
 	}
@@ -92,6 +99,21 @@ func SetDebugLoggingEnabled(enabled bool) {
 
 func isDebugLoggingEnabled() bool {
 	return currentDebugLogLevel() >= debugLogLevelDebug
+}
+
+// isUsageLoggingEnabled 需要同时满足两个条件：调试日志开着，且用户在
+// MoqiLauncher.json 里显式写了 "usageLog": true。后者默认没有，
+// 所以普通用户开调试也只会拿到运行日志，不会留下输入内容记录。
+func isUsageLoggingEnabled() bool {
+	if !isDebugLoggingEnabled() {
+		return false
+	}
+	debugLogState.mu.Lock()
+	defer debugLogState.mu.Unlock()
+	if debugLogState.override != nil {
+		return false
+	}
+	return debugLogState.usageLog
 }
 
 func isTraceLoggingEnabled() bool {
