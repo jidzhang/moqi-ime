@@ -2298,6 +2298,35 @@ func (ime *IME) clearResponse(resp *imecore.Response) {
 	resp.ShowCandidates = false
 }
 
+// usageLogPath 当日使用习惯日志路径；空=未开启（debug 级别关闭时）。
+func usageLogPath() string {
+	if !isDebugLoggingEnabled() {
+		return ""
+	}
+	dir := rimeLogDir()
+	if dir == "" {
+		return ""
+	}
+	return filepath.Join(dir, time.Now().Format("usage-2006-01-02.log"))
+}
+
+// usageLogLine 追加一行使用记录（组字串/候选页/上屏），调试级开关控制。
+// 内容全部留在本机 %LOCALAPPDATA%\MoqiIM\Log，用于打字习惯分析与
+// 候选质量回放（gram 开/关对比等）。
+func usageLogLine(kind, composition, candidatesJoined, commit string) {
+	path := usageLogPath()
+	if path == "" {
+		return
+	}
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	fmt.Fprintf(f, "%s\t%s\t%s\t%s\t%s\n",
+		time.Now().Format("15:04:05.000"), kind, composition, candidatesJoined, commit)
+}
+
 func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit bool) bool {
 	start := time.Now()
 	defer func() {
@@ -2311,6 +2340,18 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 	}()
 	if resp == nil {
 		return true
+	}
+	// 使用习惯日志：有候选页或提交时记录一行（debug 级开关控制）。
+	if usageLogPath() != "" {
+		if len(resp.CandidateList) > 0 {
+			top := resp.CandidateList
+			if len(top) > 10 {
+				top = top[:10]
+			}
+			usageLogLine("cand", resp.CompositionString, strings.Join(top, "∥"), resp.CommitString)
+		} else if resp.CommitString != "" {
+			usageLogLine("commit", "", "", resp.CommitString)
+		}
 	}
 	state, ok := ime.currentVisibleBackendState()
 	if !ok {
