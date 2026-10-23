@@ -135,8 +135,10 @@ func TestBuildFrostCustomPatchBigGrammarTuning(t *testing.T) {
 	if !strings.Contains(patch, "grammar/language: zh-hans-t-essay-bgw") {
 		t.Fatalf("应包含 grammar/language:\n%s", patch)
 	}
-	if !strings.Contains(patch, `"translator/abbrev_sentences": true`) {
-		t.Fatalf("大 gram 应启用 abbrev_sentences:\n%s", patch)
+	// 2026-10-23 方案 A：abbrev_sentences 已移除（真人回放 29.7%→64.8%），
+	// 大 gram 在位也不得再开混合组句。
+	if strings.Contains(patch, "abbrev_sentences") {
+		t.Fatalf("大 gram 也不应启用 abbrev_sentences:\n%s", patch)
 	}
 	if !strings.Contains(patch, `"melt_eng/initial_quality": 0.01`) {
 		t.Fatalf("大 gram 应降 melt_eng 权重:\n%s", patch)

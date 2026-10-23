@@ -100,8 +100,10 @@ func buildFrostCustomPatchEx(cfg localBehaviorConfig, rerankMixed bool, dirs ...
 		emit("engine/filters/-: lua_filter@*aux_lookup_filter")
 	}
 	if isDebugLoggingEnabled() {
-		// 调试档恢复候选 * / ∞ 来源标记（默认对用户隐藏；见 rime-prebuild
-		// patchCandidateMarksLua 与上游 lua/is_in_user_dict.lua）
+		// debug 档显示候选 * / ∞ 来源标记（默认对用户隐藏；见 rime-prebuild
+		// patchCandidateMarksLua 与上游 lua/is_in_user_dict.lua）。
+		// 语义（2026-10-22 定）：普通模式（error）不显示任何标记；debug
+		// 起（含打字习惯日志采集档）显示——调试者需要看到候选来源。
 		emit(`"debug/show_candidate_marks": true`)
 	}
 	if rerankMixed {
@@ -116,15 +118,18 @@ func buildFrostCustomPatchEx(cfg localBehaviorConfig, rerankMixed bool, dirs ...
 	if lang := resolveGrammarLanguage(cfg, dirs...); lang != "" {
 		emit("grammar/language: " + lang)
 		emit(`"translator/contextual_suggestions": true`)
-		// 大语法模型就位时的产品调优（2026-10-18 实测定档）：
-		// 1) abbrev_sentences：混合输入（全拼+首字母）也构建组句候选，让
-		//    语法模型参与排序。实测核心场景 +2.4；必须以大 gram 为前提——
-		//    无模型时句子路径反而大幅劣化（44.3 vs 52.2）。
+		// 大语法模型就位时的产品调优：
+		// 1) abbrev_sentences 已移除（2026-10-23 用户拍板，方案 A）：它让混合
+		//    输入（全拼+首字母）也构建组句候选，真人日志回放把混合首选率
+		//    打到 29.7%（去掉后 64.8%，与 gram 全关 65.7% 噪声级）；"我没/
+		//    想在/看一"式凑句压真词是主投诉。10-18 为 d3 基准 +2.4 定档时
+		//    还没有 mixed_pair 重排，且 d3 测的是十多字长句连打（用户：
+		//    "一般人不会连续打十多个字"）。代价 d3 65.9→56.5；如需为长句
+		//    人群恢复须改回此处（local_behavior.json 无此开关）。
 		// 2) melt_eng 权重降到 0.01：中文可解析的输入不再被英文词劫持
 		//    （der→的人 而非英文 der）；纯英文输入不受影响（hello 照常首选）。
-		//    配对 A/B +0.33。显式配置小 gram 时不启用 1（守卫见 bigGrammarActive）。
+		//    配对 A/B +0.33。
 		if bigGrammarActive(lang, dirs...) {
-			emit(`"translator/abbrev_sentences": true`)
 			emit(`"melt_eng/initial_quality": 0.01`)
 			// 上游自带的英文降位过滤器开全量模式：把"拼音前缀+尾字母"型
 			// 英文词（der/nas/mad…约 500 个）降到第 2 位，中文解析优先。
