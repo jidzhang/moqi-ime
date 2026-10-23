@@ -241,14 +241,14 @@ func applyBigramRerankFileConfig(cfg *bigramRerankConfig, body []byte) {
 	}
 	var wrapper struct {
 		BigramRerank *struct {
-			Enabled       *bool    `json:"enabled"`
-			Ratio         *float64 `json:"ratio"`
-			FloorCount    *int     `json:"floor_count"`
-			MixedPair     *bool    `json:"mixed_pair"`
-			PairRatio     *float64 `json:"pair_ratio"`
-			PairFloor     *int     `json:"pair_floor"`
-			PairMaxLen    *int     `json:"pair_max_len"`
-			PairWordRatio *float64 `json:"pair_word_ratio"`
+			Enabled           *bool    `json:"enabled"`
+			Ratio             *float64 `json:"ratio"`
+			FloorCount        *int     `json:"floor_count"`
+			MixedPair         *bool    `json:"mixed_pair"`
+			PairRatio         *float64 `json:"pair_ratio"`
+			PairFloor         *int     `json:"pair_floor"`
+			PairMaxLen        *int     `json:"pair_max_len"`
+			PairWordRatio     *float64 `json:"pair_word_ratio"`
 		} `json:"bigram_rerank"`
 	}
 	if err := json.Unmarshal(body, &wrapper); err != nil || wrapper.BigramRerank == nil {
@@ -791,19 +791,21 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int, com
 	bestIdx := -1
 	bestScore := 0
 	for i := 1; i < len(candidates); i++ {
-		if i > 1 {
-			if m := wordMass[stripMarks(candidates[i-1].Text)]; m > wordMassAbove {
-				wordMassAbove = m
-			}
+		// 候选 i 上方是 candidates[0..i-1]，含首名——首名的整词证据必须参与
+		// 比较（2026-10-23 用户实报 k yi：引擎序 [可以#1, 抗疫#2]，抗疫越位时
+		// 旧代码 if i>1 跳过首名，wordMassAbove=0，闸门失明 → 抗疫提到首位）。
+		if m := wordMass[stripMarks(candidates[i-1].Text)]; m > wordMassAbove {
+			wordMassAbove = m
 		}
 		s := pairScore(pairs, candidates[i].Text, maxLen)
 		if s < cfg.PairFloor {
 			continue
 		}
+		// 通道闸门：搭配证据须过 floor，且明显强于首名的搭配。
 		if first != 0 && float64(s) < cfg.PairRatio*float64(first) {
 			continue
 		}
-		// 闸门：搭配证据必须压过上方所有候选的整词证据（可配置倍率）。
+		// 闸门：搭配证据必须压过上方所有候选的整词证据（含首名，见上）。
 		if float64(s) < cfg.PairWordRatio*float64(wordMassAbove) {
 			continue
 		}
@@ -824,7 +826,7 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int, com
 	}
 	// 记录显示首选的引擎位次，供空格提交对齐（见 processKey）。
 	ime.mixedPairSwapIndex = bestIdx
-	debugLogf("mixed pair rerank: compo=%q %q(%d) 超过 %q(%d) 提前至#%d", composition, winner.Text, bestScore, candidates[0].Text, first, bestIdx+1)
+	debugLogf("mixed pair rerank: compo=%q %q(%d) 越过 %q(%d) 提前至#1（原#%d）", composition, winner.Text, bestScore, candidates[0].Text, first, bestIdx+1)
 	return reordered, cursor, true
 }
 

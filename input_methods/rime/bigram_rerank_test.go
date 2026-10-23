@@ -208,11 +208,21 @@ func TestMixedPairRerankRespectsWordEvidence(t *testing.T) {
 		MixedPair: true, PairRatio: 999, PairFloor: 300, PairMaxLen: 4, PairWordRatio: 1.0,
 	}}
 
-	// k yi：首名组句垃圾（整词 0），可以 在第 2（整词 19516）→ 抗疫 不许提前
+	// k yi 全新词典实况（2026-10-23 用户在新电脑实报首选"看一"）：
+	// 搭配通道救不了无搭配的真词（可以 搭配 0），这里固定当前行为——
+	// 首名组句垃圾 + 可以 无搭配 → 不换位（整词通道方案已被 d3 基准否决：
+	// 无约束 65.9→45.3、i≤2 约束 →56.7）。
 	cands := []candidateItem{{Text: "看一 ∞"}, {Text: "可以"}, {Text: "抗疫"}}
 	got, _, changed := ime.applyMixedPairRerank(cands, 0, "k yi")
 	if changed || got[0].Text != "看一 ∞" {
-		t.Fatalf("抗疫 不应被提前（整词证据不足）: changed=%t first=%q", changed, got[0].Text)
+		t.Fatalf("搭配通道下不应换位（记录现状，见 report 10-23）: changed=%t first=%q", changed, got[0].Text)
+	}
+	// 2026-10-23 生产实况：用户词典调频后引擎序就是 [可以#1, 抗疫#2]——
+	// 抗疫越位时上方恰好只有首名，闸门必须看到首名的整词证据。
+	cands3 := []candidateItem{{Text: "可以"}, {Text: "抗疫"}, {Text: "刻意"}}
+	got3, _, changed3 := ime.applyMixedPairRerank(cands3, 0, "k yi")
+	if changed3 || got3[0].Text != "可以" {
+		t.Fatalf("抗疫 越过首名 可以 应被闸门拦截: changed=%t first=%q", changed3, got3[0].Text)
 	}
 	// shi d：时代（整词 7513）在前，是的 搭配 29010 → 应提前
 	cands2 := []candidateItem{{Text: "时代"}, {Text: "是的"}, {Text: "使得"}}
