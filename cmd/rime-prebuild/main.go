@@ -58,6 +58,12 @@ func main() {
 		if err := installPlainNumberProcessor(*dataDir); err != nil {
 			log.Printf("数字直通处理器安装失败（继续）: %v", err)
 		}
+		if err := installRareDemoteFilter(*dataDir); err != nil {
+			log.Printf("生僻字降位过滤器安装失败（继续）: %v", err)
+		}
+		if err := patchSyllablePrefixAbbrev(*dataDir); err != nil {
+			log.Printf("音节前缀规则补丁失败（继续）: %v", err)
+		}
 	}
 	if apply("bigram") {
 		if err := mergeJianpinPatch(*dataDir); err != nil {
@@ -637,6 +643,100 @@ func patchDisableRadicalLookup(dataDir string) error {
 
 // mergeBigramDictPatch 把高频口语 bigram 补充词典合入打包数据：
 // 拷 patches/bigram_dict.dict.yaml → <data>/cn_dicts/moqi_bigram.dict.yaml，
+// installRareDemoteFilter 安装生僻字降位 lua 过滤器并挂到 rime_frost 全系
+// schema 的 filters 链尾（uniquifier 之后）。
+// 背景：上游默认挂载 41448/GB18030-2022 字表（2026-06 起随子模块进包），
+// fe/tin/bun/won/den 等输入被精确音节匹配的 Ext-A/B+ 生僻字霸占首名，
+// 且这些字走系统后备字体渲染、字号巨大（2026-10-22 用户实报，bug-list #7/#9）。
+// 用户拍板：不能完全关（椑/𫸴 要能打出来），降优先级、翻页可达。
+// 判据与实现见 patches/moqi_rare_demote.lua；幂等：内容一致且已挂载则跳过。
+func installRareDemoteFilter(dataDir string) error {
+	src := filepath.Join("input_methods", "rime", "patches", "moqi_rare_demote.lua")
+	body, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	dst := filepath.Join(dataDir, "lua", "moqi_rare_demote.lua")
+	if cur, err := os.ReadFile(dst); err != nil || string(cur) != string(body) {
+		if err := os.WriteFile(dst, body, 0o644); err != nil {
+			return err
+		}
+		fmt.Printf("[prebuild] rare-demote lua installed -> %s\n", dst)
+	}
+	const marker = "lua_filter@*moqi_rare_demote"
+	const anchor = "- uniquifier"
+	matches, _ := filepath.Glob(filepath.Join(dataDir, "rime_frost*.schema.yaml"))
+	patched := 0
+	for _, schema := range matches {
+		b, err := os.ReadFile(schema)
+		if err != nil || !strings.Contains(string(b), anchor) || strings.Contains(string(b), marker) {
+			continue
+		}
+		lines := strings.Split(string(b), "\n")
+		for i, line := range lines {
+			// 行尾普遍带注释（"- uniquifier  # 去重"），按前缀匹配
+			if !strings.HasPrefix(strings.TrimSpace(line), anchor) {
+				continue
+			}
+			indent := line[:len(line)-len(strings.TrimLeft(line, " \t"))]
+			lines[i] = line + "\n" + indent + "- lua_filter@*moqi_rare_demote   # 生僻字降位（moqi 打包期；翻页可达）"
+			patched++
+			break
+		}
+		if err := os.WriteFile(schema, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
+			return err
+		}
+	}
+	if patched > 0 {
+		fmt.Printf("[prebuild] rare-demote filter hooked into %d schema(s)\n", patched)
+	}
+	return nil
+}
+
+// patchSyllablePrefixAbbrev 在 rime_frost.schema.yaml 的 speller/algebra 追加：
+//  1. 「两字母起的音节前缀」abbrev 规则——未完成拼音（fe/tin/zhon…）给出
+//     前缀音节的汉字候选（fe→费/分/风/飞，学手机输入法，2026-10-22 用户拍板）；
+//  2. erase 掉生僻字表带来的 21 个非标音节（fe/tin/bun/wong…）——它们让
+//     生僻字（𫸴/𬽞/𡎛/𥥈）的 canonical 拼写占住组字节点，前缀候选出不来
+//     （机理同上游 erase/^m$/：取消独占、响应超级简拼）。这些音节无任何
+//     常用字，erase 后对应生僻字不可直接输入（` 反查仍可达），换取 fe→费
+//     的正常体验——2026-10-22 用户拍板优先正常体验。
+// 用 abbrev 而非 derive：abbrev 拼写质量低于完整音节，不改变完整拼音排序；
+// 前缀在多音节组字里只可能出现在输入末尾，完整拼音口径结构上不受影响。
+// 前缀规则的 [a-z]+（而非 *）防止把被 erase 的两字母音节再生成出来。
+// 幂等：标记行已存在则跳过。
+func patchSyllablePrefixAbbrev(dataDir string) error {
+	path := filepath.Join(dataDir, "rime_frost.schema.yaml")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	const marker = "moqi-prebuild: syllable-prefix abbrev + poison-syllable erase"
+	if strings.Contains(string(body), marker) {
+		return nil
+	}
+	const anchor = "- abbrev/^([zcs]h).+$/"
+	idx := strings.Index(string(body), anchor)
+	if idx < 0 {
+		return fmt.Errorf("rime_frost.schema.yaml: abbrev anchor not found")
+	}
+	lineEnd := strings.IndexByte(string(body)[idx:], '\n')
+	if lineEnd < 0 {
+		return fmt.Errorf("rime_frost.schema.yaml: unexpected EOF")
+	}
+	indent := "    "
+	insert := "\n" +
+		indent + "### moqi-prebuild: syllable-prefix abbrev + poison-syllable erase\n" +
+		indent + "- erase/^(bong|bun|eh|fe|fiao|fong|kiu|lvan|nia|nun|pia|piang|pv|sei|sua|ten|tin|wong|yai|zhei|ziang)$/  # 非标音节取消独占（生僻字表带进来的，无常用字）\n" +
+		indent + "- abbrev/^([a-z]{2})[a-z]+$/$1/\n" +
+		indent + "- abbrev/^([a-z]{3})[a-z]+$/$1/\n" +
+		indent + "- abbrev/^([a-z]{4})[a-z]+$/$1/\n" +
+		indent + "- abbrev/^([a-z]{5})[a-z]+$/$1/"
+	out := string(body)[:idx+lineEnd] + insert + string(body)[idx+lineEnd:]
+	fmt.Printf("[prebuild] syllable-prefix abbrev + poison-syllable erase added\n")
+	return os.WriteFile(path, []byte(out), 0o644)
+}
+
 // 并在 rime_frost.dict.yaml 的 import_tables 挂上（幂等：已挂则跳过）。
 // 与简拼补丁互补：本词典走主翻译器词典，全拼/混合输入即可整词命中
 // （简拼补丁只作用于两字母超级简拼）。生成方法见补丁文件头部注释。
