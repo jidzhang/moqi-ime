@@ -410,13 +410,19 @@ func (ime *IME) onActivate(req *imecore.Request, resp *imecore.Response) *imecor
 	if ime.activationAppliedSchemeSet != currentSchemeSetName() ||
 		ime.activationAppliedSyncID != ime.syncedSchemaIDForCurrentSchemeSet() ||
 		ime.syncedSettingsNeedsApply {
+		gateReason := "needsApply"
+		if ime.activationAppliedSchemeSet != currentSchemeSetName() {
+			gateReason = "schemeSetChanged"
+		} else if ime.activationAppliedSyncID != ime.syncedSchemaIDForCurrentSchemeSet() {
+			gateReason = "syncIDChanged"
+		}
 		applyStart := time.Now()
 		ime.applySyncedSettingsToBackend()
 		ime.syncedSettingsNeedsApply = false
 		ime.activationAppliedSchemeSet = currentSchemeSetName()
 		ime.activationAppliedSyncID = ime.syncedSchemaIDForCurrentSchemeSet()
 		logRimeSlow("onActivate.applySyncedSettings", applyStart,
-			"schemeSet=%q syncID=%q needsApplyWas=%v", ime.activationAppliedSchemeSet, ime.activationAppliedSyncID, true)
+			"schemeSet=%q syncID=%q gate=%s", ime.activationAppliedSchemeSet, ime.activationAppliedSyncID, gateReason)
 	}
 	// 切换瞬间就显示中/英徽标（与微软拼音一致的体验）：
 	// 用缓存状态立即加按钮，不建会话；首键 flush 再校准真实状态。
@@ -2193,13 +2199,18 @@ func (ime *IME) redeploy(req *imecore.Request, resp *imecore.Response) bool {
 	ime.destroySession(resp)
 
 	if native, ok := ime.backend.(*nativeBackend); ok {
-		return native.Redeploy(sharedDir, userDir)
+		ok := native.Redeploy(sharedDir, userDir)
+		if ok {
+			invalidateSchemaListCache()
+		}
+		return ok
 	}
 
 	if !ime.backend.Redeploy(sharedDir, userDir) {
 		log.Printf("重新部署失败，sharedDir=%q userDir=%q", sharedDir, userDir)
 		return false
 	}
+	invalidateSchemaListCache()
 	resp.TrayNotification = deployTrayNotification(true)
 	ime.createSession(resp)
 	return ime.onKey(req, resp)
@@ -2619,7 +2630,7 @@ func (ime *IME) isKnownDynamicCommand(commandID int) bool {
 	}
 	if ime.backend != nil {
 		if index, ok := schemaCommandIndex(commandID); ok {
-			schemas := ime.backend.SchemaList()
+			schemas := ime.schemaListCached()
 			if index >= 0 && index < len(schemas) {
 				return true
 			}
@@ -2719,7 +2730,7 @@ func (ime *IME) schemaMenuItems() []map[string]interface{} {
 	if ime.backend == nil {
 		return nil
 	}
-	schemas := ime.backend.SchemaList()
+	schemas := ime.schemaListCached()
 	if len(schemas) == 0 {
 		return nil
 	}
@@ -2749,7 +2760,7 @@ func (ime *IME) MobileSchemaEntries() []string {
 	if ime.backend == nil {
 		return nil
 	}
-	schemas := ime.backend.SchemaList()
+	schemas := ime.schemaListCached()
 	currentSchemaID := strings.TrimSpace(ime.backend.CurrentSchemaID())
 	entries := make([]string, 0, len(schemas))
 	for _, schema := range schemas {
@@ -2890,7 +2901,7 @@ func (ime *IME) handleSchemaCommand(commandID int) bool {
 	if !ok {
 		return false
 	}
-	schemas := ime.backend.SchemaList()
+	schemas := ime.schemaListCached()
 	if index < 0 || index >= len(schemas) {
 		return false
 	}
@@ -2910,7 +2921,7 @@ func (ime *IME) selectSchemaByIDLocked(schemaID string) bool {
 	if ime.backend == nil {
 		return false
 	}
-	if !schemaIDExists(schemaID, ime.backend.SchemaList()) {
+	if !schemaIDExists(schemaID, ime.schemaListCached()) {
 		return false
 	}
 	if !ime.backend.SelectSchema(schemaID) {
@@ -3135,12 +3146,42 @@ func (ime *IME) captureSyncedOptionsFromBackend() {
 	}
 }
 
+// schemaListCache：RimeGetSchemaList 实测单次 87ms（2026-10-23 分步计时），
+// 而每次客户端连接（=每次应用激活）都会走一遍 applySyncedSettingsToBackend。
+// 方案列表只在重部署（含方案集切换，二者都走 redeploy）后变化，
+// 进程级缓存即可，redeploy 成功后失效。
+var schemaListCache = struct {
+	mu      sync.Mutex
+	schemas []RimeSchema
+	valid   bool
+}{}
+
+func (ime *IME) schemaListCached() []RimeSchema {
+	// 测试假后端（testBackend）直通，避免跨测试污染进程级缓存。
+	if _, ok := ime.backend.(*nativeBackend); !ok {
+		return ime.backend.SchemaList()
+	}
+	schemaListCache.mu.Lock()
+	defer schemaListCache.mu.Unlock()
+	if !schemaListCache.valid {
+		schemaListCache.schemas = ime.backend.SchemaList()
+		schemaListCache.valid = true
+	}
+	return schemaListCache.schemas
+}
+
+func invalidateSchemaListCache() {
+	schemaListCache.mu.Lock()
+	schemaListCache.valid = false
+	schemaListCache.mu.Unlock()
+}
+
 func (ime *IME) applySyncedSettingsToBackend() {
 	if ime.backend == nil {
 		return
 	}
 	schemaID := ime.syncedSchemaIDForCurrentSchemeSet()
-	schemas := ime.backend.SchemaList()
+	schemas := ime.schemaListCached()
 	currentSchemaID := strings.TrimSpace(ime.backend.CurrentSchemaID())
 	currentSchemaExists := schemaIDExists(currentSchemaID, schemas)
 	if schemaID != "" {
