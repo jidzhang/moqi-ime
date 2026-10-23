@@ -272,7 +272,7 @@ func defaultStyle() Style {
 	return Style{
 		DisplayTrayIcon:                true,
 		CandidateFormat:                "{0} {1}",
-		CandidatePerRow:                1,
+		CandidatePerRow:                9,
 		CandidateCount:                 7,
 		CandidateUseCursor:             true,
 		CandidateTheme:                 "default",
@@ -284,9 +284,9 @@ func defaultStyle() Style {
 		CandidateCommentHighlightColor: "#000000",
 		CandidateSpacing:               20,
 		FontFace:                       "Segoe UI",
-		FontPoint:                      16,
+		FontPoint:                      14,
 		CandidateCommentFontFace:       "Consolas",
-		CandidateCommentFontPoint:      14,
+		CandidateCommentFontPoint:      12,
 		InlinePreedit:                  "composition",
 		SoftCursor:                     false,
 	}
