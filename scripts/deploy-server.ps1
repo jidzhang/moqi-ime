@@ -116,8 +116,8 @@ function Sync-GoBackendRuntime {
         New-Item -ItemType Directory -Path $Destination -Force | Out-Null
     }
 
-    $sourceServer = Join-Path $Source "server.exe"
-    $destinationServer = Join-Path $Destination "server.exe"
+    $sourceServer = Join-Path $Source "MoqiIME.exe"
+    $destinationServer = Join-Path $Destination "MoqiIME.exe"
     Copy-Item -LiteralPath $sourceServer -Destination $destinationServer -Force
 
     $sourceInputMethods = Join-Path $Source "input_methods"
@@ -178,8 +178,8 @@ if (-not (Test-Path -LiteralPath $InstallRoot)) {
     throw "Install directory not found: $InstallRoot"
 }
 
-$sourceServer = Join-Path $SourceRoot "server.exe"
-$destinationServer = Join-Path $InstallRoot "server.exe"
+$sourceServer = Join-Path $SourceRoot "MoqiIME.exe"
+$destinationServer = Join-Path $InstallRoot "MoqiIME.exe"
 $sourceRimeDLL = Join-Path $SourceRoot "input_methods\rime\rime.dll"
 $destinationRimeDLL = Join-Path $InstallRoot "input_methods\rime\rime.dll"
 
@@ -195,8 +195,8 @@ foreach ($path in $sourcePaths) {
     }
 }
 
-Write-FileDetails -Label "Source server.exe" -Path $sourceServer
-Write-FileDetails -Label "Destination server.exe (before)" -Path $destinationServer
+Write-FileDetails -Label "Source MoqiIME.exe" -Path $sourceServer
+Write-FileDetails -Label "Destination MoqiIME.exe (before)" -Path $destinationServer
 Write-FileDetails -Label "Source rime.dll" -Path $sourceRimeDLL
 Write-FileDetails -Label "Destination rime.dll (before)" -Path $destinationRimeDLL
 
@@ -206,7 +206,7 @@ try {
     Sync-GoBackendRuntime -Source $SourceRoot -Destination $InstallRoot
     Sync-RimeUserAIConfig -SourceConfig $sourceAIConfig -AppDataPath $env:APPDATA
 
-    Write-FileDetails -Label "Destination server.exe (after)" -Path $destinationServer
+    Write-FileDetails -Label "Destination MoqiIME.exe (after)" -Path $destinationServer
     Write-FileDetails -Label "Destination rime.dll (after)" -Path $destinationRimeDLL
 }
 finally {
