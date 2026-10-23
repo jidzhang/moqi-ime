@@ -172,10 +172,10 @@ function Write-ServerVersionInfo {
             CompanyName      = ""
             FileDescription  = $fileDescription
             FileVersion      = "1.0.0.0"
-            InternalName     = "server.exe"
+            InternalName     = "MoqiIME.exe"
             LegalCopyright   = ""
             LegalTrademarks  = ""
-            OriginalFilename = "server.exe"
+            OriginalFilename = "MoqiIME.exe"
             PrivateBuild     = ""
             ProductName      = $productName
             ProductVersion   = "1.0.0.0"
@@ -208,7 +208,7 @@ if (-not $PackageDir) { $PackageDir = Join-Path $BuildRoot "moqi-ime" }
 
 $BuildRoot = [System.IO.Path]::GetFullPath($BuildRoot)
 $PackageDir = [System.IO.Path]::GetFullPath($PackageDir)
-$ServerExe = Join-Path $PackageDir "server.exe"
+$ServerExe = Join-Path $PackageDir "MoqiIME.exe"
 $BackendSnippet = Join-Path $BuildRoot "backends.moqi-ime.json"
 $InputMethodsDir = Join-Path $RepoRoot "input_methods"
 $IconsDir = Join-Path $RepoRoot "icons"
@@ -255,7 +255,7 @@ try {
     }
 
     Write-Step -Title "Step 3: Build go-backend server"
-    Write-Host "[INFO] Building server.exe with dynamic DLL loading ..."
+    Write-Host "[INFO] Building MoqiIME.exe with dynamic DLL loading ..."
 
     $oldGoos = $env:GOOS
     $oldGoarch = $env:GOARCH
@@ -359,7 +359,7 @@ try {
     @(
         [ordered]@{
             name       = "moqi-ime"
-            command    = "moqi-ime\server.exe"
+            command    = "moqi-ime\MoqiIME.exe"
             workingDir = "moqi-ime"
             params     = ""
         }
