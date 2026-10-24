@@ -7,6 +7,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -35,6 +36,7 @@ func main() {
 	noFastPath := flag.Bool("noFastPath", false, "disable fast-path typing so Go-side rerank/lift run (A/B Go pipeline features)")
 	burstDedupInput := flag.Bool("burstDedupInput", false, "burst: drop later pairs whose d3 input (W1 full pinyin + W2 initial) collides with an earlier pair; same-input golds cap top-2000 at 62.25%")
 	minLen := flag.Int("minLen", 5, "corpus minimum sentence length in runes")
+	pinyinCorpus := flag.String("pinyinCorpus", "", "TSV: gold句子<TAB>按键串；命中则跳过逐字推导（外部基准对齐用）")
 	flag.Parse()
 
 	if *pinyin == "" || *dataDir == "" || *userDir == "" || (*burstTSV == "" && *corpus == "") {
@@ -56,6 +58,29 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "load pinyin:", err)
 		os.Exit(1)
+	}
+	if *pinyinCorpus != "" {
+		eval.PinyinOverride = map[string]string{}
+		f, err := os.Open(*pinyinCorpus)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "load pinyinCorpus:", err)
+			os.Exit(1)
+		}
+		defer f.Close()
+		sc := bufio.NewScanner(f)
+		sc.Buffer(make([]byte, 0, 1024*1024), 1024*1024)
+		for sc.Scan() {
+			line := strings.TrimRight(sc.Text(), "\r")
+			if line == "" {
+				continue
+			}
+			gold, keys, ok := strings.Cut(line, "\t")
+			if !ok || gold == "" || keys == "" {
+				continue
+			}
+			eval.PinyinOverride[gold] = keys
+		}
+		fmt.Printf("pinyinCorpus loaded: %d overrides\n", len(eval.PinyinOverride))
 	}
 
 	// native 裁判按需打开：同进程先后两次 RimeInit（native + ime）会互相

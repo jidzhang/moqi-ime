@@ -74,8 +74,16 @@ func levenshtein(a, b string) int {
 // 评估工具全局开关（测量工具可接受；产品代码不用）。
 var InputMode = "full"
 
+// PinyinOverride 整句按键覆盖表：gold 句子 → 预生成按键串。
+// 用于与外部黑盒基准公平对齐（如 windows-ime-bench 的 pypinyin 整句
+// 转换，多音字按词定音；逐字查表无法表达），命中即跳过 KeysForGold。
+var PinyinOverride map[string]string
+
 // KeysForGold 按当前 InputMode 生成按键串。
 func KeysForGold(gold string, readings CharReadings) (string, bool) {
+	if py, ok := PinyinOverride[gold]; ok {
+		return py, true
+	}
 	if InputMode == "jianpin" {
 		return GoldToJianpin(gold, readings)
 	}
