@@ -524,10 +524,10 @@ func TestNewInitialState(t *testing.T) {
 	if len(backend.candidates) != 0 {
 		t.Fatalf("expected no candidates, got %v", backend.candidates)
 	}
-	if ime.style.CandidatePerRow != 1 {
-		t.Fatalf("expected vertical layout by default, got CandidatePerRow=%d", ime.style.CandidatePerRow)
+	if ime.style.CandidatePerRow != 9 {
+		t.Fatalf("expected horizontal layout by default (2026-10-23 定案), got CandidatePerRow=%d", ime.style.CandidatePerRow)
 	}
-	if ime.style.CandidateTheme != "default" || ime.style.FontPoint != 16 || ime.style.CandidateCommentFontPoint != 14 {
+	if ime.style.CandidateTheme != "default" || ime.style.FontPoint != 14 || ime.style.CandidateCommentFontPoint != 12 {
 		t.Fatalf("expected default theme defaults, got theme=%q font=%d commentFont=%d",
 			ime.style.CandidateTheme, ime.style.FontPoint, ime.style.CandidateCommentFontPoint)
 	}
@@ -581,6 +581,8 @@ func TestFilterKeyDownEmitsLangButtonUpdateWhenControlHotkeyTogglesAsciiMode(t *
 	ime := newIsolatedTestIME(t)
 	backend := ime.backend.(*testBackend)
 	backend.toggleASCIIOnCtrlA = true
+	// 语言栏按钮更新现要求引擎会话已建立（currentInputModeState 门）。
+	backend.EnsureSession()
 
 	iconDir := t.TempDir()
 	for _, name := range []string{"chi.ico", "eng.ico"} {
@@ -1859,6 +1861,14 @@ func TestHandleRequestRecreatesSessionAfterSchemeSetSwitchAcrossInstances(t *tes
 	if secondResp.ReturnValue != 1 {
 		t.Fatalf("expected second instance activation handled, got %d", secondResp.ReturnValue)
 	}
+	// v1.5.0 起激活不建会话（首键 flush 才建）：先打一键把会话立起来，
+	// 再验证跨实例方案集切换后的会话重建。
+	second.HandleRequest(&imecore.Request{
+		SeqNum:  199,
+		Method:  "filterKeyDown",
+		KeyCode: int('N'),
+		CharCode: int('n'),
+	})
 	secondBackend := second.backend.(*testBackend)
 	if !secondBackend.session {
 		t.Fatal("expected second instance to have an active session before scheme set switch")
@@ -4041,13 +4051,13 @@ func TestLoadAppearancePrefsCreatesDefaultConfigWhenMissing(t *testing.T) {
 	if err := json.Unmarshal(data, &persisted); err != nil {
 		t.Fatalf("expected valid appearance config json: %v", err)
 	}
-	if got := persisted["candidate_per_row"]; got != float64(1) {
-		t.Fatalf("expected persisted candidate_per_row 1 for vertical default, got %#v", got)
+	if got := persisted["candidate_per_row"]; got != float64(9) {
+		t.Fatalf("expected persisted candidate_per_row 9 (horizontal default 2026-10-23), got %#v", got)
 	}
 	if got := persisted["candidate_count"]; got != float64(7) {
 		t.Fatalf("expected persisted candidate_count 7, got %#v", got)
 	}
-	if got := persisted["font_point"]; got != float64(16) {
+	if got := persisted["font_point"]; got != float64(14) {
 		t.Fatalf("expected persisted font_point 16 (defaultStyle), got %#v", got)
 	}
 	if got := persisted["font_face"]; got != "Segoe UI" {
@@ -4056,8 +4066,8 @@ func TestLoadAppearancePrefsCreatesDefaultConfigWhenMissing(t *testing.T) {
 	if got := persisted["candidate_comment_font_face"]; got != "Consolas" {
 		t.Fatalf("expected persisted candidate_comment_font_face Consolas, got %#v", got)
 	}
-	if got := persisted["candidate_comment_font_point"]; got != float64(14) {
-		t.Fatalf("expected persisted candidate_comment_font_point 14 (defaultStyle), got %#v", got)
+	if got := persisted["candidate_comment_font_point"]; got != float64(12) {
+		t.Fatalf("expected persisted candidate_comment_font_point 12 (defaultStyle), got %#v", got)
 	}
 	if got := persisted["candidate_theme"]; got != "default" {
 		t.Fatalf("expected persisted candidate_theme default, got %#v", got)
@@ -4065,8 +4075,8 @@ func TestLoadAppearancePrefsCreatesDefaultConfigWhenMissing(t *testing.T) {
 	if got := persisted["input_state_shared"]; got != false {
 		t.Fatalf("expected persisted input_state_shared false, got %#v", got)
 	}
-	if ime.style.CandidatePerRow != 1 {
-		t.Fatalf("expected in-memory style to stay vertical by default, got %d", ime.style.CandidatePerRow)
+	if ime.style.CandidatePerRow != 9 {
+		t.Fatalf("expected in-memory style to stay horizontal by default, got %d", ime.style.CandidatePerRow)
 	}
 	if ime.inputStateShared {
 		t.Fatal("expected shared input state disabled by default")

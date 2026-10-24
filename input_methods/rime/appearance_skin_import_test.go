@@ -160,7 +160,8 @@ patch:
 	if cfg.CandidateBackgroundColor == nil || *cfg.CandidateBackgroundColor != "#ffffff" {
 		t.Fatalf("unexpected background color: %#v", cfg.CandidateBackgroundColor)
 	}
-	if cfg.CandidateHighlightColor == nil || *cfg.CandidateHighlightColor != "#ce7539" {
+	// 小狼毫整数色按 Windows COLORREF（0xBBGGRR）解码：0xce7539 → #3975ce
+	if cfg.CandidateHighlightColor == nil || *cfg.CandidateHighlightColor != "#3975ce" {
 		t.Fatalf("unexpected highlight color: %#v", cfg.CandidateHighlightColor)
 	}
 }
