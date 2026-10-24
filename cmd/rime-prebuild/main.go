@@ -52,9 +52,6 @@ func main() {
 		if err := patchPageSizeDefault(*dataDir); err != nil {
 			log.Printf("候选数默认值对齐失败（继续）: %v", err)
 		}
-		if err := patchRemoveSmallGram(*dataDir); err != nil {
-			log.Printf("内置小 gram 移除失败（继续）: %v", err)
-		}
 		if err := installPlainNumberProcessor(*dataDir); err != nil {
 			log.Printf("数字直通处理器安装失败（继续）: %v", err)
 		}
@@ -327,75 +324,7 @@ func patchPageSizeDefault(dataDir string) error {
 	return nil
 }
 
-// patchRemoveSmallGram 删除内置的 7MB 小语法模型 zh-moqi.gram，并把各 schema
-// 里默认的 grammar/language: zh-moqi 引用一并摘掉。
-//
-// 依据：内置小 gram 统计太稀疏，实测对准确率没有提升（d5 59.92 -> 59.95，
-// 噪声级），却让每个安装包白白多背 7MB。用户明确要求"别打进安装包了"。
-// 大 gram（essay-bgw 196.8MB）不进安装包，由用户单独下载放进 data 目录，
-// 后端按 grammar/language 自动启用（见 input_methods/rime/grammar_model.go）。
-//
-// 必须连引用一起摘：octagram 插件按 grammar/language 去找 <language>.gram，
-// 留下悬空引用会每次部署刷错误日志。
-// 幂等：文件不在、引用已摘时直接返回。
-func patchRemoveSmallGram(dataDir string) error {
-	gramPath := filepath.Join(dataDir, "zh-moqi.gram")
-	if _, err := os.Stat(gramPath); err == nil {
-		if err := os.Remove(gramPath); err != nil {
-			return err
-		}
-		fmt.Println("[prebuild] removed built-in zh-moqi.gram (7MB, no accuracy gain)")
-	}
 
-	entries, err := os.ReadDir(dataDir)
-	if err != nil {
-		return err
-	}
-	for _, e := range entries {
-		name := e.Name()
-		if e.IsDir() || !strings.HasSuffix(name, ".schema.yaml") {
-			continue
-		}
-		path := filepath.Join(dataDir, name)
-		body, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		lines := strings.Split(string(body), "\n")
-		inGrammar := false
-		changed := false
-		for i, line := range lines {
-			trimmed := strings.TrimSpace(line)
-			if trimmed == "" || strings.HasPrefix(trimmed, "#") {
-				continue
-			}
-			indent := len(line) - len(strings.TrimLeft(line, " \t"))
-			if indent == 0 {
-				inGrammar = trimmed == "grammar:"
-				continue
-			}
-			if !inGrammar || !strings.HasPrefix(trimmed, "language:") {
-				continue
-			}
-			value := strings.TrimSpace(strings.TrimPrefix(trimmed, "language:"))
-			if idx := strings.Index(value, "#"); idx >= 0 {
-				value = strings.TrimSpace(value[:idx])
-			}
-			if value != "zh-moqi" {
-				continue
-			}
-			lines[i] = "  # language: zh-moqi 已移除（内置 7MB 小 gram 无提效；大 gram 由 rime_frost.custom.yaml 指定）"
-			changed = true
-		}
-		if changed {
-			if err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
-				return err
-			}
-			fmt.Printf("[prebuild] grammar/language: zh-moqi removed from %s\n", name)
-		}
-	}
-	return nil
-}
 
 // installPlainNumberProcessor 安装"数字/小数点直通上屏"的 Lua 处理器，
 // 并挂进 frost 系 schema 的 engine/processors（ascii_composer 之后）。
