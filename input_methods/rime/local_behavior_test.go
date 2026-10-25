@@ -28,8 +28,13 @@ func writeLocalBehaviorConfig(t *testing.T, body string) {
 // 供验证"空 patch 语义"的测试使用。
 func disableMixedPairT(t *testing.T) {
 	t.Helper()
+	// 隔离机器日志档位：trace/debug 档会让 patch 带出 debug/show_candidate_marks
+	// 行，测试随机器状态漂移（2026-10-25 踩过：用户开 trace 排障时 4 测试全挂）。
+	SetDebugLoggingEnabled(false)
+	t.Cleanup(func() { SetDebugLoggingEnabled(true) })
 	root := t.TempDir()
 	t.Setenv("APPDATA", root)
+	t.Setenv("LOCALAPPDATA", t.TempDir())
 	if err := os.MkdirAll(filepath.Join(root, "Moqi"), 0o755); err != nil {
 		t.Fatal(err)
 	}

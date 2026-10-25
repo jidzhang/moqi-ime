@@ -28,6 +28,9 @@ type localBehaviorConfig struct {
 	DisableCalculator *bool   `json:"disable_calculator,omitempty"`
 	DisableAuxLookup  *bool   `json:"disable_aux_lookup,omitempty"`
 	GrammarModel      *string `json:"grammar_model,omitempty"`
+	// GrammarPenalty 手填组词罚分（grammar_penalty）：最高优先，合法域
+	// [-20, 0]，越界/非法钳到 -4；缺省 = auto（预设/缓存/校准）。
+	GrammarPenalty *float64 `json:"grammar_penalty,omitempty"`
 }
 
 func localBehaviorConfigPath() string {
@@ -118,6 +121,12 @@ func buildFrostCustomPatchEx(cfg localBehaviorConfig, rerankMixed bool, dirs ...
 	if lang := resolveGrammarLanguage(cfg, dirs...); lang != "" {
 		emit("grammar/language: " + lang)
 		emit(`"translator/contextual_suggestions": true`)
+		// 组词罚分：手填 > 出厂哈希预设 > 校准缓存；都已知时随补丁烘焙
+		// 进部署（重启即生效、零运行时开销）。陌生模型此处不写，等引擎
+		// 就绪后后台校准（grammar_penalty.go）再补写。
+		if penalty, known := resolveGrammarPenaltyForDeploy(cfg, lang, dirs...); known {
+			emit(`"grammar/non_collocation_penalty": ` + FormatGrammarPenalty(penalty))
+		}
 		// 大语法模型就位时的产品调优：
 		// 1) abbrev_sentences 已移除（2026-10-23 用户拍板，方案 A）：它让混合
 		//    输入（全拼+首字母）也构建组句候选，真人日志回放把混合首选率
@@ -147,6 +156,19 @@ func buildFrostCustomPatchEx(cfg localBehaviorConfig, rerankMixed bool, dirs ...
 			// 守卫超标（d5 −0.5~−0.9），暂不启用，待门控精细化。
 			emit(`"translator/enable_transpose": true`)
 			emit(`"translator/transpose_credibility": -8`)
+		}
+	} else if setting := strings.TrimSpace(stringOrDefault(cfg.GrammarModel, "")); setting == "" || strings.EqualFold(setting, grammarModelAuto) {
+		// 仅 auto/缺省时接管小模型；grammar_model=off/显式指定名不越权。
+		// 内置小模型（<64MB 不进 auto 检测，原本走上游 schema 默认）：
+		// 产品接管罚分（2026-10-25 扫参：-6 比上游默认 -4 高 0.35 点）。
+		// 按内容哈希确认是出厂 zh-moqi 才接管，改动过/陌生的原样走默认。
+		if small := factorySmallGramPath(dirs...); small != "" {
+			if sum := gramFileSHA256(small); sum != "" {
+				if v, ok := factoryGramPenalty[sum]; ok {
+					emit("grammar/language: zh-moqi")
+					emit(`"grammar/non_collocation_penalty": ` + FormatGrammarPenalty(v))
+				}
+			}
 		}
 	}
 	if lines == 0 {

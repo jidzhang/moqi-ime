@@ -7,6 +7,7 @@ package rime
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -178,6 +179,7 @@ var (
 		getContext                   *syscall.LazyProc
 		freeContext                  *syscall.LazyProc
 		setOption                    *syscall.LazyProc
+		setGrammarPenalty            *syscall.LazyProc
 		getOption                    *syscall.LazyProc
 		getSchemaList                *syscall.LazyProc
 		freeSchemaList               *syscall.LazyProc
@@ -236,6 +238,7 @@ func loadRimeDLL(dllPath string) error {
 		getContext                   *syscall.LazyProc
 		freeContext                  *syscall.LazyProc
 		setOption                    *syscall.LazyProc
+		setGrammarPenalty            *syscall.LazyProc
 		getOption                    *syscall.LazyProc
 		getSchemaList                *syscall.LazyProc
 		freeSchemaList               *syscall.LazyProc
@@ -279,6 +282,7 @@ func loadRimeDLL(dllPath string) error {
 		getContext:                   dll.NewProc("RimeGetContext"),
 		freeContext:                  dll.NewProc("RimeFreeContext"),
 		setOption:                    dll.NewProc("RimeSetOption"),
+		setGrammarPenalty:            dll.NewProc("RimeSetGrammarNonCollocationPenalty"),
 		getOption:                    dll.NewProc("RimeGetOption"),
 		getSchemaList:                dll.NewProc("RimeGetSchemaList"),
 		freeSchemaList:               dll.NewProc("RimeFreeSchemaList"),
@@ -494,6 +498,16 @@ func SetOption(sessionId RimeSessionId, option string, value bool) {
 	}
 	rimeProcs.setOption.Call(uintptr(sessionId), uintptr(unsafe.Pointer(name)), v)
 	runtime.KeepAlive(name)
+}
+
+// SetGrammarNonCollocationPenalty 运行时覆盖组词罚分（NaN 恢复方案配置值）。
+// 罚分校准器用：不重部署、不重初始化引擎，见 librime-octagram 的 override。
+func SetGrammarNonCollocationPenalty(value float64) {
+	rimeProcs.setGrammarPenalty.Call(uintptr(math.Float64bits(value)))
+}
+
+func ClearGrammarNonCollocationPenalty() {
+	rimeProcs.setGrammarPenalty.Call(uintptr(math.Float64bits(math.NaN())))
 }
 
 func GetOption(sessionId RimeSessionId, option string) bool {

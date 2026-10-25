@@ -123,6 +123,14 @@ func (b *nativeBackend) Initialize(sharedDir, userDir string, firstRun bool) boo
 		debugLogf("nativeBackend.Initialize 一次性初始化完成 elapsed=%s success=%t", time.Since(onceStart), rimeInitOK)
 		if !rimeInitOK {
 			log.Println("RIME 初始化失败，原生后端不可用")
+		} else {
+			// 陌生 gram 模型（哈希不在预设/缓存）：校准罚分（约 5 秒，读候选
+			// 不提交不写用户词典）。**必须同步**跑在 Initialize 里：此时管道
+			// 尚未开始服务、引擎单线程独占——rime.dll 不允许跨线程并发会话
+			// （2026-10-25 S5 崩溃实证：goroutine 校准与主线程预热并发，
+			// 两条栈同时崩在 librime 内部）。一次性成本由登录预热吸收。
+			// 出厂模型与手填值走部署期烘焙，这里直接跳过（零开销）。
+			calibrateGrammarPenaltyIfNeeded(sharedDir, userDir)
 		}
 	})
 	debugLogf("nativeBackend.Initialize 返回 elapsed=%s success=%t executedOnce=%t", time.Since(initStart), rimeInitOK, executedOnce)

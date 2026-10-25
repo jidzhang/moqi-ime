@@ -342,10 +342,25 @@ try {
     }
 
     $rimeDll = Join-Path $RimeDir "rime.dll"
-    if (Test-Path -LiteralPath $rimeDll) {
-        Copy-Item -LiteralPath $rimeDll -Destination (Join-Path $PackageDir "input_methods\rime\rime.dll") -Force
-        Write-Host "[INFO] Copied rime.dll into package output"
+    # librime 构建产物自动同步 + 新鲜度硬门（2026-10-25 定）：
+    # 重编 librime 后忘了拷进仓曾把旧 dll 打进安装包（运行期校准导出缺失
+    # 实测翻车）。此后打包不再依赖手工拷贝——librime 构建产物存在且更新
+    # 就自动取用；两处都缺/都旧直接 fail，绝不静默打旧件。
+    $librimeBuildDll = Join-Path $PSScriptRoot "..\..\librime-gaboolic\build\bin\Release\rime.dll"
+    if (Test-Path -LiteralPath $librimeBuildDll) {
+        Copy-Item -LiteralPath $librimeBuildDll -Destination $rimeDll -Force
+        Write-Host "[INFO] rime.dll synced from librime build output"
     }
+    if (-not (Test-Path -LiteralPath $rimeDll)) {
+        throw "rime.dll missing at '$rimeDll' (librime build output not found either)"
+    }
+    $octagramSrc = Join-Path $PSScriptRoot "..\..\librime-gaboolic\plugins\librime-octagram\src\octagram.cc"
+    if ((Test-Path -LiteralPath $octagramSrc) -and
+        (Get-Item -LiteralPath $octagramSrc).LastWriteTime -gt (Get-Item -LiteralPath $rimeDll).LastWriteTime) {
+        throw "rime.dll is OLDER than octagram.cc — rebuild librime (rebuild-librime2.bat) before packaging"
+    }
+    Copy-Item -LiteralPath $rimeDll -Destination (Join-Path $PackageDir "input_methods\rime\rime.dll") -Force
+    Write-Host "[INFO] Copied rime.dll into package output"
 
     Write-Step -Title "Step 6.5: Prebuild Rime dictionaries (first-key latency fix)"
     $prebuildStart = Get-Date
