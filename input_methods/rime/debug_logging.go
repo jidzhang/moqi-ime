@@ -35,7 +35,7 @@ func debugConfigPath() string {
 	if localAppData == "" {
 		return ""
 	}
-	return filepath.Join(localAppData, "MoqiIM", "MoqiLauncher.json")
+	return filepath.Join(localAppData, "MoqiIM", "MoqiLaunch.json")
 }
 
 func parseDebugLogLevel(raw string) debugLogLevel {
@@ -116,7 +116,7 @@ func traceLogf(format string, args ...any) {
 const rimeDefaultMinLogLevel = 1 // 0=INFO 1=WARNING 2=ERROR
 
 // rimeMinLogLevel 决定传给 librime traits 的 min_log_level。
-// 调试档（MoqiLauncher.json logLevel=debug/trace）放行 INFO，否则只留 WARNING。
+// 调试档（MoqiLaunch.json logLevel=debug/trace）放行 INFO，否则只留 WARNING。
 func rimeMinLogLevel() int {
 	if currentDebugLogLevel() >= debugLogLevelDebug {
 		return 0

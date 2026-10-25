@@ -1,7 +1,7 @@
 param(
     [string]$SourceRoot = (Join-Path $PSScriptRoot "build\moqi-ime"),
     [string]$InstallRoot = "C:\Program Files (x86)\MoqiIM\moqi-ime",
-    [string]$LauncherPath = "C:\Program Files (x86)\MoqiIM\MoqiLauncher.exe"
+    [string]$LauncherPath = "C:\Program Files (x86)\MoqiIM\MoqiLaunch.exe"
 )
 
 $ErrorActionPreference = "Stop"
@@ -41,7 +41,7 @@ function Restart-Elevated {
 function Stop-MoqiLauncher {
     param([string]$Path)
 
-    $running = @(Get-Process -Name "MoqiLauncher" -ErrorAction SilentlyContinue)
+    $running = @(Get-Process -Name "MoqiLaunch" -ErrorAction SilentlyContinue)
     if (-not $running) {
         Write-Host "[INFO] MoqiLauncher.exe is not running."
         return
@@ -60,7 +60,7 @@ function Stop-MoqiLauncher {
     $deadline = (Get-Date).AddSeconds(5)
     do {
         Start-Sleep -Milliseconds 250
-        $running = @(Get-Process -Name "MoqiLauncher" -ErrorAction SilentlyContinue)
+        $running = @(Get-Process -Name "MoqiLaunch" -ErrorAction SilentlyContinue)
     } while ($running.Count -gt 0 -and (Get-Date) -lt $deadline)
 
     if ($running.Count -gt 0) {
