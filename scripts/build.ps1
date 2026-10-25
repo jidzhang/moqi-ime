@@ -213,6 +213,8 @@ $BackendSnippet = Join-Path $BuildRoot "backends.moqi-ime.json"
 $InputMethodsDir = Join-Path $RepoRoot "input_methods"
 $IconsDir = Join-Path $RepoRoot "icons"
 $RimeDir = Join-Path $InputMethodsDir "rime"
+$LibrimeBuildDll = Join-Path $RepoRoot "..\librime-gaboolic\build\bin\Release\rime.dll"
+$LibrimeOctagramSrc = Join-Path $RepoRoot "..\librime-gaboolic\plugins\librime-octagram\src\octagram.cc"
 $RimeDataDir = Join-Path $RepoRoot "rime-frost"
 $PackageRimeDir = Join-Path $PackageDir "input_methods\rime"
 $PackageRimeDataDir = Join-Path $PackageRimeDir "data"
@@ -342,21 +344,20 @@ try {
     }
 
     $rimeDll = Join-Path $RimeDir "rime.dll"
-    # librime 构建产物自动同步 + 新鲜度硬门（2026-10-25 定）：
-    # 重编 librime 后忘了拷进仓曾把旧 dll 打进安装包（运行期校准导出缺失
-    # 实测翻车）。此后打包不再依赖手工拷贝——librime 构建产物存在且更新
-    # 就自动取用；两处都缺/都旧直接 fail，绝不静默打旧件。
-    $librimeBuildDll = Join-Path $PSScriptRoot "..\..\librime-gaboolic\build\bin\Release\rime.dll"
-    if (Test-Path -LiteralPath $librimeBuildDll) {
-        Copy-Item -LiteralPath $librimeBuildDll -Destination $rimeDll -Force
+    # Auto-sync rime.dll from the librime build output + freshness hard gate
+    # (2026-10-25): a stale repo dll once shipped inside the installer because
+    # the manual copy step was forgotten. The gate refuses to package an older
+    # dll. Paths are resolved at script top-level next to $RepoRoot because
+    # $PSScriptRoot-based derivation returned empty in this nested scope.
+    if (Test-Path -LiteralPath $LibrimeBuildDll) {
+        Copy-Item -LiteralPath $LibrimeBuildDll -Destination $rimeDll -Force
         Write-Host "[INFO] rime.dll synced from librime build output"
     }
     if (-not (Test-Path -LiteralPath $rimeDll)) {
         throw "rime.dll missing at '$rimeDll' (librime build output not found either)"
     }
-    $octagramSrc = Join-Path $PSScriptRoot "..\..\librime-gaboolic\plugins\librime-octagram\src\octagram.cc"
-    if ((Test-Path -LiteralPath $octagramSrc) -and
-        (Get-Item -LiteralPath $octagramSrc).LastWriteTime -gt (Get-Item -LiteralPath $rimeDll).LastWriteTime) {
+    if ((Test-Path -LiteralPath $LibrimeOctagramSrc) -and
+        (Get-Item -LiteralPath $LibrimeOctagramSrc).LastWriteTime -gt (Get-Item -LiteralPath $rimeDll).LastWriteTime) {
         throw "rime.dll is OLDER than octagram.cc — rebuild librime (rebuild-librime2.bat) before packaging"
     }
     Copy-Item -LiteralPath $rimeDll -Destination (Join-Path $PackageDir "input_methods\rime\rime.dll") -Force
