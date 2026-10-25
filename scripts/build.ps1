@@ -358,7 +358,7 @@ try {
     }
     if ((Test-Path -LiteralPath $LibrimeOctagramSrc) -and
         (Get-Item -LiteralPath $LibrimeOctagramSrc).LastWriteTime -gt (Get-Item -LiteralPath $rimeDll).LastWriteTime) {
-        throw "rime.dll is OLDER than octagram.cc — rebuild librime (rebuild-librime2.bat) before packaging"
+        throw "rime.dll is OLDER than octagram.cc - rebuild librime (rebuild-librime2.bat) before packaging"
     }
     Copy-Item -LiteralPath $rimeDll -Destination (Join-Path $PackageDir "input_methods\rime\rime.dll") -Force
     Write-Host "[INFO] Copied rime.dll into package output"
@@ -400,4 +400,4 @@ Write-Host "2. Ensure C:\Program Files (x86)\MoqiIM\backends.json includes moqi-
 Write-Host "3. Ensure C:\Program Files (x86)\MoqiIM\moqi-ime\input_methods\*\ime.json exists."
 Write-Host "4. Re-register both MoqiTextService.dll files after copying."
 Write-Host "5. Ensure C:\Program Files (x86)\MoqiIM\moqi-ime\input_methods\rime contains rime.dll."
-Write-Host "6. Start or restart MoqiLauncher.exe after install."
+Write-Host "6. Start or restart MoqiLaunch.exe after install."
