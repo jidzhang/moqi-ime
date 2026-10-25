@@ -55,6 +55,9 @@ var factoryGramPenalty = map[string]float64{
 	"7b9a593ce9f58bd538048cef11f825c3cd86307030552726d58785dd87d98ae9": -6,
 	// zh-hans-t-essay-bgw.gram（full 内置 206MB）→ -4（2026-10-24 扫参峰）
 	"b91e4be2d9fee62bfda0aa0d87df94ef95c8d7ffd7302365b90a3e888dc60773": -4,
+	// wanxiang-lts-zh-hans.gram（本地 wanxiang 变体包内置 380MB，仅本地出包
+	// 不走 CI）→ 0（2026-10-25 全语料扫参峰，真机 63.33 复现）
+	"1849e5e4acbdbfaf41fceeb86b739d5d0c85d574bd8a688562cba1e6beb78488": 0,
 }
 
 const grammarPenaltyCacheName = "grammar_penalty_cache.json"
