@@ -152,10 +152,25 @@ func buildFrostCustomPatchEx(cfg localBehaviorConfig, rerankMixed bool, dirs ...
 			emit(`"translator/sentence_quality_boost": -2`)
 			// 换位容错（2026-10-19 定档 −8）：T 类错字 23.4→51.6，守卫
 			// d1 −0.10 / d5 −0.12 / d3 ~−0.3 边界、每键延迟 +7.6%，全部达标。
-			// 漏字边（enable_deletion + deletion_credibility）机制已实现但
-			// 守卫超标（d5 −0.5~−0.9），暂不启用，待门控精细化。
 			emit(`"translator/enable_transpose": true`)
 			emit(`"translator/transpose_credibility": -8`)
+			// 二遍拼接隔离流（2026-10-29 落地，librime 17b38c80+15aac49c）：
+			// 首遍纯净（主列表零污染，d5 逐位一致）+ 触发（短输入 ≤12 常开，
+			// 且输入须含 >=2 字符全拼顶点——纯简拼不跑）时二遍带
+			// del/sub/ins 三边重查，候选经 InterleaveTranslation 插到首遍
+			// 第 5 个之后（不抢 top-1、第一页可见）。验收：d7 可达率
+			// sub 17→78.5 / ins 30→66.9 / del 33→67.8；守卫 d1/d2/d3/d4/d5/d6
+			// 全绿（jp2 为 ±0.5 噪声带）；引擎 fast-path +0.29ms/键 =
+			// 端到端 +2.5%。credibility −8 三边同档（瘦身边扫参待做）。
+			emit(`"translator/enable_deletion": true`)
+			emit(`"translator/deletion_credibility": -8`)
+			emit(`"translator/enable_substitution": true`)
+			emit(`"translator/substitution_credibility": -8`)
+			emit(`"translator/enable_insertion": true`)
+			emit(`"translator/insertion_credibility": -8`)
+			emit(`"translator/typo_second_pass": true`)
+			emit(`"translator/typo_second_pass_max_input_length": 12`)
+			emit(`"translator/typo_second_pass_insert_after": 5`)
 		}
 	} else if setting := strings.TrimSpace(stringOrDefault(cfg.GrammarModel, "")); setting == "" || strings.EqualFold(setting, grammarModelAuto) {
 		// 仅 auto/缺省时接管内置 gram；grammar_model=off/显式指定名不越权。

@@ -172,6 +172,13 @@ func translateKeyCode(req *imecore.Request) int {
 	}
 
 	if mapped, ok := vkMaps[keyCode]; ok {
+		// OEM_3 是 vkMaps 里唯一带字符语义的可打印键（其余 OEM 键走
+		// CharCode）。Shift+` 前端 ToUnicodeEx 已给 CharCode='~'，常量
+		// 映射必须让位，否则 shift 语义被吞（2026-10-29 用户实报
+		// Shift+` 得到 `）。
+		if keyCode == vkOem3 && isPrintableChar(req) && req.CharCode != '`' {
+			return req.CharCode
+		}
 		return mapped
 	}
 	if isPrintableChar(req) {

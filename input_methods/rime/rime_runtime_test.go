@@ -328,6 +328,18 @@ func TestRealRimePunctuationKeys(t *testing.T) {
 			allowedCommit: []string{"、", "`", "｀"},
 		},
 		{
+			// 2026-10-29 用户实报：中文模式 Shift+` 得到 ` 而非 ~。
+			// 前端 ToUnicodeEx 已给 CharCode='~'（KeyEvent.cpp），后端
+			// vkMaps 的 OEM_3 常量映射不得吞掉 shift 后的字符。
+			name: "shift+grave → tilde",
+			req: &imecore.Request{
+				KeyCode:   0xC0,
+				CharCode:  '~',
+				KeyStates: keyStatesDown(vkLShift),
+			},
+			allowedCommit: []string{"~", "～"},
+		},
+		{
 			name: "pipe",
 			req: &imecore.Request{
 				KeyCode:  0xDC,

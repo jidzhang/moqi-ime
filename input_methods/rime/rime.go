@@ -243,6 +243,7 @@ type IME struct {
 	autoPairQuotes               bool
 	semicolonSelectSecond        bool
 	rawInputTracked              string
+	rawInputAtCommit             string // 提交类按键上的 raw 快照（typo_memory 用）
 	customPhraseComposition      string
 	customPhraseCandidates       []candidateItem
 	customPhraseCursor           int
@@ -809,6 +810,16 @@ func (ime *IME) resetTrackedRawInput() {
 	ime.rawInputTracked = ""
 }
 
+// snapshotRawInputForCommit 在提交类按键上保存 raw 串快照。
+// updateTrackedRawInput 先于 fillResponseFromBackendState 执行，若此处直接
+// 清空，typo_memory 记录时就读不到用户实际敲了什么。
+func (ime *IME) snapshotRawInputForCommit() {
+	if ime.rawInputTracked != "" {
+		ime.rawInputAtCommit = ime.rawInputTracked
+	}
+	ime.rawInputTracked = ""
+}
+
 func (ime *IME) trimTrackedRawInput() {
 	if ime.rawInputTracked == "" {
 		return
@@ -828,13 +839,19 @@ func (ime *IME) updateTrackedRawInput(req *imecore.Request, backendRet bool) {
 	case vkBack:
 		ime.trimTrackedRawInput()
 		return
-	case vkEscape, vkReturn, vkSpace:
+	case vkSpace, vkReturn:
+		// 提交类按键：先快照 raw，供 typo_memory 记录用（本函数先于
+		// fillResponseFromBackendState 执行，直接清空会让记录读到空值）。
+		ime.snapshotRawInputForCommit()
+		return
+	case vkEscape:
+		ime.rawInputAtCommit = ""
 		ime.resetTrackedRawInput()
 		return
 	}
 
 	if _, ok := ime.selectionKeyIndex(req); ok {
-		ime.resetTrackedRawInput()
+		ime.snapshotRawInputForCommit()
 		return
 	}
 
@@ -1197,6 +1214,9 @@ func (ime *IME) Init(req *imecore.Request) bool {
 }
 
 func (ime *IME) Close() {
+	// 错字记忆退出落盘：record 走阈值批量写（8 条）省 IO，进程正常退出
+	// 时必须补写，否则最后几条会随进程消失。
+	typoMemory.save()
 	ime.destroySession(nil)
 	debugLogf("RIME 输入法关闭")
 }
@@ -1778,6 +1798,7 @@ func (ime *IME) commitAICandidate(resp *imecore.Response) {
 	}
 	resp.CommitString = ime.aiCandidates[ime.aiCandidateCursor]
 	ime.rememberAICommit(resp.CommitString)
+	ime.recordTypoMemory(resp.CommitString)
 	ime.pushContextualCommit(resp.CommitString)
 	ime.clearResponse(resp)
 	ime.resetAIState()
@@ -2404,6 +2425,7 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 	if allowCommit && state.CommitString != "" {
 		resp.CommitString = state.CommitString
 		ime.rememberAICommit(state.CommitString)
+		ime.recordTypoMemory(state.CommitString)
 		ime.pushContextualCommit(state.CommitString)
 		ime.resetTrackedRawInput()
 	}
@@ -2468,6 +2490,15 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 	if len(state.Candidates) > 0 || len(customPhraseCandidates) > 0 {
 		resp.CandidateList = append(ime.formatCandidates(customPhraseCandidates), ime.formatCandidates(state.Candidates)...)
 		resp.CandidateEntries = append(ime.candidateEntries(customPhraseCandidates), ime.candidateEntries(state.Candidates)...)
+		// 错字自适应记忆提顶（typo_memory.go）：同一 raw input 上次选过的词
+		// 若已在候选里，提到第 1 位（原第 1 顺延）。不新增候选、不参与引擎
+		// 打分；只在"用户带着同一错法再次输入"时生效，正确输入零扰动。
+		if ime.rawInputTracked != "" && len(resp.CandidateList) > 1 {
+			if remembered := typoMemory.lookup(ime.rawInputTracked); remembered != "" {
+				resp.CandidateList = hoistCandidate(resp.CandidateList, remembered)
+				resp.CandidateEntries = hoistCandidateEntry(resp.CandidateEntries, remembered)
+			}
+		}
 		if len(customPhraseCandidates) > 0 {
 			if ime.customPhraseCursor < 0 {
 				ime.customPhraseCursor = 0
