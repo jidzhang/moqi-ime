@@ -11,6 +11,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gaboolic/moqi-ime/eval"
@@ -58,6 +59,14 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "load pinyin:", err)
 		os.Exit(1)
+	}
+	// 词级读音表与 pinyin.txt 同目录（mozillazg/phrase-pinyin-data）：存在即加载，
+	// 多音字按词定音，与黑盒考卷生成器（pypinyin）口径一致。
+	if ph, err := eval.LoadPhraseReadings(filepath.Join(filepath.Dir(*pinyin), "phrase-pinyin-data.txt")); err == nil {
+		eval.PhraseReadings = ph
+		fmt.Printf("phrase readings loaded: %d entries\n", len(ph))
+	} else {
+		fmt.Printf("phrase readings not loaded, per-char fallback: %v\n", err)
 	}
 	if *pinyinCorpus != "" {
 		eval.PinyinOverride = map[string]string{}

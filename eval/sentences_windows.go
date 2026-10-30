@@ -80,29 +80,123 @@ func stripTone(s string) string {
 }
 
 // GoldToPinyin 金句逐字转连续小写拼音（无分隔，与 eval-sentences.js 一致）。
-func GoldToPinyin(gold string, readings CharReadings) (string, bool) {
-	var b strings.Builder
-	for _, r := range gold {
-		ch := string(r)
-		py, ok := readings[ch]
-		if !ok {
-			return "", false
-		}
-		b.WriteString(py)
-	}
-	return b.String(), true
+// PhraseReadings 词级读音表：词 → 无声调音节序列（银行→[yin hang]）。
+// LoadPhraseReadings 加载 mozillazg/phrase-pinyin-data（与 pypinyin 词表同源）；
+// nil 时三个 GoldTo* 回退单字第一音（旧口径）。评估工具全局，产品代码不用。
+var PhraseReadings map[string][]string
+
+// phrasePinyinCorrections 语料读音纠错词典，与 windows-ime-bench 引擎 a1e2d1d
+// 的 load_phrases_dict 同源（zhihu120 六句多音字修正）。词表缺这些词或最长
+// 匹配会走错路径（"受降雨"被"受降"吃掉、"重做"回退单字 zhong）。
+var phrasePinyinCorrections = map[string][]string{
+	"降雨":  {"jiang", "yu"},
+	"受降雨": {"shou", "jiang", "yu"},
+	"得重":  {"dei", "chong"},
+	"重做":  {"chong", "zuo"},
+	"重画":  {"chong", "hua"},
+	"重绘":  {"chong", "hui"},
 }
 
-// GoldToJianpin 超级简拼：每字取拼音首字母（nh→你好）。
-func GoldToJianpin(gold string, readings CharReadings) (string, bool) {
-	var b strings.Builder
-	for _, r := range gold {
-		ch := string(r)
-		py, ok := readings[ch]
-		if !ok || py == "" {
-			return "", false
+// LoadPhraseReadings 解析 phrase-pinyin-data.txt（`词: yīn jié`，同词多音
+// 逗号分隔取第一）。音节去过声调、ü→v，与 GoldToPinyin 输出同构。
+func LoadPhraseReadings(path string) (map[string][]string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	out := map[string][]string{}
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 0, 1024*1024), 1024*1024)
+	for sc.Scan() {
+		line := strings.TrimSpace(sc.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
 		}
-		b.WriteByte(py[0])
+		w, pys, ok := strings.Cut(line, ":")
+		if !ok {
+			continue
+		}
+		w = strings.TrimSpace(w)
+		first := strings.TrimSpace(strings.Split(pys, ",")[0])
+		if w == "" || first == "" {
+			continue
+		}
+		if _, exists := out[w]; exists {
+			continue
+		}
+		fields := strings.Fields(first)
+		syllables := make([]string, 0, len(fields))
+		for _, s := range fields {
+			if t := stripTone(s); t != "" {
+				syllables = append(syllables, t)
+			}
+		}
+		if len(syllables) == 0 {
+			continue
+		}
+		out[w] = syllables
+	}
+	return out, sc.Err()
+}
+
+// goldSyllables 词级最长匹配定音（正向最大匹配）：每个位置优先取纠错词典/
+// 词表能命中的最长词的整词读音，不命中回退单字第一音。机制与黑盒考卷生成器
+// pypinyin 的分词定音一致（a1e2d1d 实证其为最长匹配），保证两套考卷口径一致。
+func goldSyllables(gold string, readings CharReadings) ([]string, bool) {
+	runes := []rune(gold)
+	out := make([]string, 0, len(runes))
+	const maxPhraseLen = 16
+	for i := 0; i < len(runes); {
+		matched := false
+		for l := maxPhraseLen; l >= 2; l-- {
+			if i+l > len(runes) {
+				continue
+			}
+			cand := string(runes[i : i+l])
+			if syl, ok := phrasePinyinCorrections[cand]; ok {
+				out = append(out, syl...)
+				i += l
+				matched = true
+				break
+			}
+			if syl, ok := PhraseReadings[cand]; ok {
+				out = append(out, syl...)
+				i += l
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			py, ok := readings[string(runes[i])]
+			if !ok || py == "" {
+				return nil, false
+			}
+			out = append(out, py)
+			i++
+		}
+	}
+	return out, true
+}
+
+// GoldToPinyin 金句转连续小写拼音（无分隔）。多音字按词定音（goldSyllables）。
+func GoldToPinyin(gold string, readings CharReadings) (string, bool) {
+	syl, ok := goldSyllables(gold, readings)
+	if !ok {
+		return "", false
+	}
+	return strings.Join(syl, ""), true
+}
+
+// GoldToJianpin 超级简拼：每音节取首字母（nh→你好）。音节来自词级定音。
+func GoldToJianpin(gold string, readings CharReadings) (string, bool) {
+	syl, ok := goldSyllables(gold, readings)
+	if !ok {
+		return "", false
+	}
+	var b strings.Builder
+	for _, s := range syl {
+		b.WriteByte(s[0])
 	}
 	return b.String(), true
 }

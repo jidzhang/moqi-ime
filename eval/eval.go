@@ -94,15 +94,14 @@ func KeysForGold(gold string, readings CharReadings) (string, bool) {
 }
 
 // GoldToShengmu 声母简拼：zh/ch/sh 取双字母声母，其余取首字母
-// （zhang→zh、chi→ch、an→a）。歧义远小于单字母简拼。
+// （zhang→zh、chi→ch、an→a）。歧义远小于单字母简拼。音节来自词级定音。
 func GoldToShengmu(gold string, readings CharReadings) (string, bool) {
+	syl, ok := goldSyllables(gold, readings)
+	if !ok {
+		return "", false
+	}
 	var b strings.Builder
-	for _, r := range gold {
-		ch := string(r)
-		py, ok := readings[ch]
-		if !ok || py == "" {
-			return "", false
-		}
+	for _, py := range syl {
 		if strings.HasPrefix(py, "zh") || strings.HasPrefix(py, "ch") || strings.HasPrefix(py, "sh") {
 			b.WriteString(py[:2])
 		} else {

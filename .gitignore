@@ -40,3 +40,15 @@ input_methods/rime/data
 
 # 报告目录下的自训模型产物（24MB，研究资产不入库）
 report/*.gram
+
+# gram 训练管线工件：挖掘 TSV 与产物不入库（TSV hash 锁定在 tools/gram-train/SHA256SUMS.artifacts）
+tools/gram-train/artifacts/
+tools/gram-train/feed_wiki.txt
+tools/gram-train/*.gram
+
+# 2026-10-29: gram 实验产物与白盒素材不进仓（管线代码保留）
+eval-workspace/
+tools/gram-train/*.gram
+tools/gram-train/*.txt
+tools/gram-train/users/
+tools/gram-train/users/

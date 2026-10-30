@@ -158,16 +158,25 @@ func buildFrostCustomPatchEx(cfg localBehaviorConfig, rerankMixed bool, dirs ...
 			emit(`"translator/transpose_credibility": -8`)
 		}
 	} else if setting := strings.TrimSpace(stringOrDefault(cfg.GrammarModel, "")); setting == "" || strings.EqualFold(setting, grammarModelAuto) {
-		// 仅 auto/缺省时接管小模型；grammar_model=off/显式指定名不越权。
-		// 内置小模型（<64MB 不进 auto 检测，原本走上游 schema 默认）：
-		// 产品接管罚分（2026-10-25 扫参：-6 比上游默认 -4 高 0.35 点）。
-		// 按内容哈希确认是出厂 zh-moqi 才接管，改动过/陌生的原样走默认。
-		if small := factorySmallGramPath(dirs...); small != "" {
-			if sum := gramFileSHA256(small); sum != "" {
-				if v, ok := factoryGramPenalty[sum]; ok {
-					emit("grammar/language: zh-moqi")
-					emit(`"grammar/non_collocation_penalty": ` + FormatGrammarPenalty(v))
-				}
+		// 仅 auto/缺省时接管内置 gram；grammar_model=off/显式指定名不越权。
+		// 2026-10-29 三档内置（均 <50MB 不进 auto 检测，走本接管通道）：
+		// wiki 包 30.6MB / 标准包 9MB / lite 包 1KB
+		// dummy（空占位，纯 BeamSearch 开关效应）。按内容哈希确认出厂
+		// 文件才接管，改动过/陌生的原样走默认；优先级 wiki > zh-moqi >
+		// dummy（正常每档 data 只有一个，顺序仅防多文件并存场景）。
+		for _, name := range factoryBuiltinGrams {
+			p := gramFilePathForLanguage(name, dirs...)
+			if p == "" {
+				continue
+			}
+			sum := gramFileSHA256(p)
+			if sum == "" {
+				continue
+			}
+			if v, ok := factoryGramPenalty[sum]; ok {
+				emit("grammar/language: " + name)
+				emit(`"grammar/non_collocation_penalty": ` + FormatGrammarPenalty(v))
+				break
 			}
 		}
 	}
@@ -239,7 +248,7 @@ func writeFrostCustomPatch(userDir, patch string) bool {
 	return true
 }
 
-// bigGrammarActive 判断指定语言的 gram 文件是否达到大模型门槛（64MB），
+// bigGrammarActive 判断指定语言的 gram 文件是否达到大模型门槛（50MB，2026-10-27 由 64MB 下调），
 // 任一数据目录命中即为真。abbrev_sentences 只应在大模型下启用
 // （见 buildFrostCustomPatch 注释）。
 func bigGrammarActive(lang string, dirs ...string) bool {

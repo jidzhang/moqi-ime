@@ -328,7 +328,13 @@ try {
 
     $pathsToRemove = @(
         @{ Path = Join-Path $PackageDir "input_methods\rime\data\others"; Label = "rime shared data others directory" },
-        @{ Path = Join-Path $PackageDir "input_methods\rime\icons\icons"; Label = "nested icons directory" }
+        @{ Path = Join-Path $PackageDir "input_methods\rime\icons\icons"; Label = "nested icons directory" },
+        # small gram ships with the rime-frost submodule but is excluded from
+        # auto selection (grammar_model.go minAutoGramBytes = 64MB); never pack it
+        @{ Path = Join-Path $PackageDir "input_methods\rime\data\zh-moqi.gram"; Label = "builtin small gram (inert, 7.3MB)" },
+        # runtime reads the data/ copy only (bigram_rerank.go); the source copy
+        # at the rime dir root must not ship
+        @{ Path = Join-Path $PackageDir "input_methods\rime\zh-bigram.tsv"; Label = "duplicate zh-bigram.tsv at rime root" }
     )
     foreach ($entry in $pathsToRemove) {
         if (Test-Path -LiteralPath $entry.Path) {

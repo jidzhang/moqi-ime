@@ -24,7 +24,9 @@ import (
 const grammarModelAuto = "auto"
 
 // 内置小 gram 不参与自动选择——它统计太稀疏，选它等于没开。
-const minAutoGramBytes = 64 << 20 // 64MB
+// 2026-10-27 用户拍板：门槛 64MB→50MB（自训 zh-moqi-wiki 64,460,844B 差 2.6MB
+// 未过旧线导致整包静默失效；50MB 亦留出未来小模型的余量）。
+const minAutoGramBytes = 50 << 20 // 50MB
 
 // detectAutoGrammarLanguage 扫描各数据目录，返回应启用的语言名
 // （取最大的 .gram 文件，去掉扩展名）；没有合格文件返回空。
