@@ -270,7 +270,7 @@ func TestBundledAIConfigKeyIsMaskedAndUsable(t *testing.T) {
 	if !strings.HasPrefix(raw.API.APIKey, aikey.Prefix) {
 		t.Fatalf("bundled api_key must be masked, got %q", raw.API.APIKey)
 	}
-	key := resolveAPIKey(raw.API.APIKey)
+	key := aikey.Resolve(raw.API.APIKey)
 	if key == raw.API.APIKey || len(key) < 20 {
 		t.Fatalf("masked key must resolve back to a usable key, got %q", key)
 	}
@@ -334,7 +334,7 @@ func TestSyncAIConfigFromBundledPreservesUnknownAPIKeys(t *testing.T) {
 }
 
 // 老用户目录里留着旧版占位符「删除我…」：升级后要被真 key 替换；
-// 已经填了自己 key 的用户不能被覆盖。
+// 老包里带来的混淆值要跟着换 key 换掉；已经填了自己 key 的用户不能被覆盖。
 func TestSyncAIConfigFromBundledFillsPlaceholderButKeepsUserKey(t *testing.T) {
 	bundledKey := aikey.Mask("sk-bundled")
 	tmpDir := t.TempDir()
@@ -349,6 +349,8 @@ func TestSyncAIConfigFromBundledFillsPlaceholderButKeepsUserKey(t *testing.T) {
 
 	cases := []struct{ name, userKey, wantKey string }{
 		{"placeholder", "删除我和XYZ", bundledKey},
+		{"stale-masked", aikey.Mask("sk-old-bundle"), bundledKey},
+		{"same-masked", bundledKey, bundledKey},
 		{"user-own", "sk-user-own", "sk-user-own"},
 	}
 	for _, tc := range cases {
@@ -366,6 +368,9 @@ func TestSyncAIConfigFromBundledFillsPlaceholderButKeepsUserKey(t *testing.T) {
 		data, err := os.ReadFile(dstPath)
 		if err != nil {
 			t.Fatalf("%s: read user config: %v", tc.name, err)
+		}
+		if tc.name == "same-masked" && string(data) != user {
+			t.Fatalf("identical masked key must not rewrite the file, got %q", data)
 		}
 		var got aiFileConfig
 		if err := json.Unmarshal(data, &got); err != nil {

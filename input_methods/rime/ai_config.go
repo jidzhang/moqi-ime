@@ -188,7 +188,7 @@ func mergeAIAPI(bundledRaw, userRaw json.RawMessage) (json.RawMessage, bool) {
 		if !exists || isBlankJSONString(srcVal) {
 			continue
 		}
-		if curVal, exists := user[key]; exists && !aiAPIUnusableValue(key, curVal) {
+		if curVal, exists := user[key]; exists && !shouldFillAPIValue(key, curVal, srcVal) {
 			continue
 		}
 		user[key] = srcVal
@@ -267,23 +267,31 @@ func isBlankJSONString(raw json.RawMessage) bool {
 	return strings.TrimSpace(s) == ""
 }
 
-// resolveAPIKey 区分内置 key 的混淆值和用户自己填的明文：前者还原，后者原样用。
-// 格式细节在 imecore/aikey（生成工具 cmd/ai-key-mask 共用同一份实现）。
-func resolveAPIKey(raw string) string {
-	return aikey.Resolve(raw)
-}
-
-// aiAPIUnusableValue 判断用户侧这个键的值要不要被内置值替换：空串，或 api_key
-// 还是旧版内置配置里的「删除我…」占位符（老用户升级后不能把占位符当真 key 留住）。
-func aiAPIUnusableValue(key string, raw json.RawMessage) bool {
-	if isBlankJSONString(raw) {
+// shouldFillAPIValue 判断用户侧这个 api 键要不要被随包的当前值替换：
+//   - 空串 → 补；
+//   - 旧版内置配置的「删除我…」占位符 → 换成真 key；
+//   - 混淆值 → 是随包分发的 key，换 key 时要跟着换（用户不可能手填这种格式）；
+//     已经和随包值一样就不动，免得每次启动重写配置文件；
+//   - 其余（用户自己填的明文 key，任何格式）→ 永远不覆盖。
+func shouldFillAPIValue(key string, cur, bundled json.RawMessage) bool {
+	if isBlankJSONString(cur) {
 		return true
 	}
 	if key != "api_key" {
 		return false
 	}
-	var s string
-	return json.Unmarshal(raw, &s) == nil && strings.HasPrefix(strings.TrimSpace(s), "删除我")
+	var curStr string
+	if json.Unmarshal(cur, &curStr) != nil {
+		return false // 手改坏了（非字符串），不猜
+	}
+	if strings.HasPrefix(strings.TrimSpace(curStr), "删除我") {
+		return true
+	}
+	if !aikey.IsMasked(curStr) {
+		return false
+	}
+	var bundledStr string
+	return json.Unmarshal(bundled, &bundledStr) != nil || curStr != bundledStr
 }
 
 func copyAIConfigIfMissing(dstPath, srcPath string) error {
@@ -370,7 +378,7 @@ func parseAIConfigJSON(data []byte) (*aiRuntimeConfig, error) {
 			Model:   strings.TrimSpace(raw.API.Model),
 		},
 	}
-	cfg.API.APIKey = resolveAPIKey(cfg.API.APIKey)
+	cfg.API.APIKey = aikey.Resolve(cfg.API.APIKey)
 	cfg.API = fillAIAPIConfigFromEnv(cfg.API)
 	if cfg.API.BaseURL == "" {
 		// 隐私默认：内置配置把键名写成「base_url删掉我即可用AI功能」，JSON 解析后

@@ -12,7 +12,7 @@ func TestMaskResolveRoundTrip(t *testing.T) {
 		if !strings.HasPrefix(masked, Prefix) {
 			t.Fatalf("masked value %q must carry prefix %q", masked, Prefix)
 		}
-		if strings.Contains(masked, key) && len(key) > 3 {
+		if len(key) > 3 && strings.Contains(masked, key) {
 			t.Fatalf("masked value %q must not leak plaintext %q", masked, key)
 		}
 		if got := Resolve(masked); got != key {

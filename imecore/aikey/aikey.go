@@ -30,24 +30,33 @@ func Mask(key string) string {
 // Resolve 还原内置 key。任何不符合混淆格式的值——用户自己的明文 key（哪家厂商
 // 的都有，含非 ASCII）、base64 坏掉、校验对不上——都原样返回，绝不猜。
 func Resolve(raw string) string {
-	if !strings.HasPrefix(raw, Prefix) {
+	plain, ok := decode(raw)
+	if !ok {
 		return raw
 	}
-	blob, err := base64.StdEncoding.DecodeString(raw[len(Prefix):])
-	if err != nil || len(blob) <= tagLen {
-		return raw
-	}
-	plain := xor(blob[:len(blob)-tagLen])
-	tag := sha256.Sum256(plain)
-	if !bytes.Equal(blob[len(blob)-tagLen:], tag[:tagLen]) {
-		return raw
-	}
-	return string(plain)
+	return plain
 }
 
 // IsMasked 判断一个值是否是本包的混淆格式（前缀 + 校验都对得上）。
 func IsMasked(raw string) bool {
-	return Resolve(raw) != raw
+	_, ok := decode(raw)
+	return ok
+}
+
+func decode(raw string) (string, bool) {
+	if !strings.HasPrefix(raw, Prefix) {
+		return "", false
+	}
+	blob, err := base64.StdEncoding.DecodeString(raw[len(Prefix):])
+	if err != nil || len(blob) <= tagLen {
+		return "", false
+	}
+	plain := xor(blob[:len(blob)-tagLen])
+	tag := sha256.Sum256(plain)
+	if !bytes.Equal(blob[len(blob)-tagLen:], tag[:tagLen]) {
+		return "", false
+	}
+	return string(plain), true
 }
 
 // xor 对称：掩码一次得密文，再掩码一次还原。

@@ -17,15 +17,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/gaboolic/moqi-ime/imecore/aikey"
 )
 
-const optInKeyNamePrefix = "base_url"
+const optInKeyName = "base_url"
 
 func main() {
 	// 手写解析：flag 包在第一个位置参数处停止，`<key> -f file` 这种自然写法会失效。
@@ -114,6 +114,9 @@ func runMask(key, file string) int {
 }
 
 func runCheck(file, value string) int {
+	if file != "" && value != "" {
+		fail("pass either -f ai_config.json or a value, not both")
+	}
 	source := "command line"
 	if file != "" {
 		got, err := readKey(file)
@@ -126,14 +129,25 @@ func runCheck(file, value string) int {
 	if value == "" {
 		fail("nothing to check: pass -f ai_config.json or a value")
 	}
+
 	resolved := aikey.Resolve(value)
 	fmt.Printf("source    : %s\n", source)
-	if aikey.IsMasked(value) {
-		fmt.Printf("stored    : masked (%s..., len %d)\n", value[:min(len(value), 12)], len(value))
-	} else {
-		fmt.Println("stored    : plaintext (no prefix) - used as the user's own key")
+	broken := false
+	switch {
+	case aikey.IsMasked(value):
+		fmt.Printf("stored    : masked (%s..., len %d)\n", head(value, 12), len(value))
+	case strings.HasPrefix(value, aikey.Prefix):
+		// 有前缀却还原不出来=混淆值被改坏了，按原样发出去只会 401，必须报出来。
+		broken = true
+		fmt.Println("stored    : BROKEN masked value (prefix ok, base64/checksum bad)")
+	default:
+		fmt.Println("stored    : plaintext (no prefix) - the user's own key")
 	}
 	fmt.Printf("resolved  : len=%d sha256=%s\n", len(resolved), fingerprint(resolved))
+	if broken {
+		fmt.Println("verdict   : FAIL - rewrite it with: ai-key-mask.exe <key> -f <file>")
+		return 1
+	}
 	if !utf8.ValidString(resolved) {
 		fmt.Println("verdict   : WARN - resolved value is not valid UTF-8, check the source key")
 		return 1
@@ -142,21 +156,11 @@ func runCheck(file, value string) int {
 	return 0
 }
 
-// readKey 取 ai.api_key 的原始值，并把配置状态一并提示出来。
+// readKey 取 ai.api_key 的原始值，顺带提示 AI 是否还被选择性加入的键名关着。
 func readKey(path string) (string, error) {
-	data, err := os.ReadFile(path)
+	_, api, err := loadObjects(path)
 	if err != nil {
-		return "", fmt.Errorf("read %s: %w", path, err)
-	}
-	root := map[string]json.RawMessage{}
-	if err := json.Unmarshal(data, &root); err != nil {
-		return "", fmt.Errorf("%s is not valid JSON: %w", path, err)
-	}
-	api := map[string]json.RawMessage{}
-	if raw, ok := root["api"]; ok {
-		if err := json.Unmarshal(raw, &api); err != nil {
-			return "", fmt.Errorf("%s: api is not an object: %w", path, err)
-		}
+		return "", err
 	}
 	var key string
 	if raw, ok := api["api_key"]; ok {
@@ -167,45 +171,70 @@ func readKey(path string) (string, error) {
 	if key == "" {
 		return "", fmt.Errorf("%s: api.api_key is missing or empty", path)
 	}
-	for name := range api {
-		if name != optInKeyNamePrefix && strings.HasPrefix(name, optInKeyNamePrefix) {
-			fmt.Printf("state     : AI disabled (api key name is %q, rename it to %q to enable)\n", name, optInKeyNamePrefix)
-		}
+	if name := optInKeyNameIn(api); name != "" {
+		fmt.Printf("state     : AI disabled (api key name is %q, rename it to %q to enable)\n", name, optInKeyName)
 	}
 	return key, nil
 }
 
 func writeKey(path, masked string) error {
-	data, err := os.ReadFile(path)
+	root, api, err := loadObjects(path)
 	if err != nil {
-		return fmt.Errorf("read %s: %w", path, err)
-	}
-	root := map[string]json.RawMessage{}
-	if err := json.Unmarshal(data, &root); err != nil {
-		return fmt.Errorf("%s is not valid JSON, refusing to rewrite it: %w", path, err)
-	}
-	api := map[string]json.RawMessage{}
-	if raw, ok := root["api"]; ok {
-		if err := json.Unmarshal(raw, &api); err != nil {
-			return fmt.Errorf("%s: api is not an object: %w", path, err)
-		}
+		return fmt.Errorf("%w (refusing to rewrite)", err)
 	}
 	encoded, err := json.Marshal(masked)
 	if err != nil {
 		return err
 	}
 	api["api_key"] = encoded
-	apiRaw, err := json.Marshal(api)
-	if err != nil {
+	if apiRaw, err := json.Marshal(api); err != nil {
 		return err
+	} else {
+		root["api"] = apiRaw
 	}
-	root["api"] = apiRaw
 	out, err := marshalOrdered(root, []string{"api", "actions"})
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(path, out, 0o644); err != nil {
-		return fmt.Errorf("write %s: %w", path, err)
+	return replaceFile(path, out)
+}
+
+// loadObjects 读出顶层对象与它的 api 对象；读和写共用，免得两处各解析一遍。
+func loadObjects(path string) (map[string]json.RawMessage, map[string]json.RawMessage, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, nil, fmt.Errorf("read %s: %w", path, err)
+	}
+	root := map[string]json.RawMessage{}
+	if err := json.Unmarshal(data, &root); err != nil {
+		return nil, nil, fmt.Errorf("%s is not valid JSON: %w", path, err)
+	}
+	api := map[string]json.RawMessage{}
+	if raw, ok := root["api"]; ok {
+		if err := json.Unmarshal(raw, &api); err != nil {
+			return nil, nil, fmt.Errorf("%s: api is not an object: %w", path, err)
+		}
+	}
+	return root, api, nil
+}
+
+// replaceFile 先写同目录临时文件再改名：中途失败不会留下半个 JSON——产品启动时
+// 读到坏配置就等于 AI 用不了。
+func replaceFile(path string, data []byte) error {
+	tmp, err := os.CreateTemp(filepath.Dir(path), ".ai_config.*.json")
+	if err != nil {
+		return fmt.Errorf("create temp file next to %s: %w", path, err)
+	}
+	defer os.Remove(tmp.Name())
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		return fmt.Errorf("write temp file: %w", err)
+	}
+	if err := tmp.Close(); err != nil {
+		return fmt.Errorf("close temp file: %w", err)
+	}
+	if err := os.Rename(tmp.Name(), path); err != nil {
+		return fmt.Errorf("replace %s: %w", path, err)
 	}
 	return nil
 }
@@ -253,24 +282,38 @@ func marshalOrdered(root map[string]json.RawMessage, preferred []string) ([]byte
 	return []byte(b.String()), nil
 }
 
+// optInKeyNameIn 找出「base_url 开头但不是 base_url」的键名（产品侧的启用开关）。
+func optInKeyNameIn(api map[string]json.RawMessage) string {
+	name := ""
+	for key := range api {
+		if key == optInKeyName || !strings.HasPrefix(key, optInKeyName) {
+			continue
+		}
+		if name == "" || key < name {
+			name = key
+		}
+	}
+	return name
+}
+
 func fingerprint(key string) string {
 	sum := sha256.Sum256([]byte(key))
 	return hex.EncodeToString(sum[:])[:12]
 }
 
 func describe(key string) string {
-	ascii := true
-	for _, r := range key {
-		if r > unicode.MaxASCII {
-			ascii = false
-			break
-		}
+	n := utf8.RuneCountInString(key)
+	if n == len(key) {
+		return fmt.Sprintf("ASCII, %d chars", n)
 	}
-	kind := "non-ASCII"
-	if ascii {
-		kind = "ASCII"
+	return fmt.Sprintf("non-ASCII, %d chars", n)
+}
+
+func head(s string, n int) string {
+	if len(s) <= n {
+		return s
 	}
-	return fmt.Sprintf("%s, %d chars", kind, utf8.RuneCountInString(key))
+	return s[:n]
 }
 
 func fail(format string, args ...any) {
