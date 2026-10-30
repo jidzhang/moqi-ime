@@ -174,6 +174,7 @@ moqi-ime/
 ```
 
 - **`api`**：`base_url`、`api_key`、`model` 必填（可从环境变量补全，见 `fillAIAPIConfigFromEnv`）。
+- **`api_key`**：填自己的 key 直接写明文，任何格式都行。随包内置的是 `MQ-` 前缀的混淆值（`maskBundledAPIKey` 生成，尾部带校验），直接抄去调 API 只会失败，程序识别 `MQ-` 且校验通过才还原。
 - **`actions`**：可配置多个动作；热键解析支持 `Ctrl` / `Alt` / `Shift` 与主键 **A–Z、0–9**（如 `Ctrl+Shift+G`、`Ctrl+Alt+1`）。若缺省 `actions`，会使用内置默认动作（默认热键 **Ctrl+Shift+G**，名称「写好评」）。
 - **`prompt` 占位符**（`applyAIPromptPlaceholders`）：`{{previous_commit}}`、`{{composition}}`、`{{raw_input}}`、`{{candidate_1}}`～`{{candidate_3}}`、`{{first_candidate}}`～`{{third_candidate}}`、`{{candidates_top3}}` 等；若模板中**未出现任何占位符**，会在提示词后附加一段固定上下文（上一句 / 原始输入 / 前三个候选）。
 

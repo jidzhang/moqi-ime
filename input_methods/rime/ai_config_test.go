@@ -256,6 +256,49 @@ func TestBundledAIConfigDefaultsToAIDisabled(t *testing.T) {
 	}
 }
 
+// 随包的 key 必须是混淆值，且解出来确实是一把能用的 key：混淆写坏了两处都会失败。
+func TestBundledAIConfigKeyIsMaskedAndUsable(t *testing.T) {
+	data, err := os.ReadFile(aiConfigFileName)
+	if err != nil {
+		t.Fatalf("read bundled ai_config.json: %v", err)
+	}
+	var raw aiFileConfig
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatalf("decode bundled ai_config.json: %v", err)
+	}
+	if !strings.HasPrefix(raw.API.APIKey, aiBundledKeyPrefix) {
+		t.Fatalf("bundled api_key must be masked, got %q", raw.API.APIKey)
+	}
+	key := resolveAPIKey(raw.API.APIKey)
+	if key == raw.API.APIKey || len(key) < 20 {
+		t.Fatalf("masked key must resolve back to a usable key, got %q", key)
+	}
+	if strings.Contains(string(data), key) {
+		t.Fatal("bundled ai_config.json must not contain the plaintext key")
+	}
+}
+
+func TestResolveAPIKey(t *testing.T) {
+	// 用户自己填的 key 可以是任何形态，一律原样使用。
+	for _, raw := range []string{"sk-user-own-key", "abc123token", "别家的密钥", "!!not-base64!!", ""} {
+		if got := resolveAPIKey(raw); got != raw {
+			t.Fatalf("plaintext value %q must be used as-is, got %q", raw, got)
+		}
+	}
+	// 内置值不论 key 本身有没有前缀/是不是 ASCII 都要能还原。
+	for _, key := range []string{"sk-round-trip", "plain-token-without-prefix", "含中文的密钥"} {
+		if got := resolveAPIKey(maskBundledAPIKey(key)); got != key {
+			t.Fatalf("mask/resolve must round-trip %q, got %q", key, got)
+		}
+	}
+	// 校验尾被改坏就退回当明文，不能还原出半截乱码。
+	masked := maskBundledAPIKey("sk-round-trip")
+	corrupted := masked[:len(masked)-4] + "AAAA"
+	if got := resolveAPIKey(corrupted); got != corrupted {
+		t.Fatalf("corrupted value must be used as-is, got %q", got)
+	}
+}
+
 func TestSyncAIConfigFromBundledPreservesUnknownAPIKeys(t *testing.T) {
 	tmpDir := t.TempDir()
 	srcPath := filepath.Join(tmpDir, "bundle", aiConfigFileName)
@@ -287,5 +330,49 @@ func TestSyncAIConfigFromBundledPreservesUnknownAPIKeys(t *testing.T) {
 	}
 	if string(got) != user {
 		t.Fatalf("opt-in key must survive merge and untouched config must stay identical, got %q", got)
+	}
+}
+
+// 老用户目录里留着旧版占位符「删除我…」：升级后要被真 key 替换；
+// 已经填了自己 key 的用户不能被覆盖。
+func TestSyncAIConfigFromBundledFillsPlaceholderButKeepsUserKey(t *testing.T) {
+	bundledKey := maskBundledAPIKey("sk-bundled")
+	tmpDir := t.TempDir()
+	srcPath := filepath.Join(tmpDir, "bundle", aiConfigFileName)
+	if err := os.MkdirAll(filepath.Dir(srcPath), 0o755); err != nil {
+		t.Fatalf("mkdir src dir: %v", err)
+	}
+	bundled := `{"api":{"base_url":"https://bundled.test","api_key":"` + bundledKey + `","model":"bundled-model"}}`
+	if err := os.WriteFile(srcPath, []byte(bundled), 0o644); err != nil {
+		t.Fatalf("write src config: %v", err)
+	}
+
+	cases := []struct{ name, userKey, wantKey string }{
+		{"placeholder", "删除我和XYZ", bundledKey},
+		{"user-own", "sk-user-own", "sk-user-own"},
+	}
+	for _, tc := range cases {
+		dstPath := filepath.Join(tmpDir, tc.name, aiConfigFileName)
+		if err := os.MkdirAll(filepath.Dir(dstPath), 0o755); err != nil {
+			t.Fatalf("mkdir dst dir: %v", err)
+		}
+		user := `{"api":{"base_url":"https://bundled.test","api_key":"` + tc.userKey + `","model":"bundled-model"}}`
+		if err := os.WriteFile(dstPath, []byte(user), 0o644); err != nil {
+			t.Fatalf("write user config: %v", err)
+		}
+		if err := syncAIConfigFromBundled(dstPath, srcPath); err != nil {
+			t.Fatalf("%s: expected merge to succeed, got %v", tc.name, err)
+		}
+		data, err := os.ReadFile(dstPath)
+		if err != nil {
+			t.Fatalf("%s: read user config: %v", tc.name, err)
+		}
+		var got aiFileConfig
+		if err := json.Unmarshal(data, &got); err != nil {
+			t.Fatalf("%s: decode user config: %v", tc.name, err)
+		}
+		if got.API.APIKey != tc.wantKey {
+			t.Fatalf("%s: want api_key %q, got %q", tc.name, tc.wantKey, got.API.APIKey)
+		}
 	}
 }

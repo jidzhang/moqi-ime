@@ -1,7 +1,7 @@
 {
   "api": {
     "base_url删掉我即可用AI功能": "https://api.chatanywhere.tech",
-    "api_key": "删除我和XYZ",
+    "api_key": "MQ-PgRcEwkTW1x8VSQIRFkFGwBZB1kXFiUmdj5YcVYEOA0UDAQsZlF6eQ8IJQMyBHtZfU46GK2NUQ==",
     "model": "gpt-6-luna"
   },
   "actions": [
