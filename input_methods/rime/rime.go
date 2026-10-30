@@ -3,6 +3,7 @@
 package rime
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -36,9 +37,15 @@ const (
 	ID_HELP_DOCS           = 21
 	ID_DISCUSSIONS         = 22
 	ID_DOWNLOAD_SCHEME_SET = 23
-	ID_SCHEMA_BASE         = 1000
-	ID_SWITCH_BASE         = 2000
-	ID_SCHEME_SET_BASE     = 3000
+	// 启动器级命令：后端只在语言栏菜单里列出它们，实际动作由 MoqiLaunch.exe 在
+	// 代理路径上执行（MoqLauncher/BackendServer.cpp → PipeServer::handleLauncherCommand，
+	// 那边的常量与本组一一对应）。
+	ID_LAUNCHER_DEBUG_LOG        = 30
+	ID_LAUNCHER_RESTART_BACKENDS = 32
+	ID_LAUNCHER_QUIT             = 33
+	ID_SCHEMA_BASE               = 1000
+	ID_SWITCH_BASE               = 2000
+	ID_SCHEME_SET_BASE           = 3000
 
 	ID_APPEARANCE_INLINE_PREEDIT               = 100
 	ID_APPEARANCE_FONT_8                       = 113
@@ -1057,6 +1064,9 @@ func (ime *IME) onCommand(req *imecore.Request, resp *imecore.Response) *imecore
 		ime.toggleCloudClipboardEnabled(resp)
 	case ID_CLOUD_CLIPBOARD_TEST:
 		ime.testCloudClipboardConnectionCommand(resp)
+	case ID_LAUNCHER_DEBUG_LOG, ID_LAUNCHER_RESTART_BACKENDS, ID_LAUNCHER_QUIT:
+		// 由启动器执行（它代理并拦截这几个 id），这里只回执"已处理"。
+		// 菜单勾选状态在下次打开菜单时按启动器配置文件重新读，无需在这里刷新。
 	default:
 		previousCandidateCount := ime.candidateCount()
 		if commandID == ID_SHARED_INPUT_STATE {
@@ -3562,6 +3572,12 @@ func (ime *IME) buildMenu() []map[string]interface{} {
 			{"id": ID_INPUT_SEMICOLON_SELECT_SECOND, "text": "分号键次选", "checked": ime.semicolonSelectSecond},
 		}},
 		ime.cloudClipboardMenuSection(),
+		// 维护类动作收在二级菜单：平时不显眼，出问题时（要日志、输入卡住）有地方点。
+		map[string]interface{}{"text": "维护", "submenu": []map[string]interface{}{
+			{"id": ID_LAUNCHER_DEBUG_LOG, "text": "开启调试", "checked": launcherDebugLogEnabled()},
+			{"id": ID_LAUNCHER_RESTART_BACKENDS, "text": "重启引擎"},
+			{"id": ID_LAUNCHER_QUIT, "text": "退出引擎"},
+		}},
 		map[string]interface{}{"text": "打开文件夹(&O)", "submenu": []map[string]interface{}{
 			{"id": ID_USER_DIR, "text": "用户文件夹"},
 			{"id": ID_SHARED_DIR, "text": "共享文件夹"},
@@ -3626,11 +3642,45 @@ func logRimeSlow(operation string, start time.Time, format string, args ...inter
 }
 
 func rimeLogDir() string {
+	dir := moqiLocalAppDataDir()
+	if dir == "" {
+		return ""
+	}
+	return filepath.Join(dir, "Log")
+}
+
+// moqiLocalAppDataDir 是启动器/前端共用数据的目录（日志、MoqiLauncher.json）。
+func moqiLocalAppDataDir() string {
 	localAppData := os.Getenv("LOCALAPPDATA")
 	if localAppData == "" {
 		return ""
 	}
-	return filepath.Join(localAppData, "MoqiIM", "Log")
+	return filepath.Join(localAppData, "MoqiIM")
+}
+
+// launcherDebugLogEnabled 读启动器的配置文件，判断"开启调试"当前是否为开。
+// 启动器把开关写成 "trace" 才同时打开前端埋点，所以 trace/debug 都算开；
+// 前端侧历史写法是 "loglevel"，两种拼写都认（C++ 侧 DebugLogConfig 同样两种都读）。
+func launcherDebugLogEnabled() bool {
+	dir := moqiLocalAppDataDir()
+	if dir == "" {
+		return false
+	}
+	data, err := os.ReadFile(filepath.Join(dir, "MoqiLauncher.json"))
+	if err != nil {
+		return false
+	}
+	var cfg map[string]string
+	if json.Unmarshal(data, &cfg) != nil {
+		return false
+	}
+	for _, key := range []string{"logLevel", "loglevel"} {
+		switch strings.ToLower(strings.TrimSpace(cfg[key])) {
+		case "trace", "debug":
+			return true
+		}
+	}
+	return false
 }
 
 func (ime *IME) openPath(path string) {

@@ -1864,9 +1864,9 @@ func TestHandleRequestRecreatesSessionAfterSchemeSetSwitchAcrossInstances(t *tes
 	// v1.5.0 起激活不建会话（首键 flush 才建）：先打一键把会话立起来，
 	// 再验证跨实例方案集切换后的会话重建。
 	second.HandleRequest(&imecore.Request{
-		SeqNum:  199,
-		Method:  "filterKeyDown",
-		KeyCode: int('N'),
+		SeqNum:   199,
+		Method:   "filterKeyDown",
+		KeyCode:  int('N'),
 		CharCode: int('n'),
 	})
 	secondBackend := second.backend.(*testBackend)
@@ -4166,5 +4166,77 @@ func TestCompositionCaretRuneIndex(t *testing.T) {
 	}
 	if got := compositionCaretRuneIndex(mixed, len(mixed)); got != 4 {
 		t.Fatalf("end caret: got %d want 4", got)
+	}
+}
+
+// 托盘移除后，维护类动作收进二级菜单"维护"，不再占一级菜单位置。
+func TestBuildMenuPutsLauncherActionsInMaintenanceSubmenu(t *testing.T) {
+	ime := newIsolatedTestIME(t)
+
+	items := ime.buildMenu()
+	var submenu []map[string]interface{}
+	for _, item := range items {
+		if item["text"] == "维护" {
+			submenu, _ = item["submenu"].([]map[string]interface{})
+			break
+		}
+	}
+	if submenu == nil {
+		t.Fatalf("expected a 维护 submenu, got %#v", items)
+	}
+	want := map[string]int{
+		"开启调试": ID_LAUNCHER_DEBUG_LOG,
+		"重启引擎": ID_LAUNCHER_RESTART_BACKENDS,
+		"退出引擎": ID_LAUNCHER_QUIT,
+	}
+	for text, id := range want {
+		found := false
+		for _, item := range submenu {
+			if item["text"] == text && item["id"] == id {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("expected submenu item %q with id %d, got %#v", text, id, submenu)
+		}
+	}
+	if len(submenu) != len(want) {
+		t.Fatalf("maintenance submenu should hold exactly %d items, got %#v", len(want), submenu)
+	}
+	for _, item := range items {
+		if item["text"] == "重启引擎" || item["text"] == "开启调试" || item["text"] == "退出引擎" {
+			t.Fatalf("launcher actions must not sit on the top level, got %#v", items)
+		}
+	}
+}
+
+func TestLauncherDebugLogEnabledReadsLauncherConfig(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("LOCALAPPDATA", dir)
+
+	if launcherDebugLogEnabled() {
+		t.Fatal("missing launcher config must read as disabled")
+	}
+	configDir := filepath.Join(dir, "MoqiIM")
+	if err := os.MkdirAll(configDir, 0o755); err != nil {
+		t.Fatalf("mkdir config dir: %v", err)
+	}
+	path := filepath.Join(configDir, "MoqiLauncher.json")
+	for level, want := range map[string]bool{"trace": true, "debug": true, "TRACE": true, "error": false, "": false} {
+		for _, key := range []string{"logLevel", "loglevel"} {
+			if err := os.WriteFile(path, []byte(`{"`+key+`":"`+level+`"}`), 0o644); err != nil {
+				t.Fatalf("write launcher config: %v", err)
+			}
+			if got := launcherDebugLogEnabled(); got != want {
+				t.Fatalf("%s %q: want %v, got %v", key, level, want, got)
+			}
+		}
+	}
+	if err := os.WriteFile(path, []byte(`not json`), 0o644); err != nil {
+		t.Fatalf("write broken launcher config: %v", err)
+	}
+	if launcherDebugLogEnabled() {
+		t.Fatal("broken launcher config must read as disabled")
 	}
 }
