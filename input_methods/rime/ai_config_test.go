@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gaboolic/moqi-ime/imecore"
+	"github.com/gaboolic/moqi-ime/imecore/aikey"
 )
 
 func TestParseAIConfigJSON(t *testing.T) {
@@ -266,7 +267,7 @@ func TestBundledAIConfigKeyIsMaskedAndUsable(t *testing.T) {
 	if err := json.Unmarshal(data, &raw); err != nil {
 		t.Fatalf("decode bundled ai_config.json: %v", err)
 	}
-	if !strings.HasPrefix(raw.API.APIKey, aiBundledKeyPrefix) {
+	if !strings.HasPrefix(raw.API.APIKey, aikey.Prefix) {
 		t.Fatalf("bundled api_key must be masked, got %q", raw.API.APIKey)
 	}
 	key := resolveAPIKey(raw.API.APIKey)
@@ -275,27 +276,6 @@ func TestBundledAIConfigKeyIsMaskedAndUsable(t *testing.T) {
 	}
 	if strings.Contains(string(data), key) {
 		t.Fatal("bundled ai_config.json must not contain the plaintext key")
-	}
-}
-
-func TestResolveAPIKey(t *testing.T) {
-	// 用户自己填的 key 可以是任何形态，一律原样使用。
-	for _, raw := range []string{"sk-user-own-key", "abc123token", "别家的密钥", "!!not-base64!!", ""} {
-		if got := resolveAPIKey(raw); got != raw {
-			t.Fatalf("plaintext value %q must be used as-is, got %q", raw, got)
-		}
-	}
-	// 内置值不论 key 本身有没有前缀/是不是 ASCII 都要能还原。
-	for _, key := range []string{"sk-round-trip", "plain-token-without-prefix", "含中文的密钥"} {
-		if got := resolveAPIKey(maskBundledAPIKey(key)); got != key {
-			t.Fatalf("mask/resolve must round-trip %q, got %q", key, got)
-		}
-	}
-	// 校验尾被改坏就退回当明文，不能还原出半截乱码。
-	masked := maskBundledAPIKey("sk-round-trip")
-	corrupted := masked[:len(masked)-4] + "AAAA"
-	if got := resolveAPIKey(corrupted); got != corrupted {
-		t.Fatalf("corrupted value must be used as-is, got %q", got)
 	}
 }
 
@@ -336,7 +316,7 @@ func TestSyncAIConfigFromBundledPreservesUnknownAPIKeys(t *testing.T) {
 // 老用户目录里留着旧版占位符「删除我…」：升级后要被真 key 替换；
 // 已经填了自己 key 的用户不能被覆盖。
 func TestSyncAIConfigFromBundledFillsPlaceholderButKeepsUserKey(t *testing.T) {
-	bundledKey := maskBundledAPIKey("sk-bundled")
+	bundledKey := aikey.Mask("sk-bundled")
 	tmpDir := t.TempDir()
 	srcPath := filepath.Join(tmpDir, "bundle", aiConfigFileName)
 	if err := os.MkdirAll(filepath.Dir(srcPath), 0o755); err != nil {

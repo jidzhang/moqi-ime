@@ -1,9 +1,6 @@
 package rime
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,19 +11,10 @@ import (
 	"strings"
 
 	"github.com/gaboolic/moqi-ime/imecore"
+	"github.com/gaboolic/moqi-ime/imecore/aikey"
 )
 
 const aiConfigFileName = "ai_config.json"
-
-// 内置免费额度的 key 以混淆形式随包分发：爬虫抄走这串字符直接调 API 只会拿到
-// 401，判断无效后就放弃了。这不是加密（还原逻辑就在下面，代码开源），只是不让
-// 仓库里躺着一把现成的 key。前缀用自家命名空间（没有哪家厂商的 key 以 MQ- 开头），
-// 看着像一把普通 token；尾部带校验，手改坏了不会被猜成别的。
-const aiBundledKeyPrefix = "MQ-"
-
-var aiBundledKeyMask = []byte("MoqiAI2026")
-
-const aiBundledKeyTagLen = 4
 
 type aiGenerateRequest struct {
 	PreviousCommit string
@@ -279,39 +267,10 @@ func isBlankJSONString(raw json.RawMessage) bool {
 	return strings.TrimSpace(s) == ""
 }
 
-// resolveAPIKey 判断文件里这个值是内置 key 的混淆值还是用户自己填的明文：只有
-// MQ- 前缀且尾部校验对得上才还原，其余情况一律按明文原样使用——不依赖 key 的
-// 前缀或格式，用户用哪家的 key 都不受影响。
+// resolveAPIKey 区分内置 key 的混淆值和用户自己填的明文：前者还原，后者原样用。
+// 格式细节在 imecore/aikey（生成工具 cmd/ai-key-mask 共用同一份实现）。
 func resolveAPIKey(raw string) string {
-	if !strings.HasPrefix(raw, aiBundledKeyPrefix) {
-		return raw
-	}
-	blob, err := base64.StdEncoding.DecodeString(raw[len(aiBundledKeyPrefix):])
-	if err != nil || len(blob) <= aiBundledKeyTagLen {
-		return raw
-	}
-	plain := aiBundledKeyXOR(blob[:len(blob)-aiBundledKeyTagLen])
-	tag := sha256.Sum256(plain)
-	if !bytes.Equal(blob[len(blob)-aiBundledKeyTagLen:], tag[:aiBundledKeyTagLen]) {
-		return raw
-	}
-	return string(plain)
-}
-
-func maskBundledAPIKey(key string) string {
-	plain := []byte(key)
-	tag := sha256.Sum256(plain)
-	blob := append(aiBundledKeyXOR(plain), tag[:aiBundledKeyTagLen]...)
-	return aiBundledKeyPrefix + base64.StdEncoding.EncodeToString(blob)
-}
-
-// aiBundledKeyXOR 是对称的：掩码一次得密文，再掩码一次还原。
-func aiBundledKeyXOR(data []byte) []byte {
-	out := make([]byte, len(data))
-	for i, b := range data {
-		out[i] = b ^ aiBundledKeyMask[i%len(aiBundledKeyMask)]
-	}
-	return out
+	return aikey.Resolve(raw)
 }
 
 // aiAPIUnusableValue 判断用户侧这个键的值要不要被内置值替换：空串，或 api_key
