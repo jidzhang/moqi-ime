@@ -279,6 +279,26 @@ func TestBundledAIConfigKeyIsMaskedAndUsable(t *testing.T) {
 	}
 }
 
+// 工具（cmd/ai-key-mask）写进去的值，产品这条加载路径必须能直接拿来用：
+// 把随包文件的哨兵键改成 base_url（用户开启 AI 的动作），加载出的 key 是明文。
+func TestBundledAIConfigOptInYieldsResolvedKey(t *testing.T) {
+	data, err := os.ReadFile(aiConfigFileName)
+	if err != nil {
+		t.Fatalf("read bundled ai_config.json: %v", err)
+	}
+	optedIn := strings.Replace(string(data), `"base_url删掉我即可用AI功能":`, `"base_url":`, 1)
+	if optedIn == string(data) {
+		t.Fatal("expected an opt-in sentinel key in the bundled config")
+	}
+	cfg, err := parseAIConfigJSON([]byte(optedIn))
+	if err != nil {
+		t.Fatalf("opted-in bundled config must load, got %v", err)
+	}
+	if strings.HasPrefix(cfg.API.APIKey, aikey.Prefix) || len(cfg.API.APIKey) < 20 {
+		t.Fatalf("loaded api_key must be the resolved plaintext key, got %q", cfg.API.APIKey)
+	}
+}
+
 func TestSyncAIConfigFromBundledPreservesUnknownAPIKeys(t *testing.T) {
 	tmpDir := t.TempDir()
 	srcPath := filepath.Join(tmpDir, "bundle", aiConfigFileName)
