@@ -174,11 +174,11 @@ func buildFrostCustomPatchEx(cfg localBehaviorConfig, rerankMixed bool, dirs ...
 		}
 	} else if setting := strings.TrimSpace(stringOrDefault(cfg.GrammarModel, "")); setting == "" || strings.EqualFold(setting, grammarModelAuto) {
 		// 仅 auto/缺省时接管内置 gram；grammar_model=off/显式指定名不越权。
-		// 2026-10-29 三档内置（均 <50MB 不进 auto 检测，走本接管通道）：
-		// wiki 包 30.6MB / 标准包 9MB / lite 包 1KB
-		// dummy（空占位，纯 BeamSearch 开关效应）。按内容哈希确认出厂
-		// 文件才接管，改动过/陌生的原样走默认；优先级 wiki > zh-moqi >
-		// dummy（正常每档 data 只有一个，顺序仅防多文件并存场景）。
+		// 三档内置（均 <50MB 不进 auto 检测，走本接管通道）：wiki 包
+		// 30.6MB / 标准包 9MB / lite 包 1.1MB（2026-10-31 起为 essay
+		// top-10 万裁剪，换下 1KB 空占位）。按内容哈希确认出厂文件才
+		// 接管，改动过/陌生的原样走默认；优先级 wiki > zh-moqi >
+		// lite（正常每档 data 只有一个，顺序仅防多文件并存场景）。
 		for _, name := range factoryBuiltinGrams {
 			p := gramFilePathForLanguage(name, dirs...)
 			if p == "" {

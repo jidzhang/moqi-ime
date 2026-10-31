@@ -50,17 +50,18 @@ const (
 )
 
 // factoryGramPenalty 出厂模型预设（SHA256 全量）。改词库模型文件时须同步。
-// 2026-10-29 gram 档位定版（用户拍板）：std 9MB / wiki 30.6MB / lite 1KB
-// dummy 三档，罚分 -4（essay 系分布扫参峰）；dummy 为空占位（BeamSearch
-// 开关效应，无内容故罚分不生效，仅预设防校准）。
+// 2026-10-29 gram 档位定版（用户拍板）：std 9MB / wiki 30.6MB / lite 三档，
+// 罚分 -4（essay 系分布扫参峰）。lite 档 2026-10-31 从 1KB 空占位换装
+// 1.1MB essay 裁剪（top-10 万高频词对，延续 hit@1 +5.2，两词简拼 -3.6）。
 var factoryGramPenalty = map[string]float64{
 	// zh-moqi.gram（标准包内置 9MB）→ -4（2026-10-29）
 	"098bb5dac68d30dd01da194c31a92e4769fd845258cb1ad22689e68ad14a3223": -4,
 	// zh-moqi-wiki.gram（wiki 包内置 30.6MB，；档名与
 	// 基底解耦，后续可能换基底，用户 2026-10-29 定名不变）→ -4
 	"02337eeb5a2812fa68f242bcd6689e8922bf76278e242f9a8e645309dd1cdb59": -4,
-	// zh-moqi-dummy.gram（lite 包内置 1KB 空占位，纯 BeamSearch 开关）→ -4
-	"b4fdfca661af8c6bb5ef1965f3128ddc898ebe21a35459234da1f049c5cf6be5": -4,
+	// zh-moqi-lite.gram（lite 包内置 1.1MB，essay top-10 万裁剪，2026-10-31
+	// 换下 1KB dummy 空占位）→ -4（essay 系分布）
+	"7b441e6db5c3b8ec977d87d48656407d7694691142a55deda529edf4fe86f858": -4,
 	// zh-hans-t-essay-bgw.gram（essay 包内置 206MB）→ -4（2026-10-24 扫参峰）
 	"b91e4be2d9fee62bfda0aa0d87df94ef95c8d7ffd7302365b90a3e888dc60773": -4,
 	// wanxiang-lts-zh-hans.gram（本地 wanxiang 变体包内置 380MB，仅本地出包
@@ -143,8 +144,8 @@ func gramFilePathForLanguage(language string, dirs ...string) string {
 
 // factoryBuiltinGrams 出厂内置 gram 接管白名单（local_behavior 通道，按
 // 优先级）。均 <50MB 不进 auto 检测：wiki 包 30.6MB、标准包 9MB、
-// lite 包 1KB dummy（空占位）。
-var factoryBuiltinGrams = []string{"zh-moqi-wiki", "zh-moqi", "zh-moqi-dummy"}
+// lite 包 1.1MB（essay 裁剪）。
+var factoryBuiltinGrams = []string{"zh-moqi-wiki", "zh-moqi", "zh-moqi-lite"}
 
 // gramFileSHA256 带快速索引的哈希（size+mtime 未变直接用缓存值）。
 func gramFileSHA256(path string) string {
