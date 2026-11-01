@@ -7,7 +7,7 @@ import (
 	"io"
 
 	moqipb "github.com/gaboolic/moqi-ime/proto"
-	gproto "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func readFrame(reader *bufio.Reader) ([]byte, error) {
@@ -38,12 +38,12 @@ func writeFrame(writer io.Writer, payload []byte) error {
 
 func decodeClientRequest(payload []byte) (*moqipb.ClientRequest, error) {
 	msg := &moqipb.ClientRequest{}
-	if err := gproto.Unmarshal(payload, msg); err != nil {
+	if err := protojson.Unmarshal(payload, msg); err != nil {
 		return nil, err
 	}
 	return msg, nil
 }
 
 func encodeServerResponse(msg *moqipb.ServerResponse) ([]byte, error) {
-	return gproto.Marshal(msg)
+	return protojson.Marshal(msg)
 }
