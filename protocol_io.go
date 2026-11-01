@@ -44,6 +44,12 @@ func decodeClientRequest(payload []byte) (*moqipb.ClientRequest, error) {
 	return msg, nil
 }
 
+// protojson 默认省略零值字段（false/空串/空数组/0），而 DLL 的清组字/关候选
+// 分支依赖这些显式键（showCandidates:false、空 candidateEntries、空
+// compositionString、seqNum:0）——必须全量输出（Notepad4 双 ESC/候选窗不消失
+// 的根因，2026-11-01 用户实报）。
+var protojsonMarshal = protojson.MarshalOptions{EmitUnpopulated: true}
+
 func encodeServerResponse(msg *moqipb.ServerResponse) ([]byte, error) {
-	return protojson.Marshal(msg)
+	return protojsonMarshal.Marshal(msg)
 }
