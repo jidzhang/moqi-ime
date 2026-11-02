@@ -187,6 +187,85 @@ func TestBuildDisplayPerm(t *testing.T) {
 	}
 }
 
+// 2026-11-02 用户实报（shima）：typo_memory 提顶改了显示顺序但 displayPerm
+// 没跟着旋转 → 空格/数字按提顶前映射选（显示"是嘛"上屏"事吗"）。
+// 锁定不变式：提顶到第 1 位后，"显示第 k 位"必须恰好提交显示第 k 位的词。
+func TestHoistPermFollowsTypoMemoryHoist(t *testing.T) {
+	mk := func(xs ...string) []candidateItem {
+		out := make([]candidateItem, len(xs))
+		for i, s := range xs {
+			out[i] = candidateItem{Text: s}
+		}
+		return out
+	}
+	engine := mk("事吗", "适马", "事妈", "是吗", "是嘛")
+	// 重排/提顶后的显示顺序（是嘛 被提顶到第 1 位）
+	display := mk("是嘛", "事吗", "适马", "事妈", "是吗")
+	perm := buildDisplayPerm(engine, display)
+	if perm == nil {
+		t.Fatalf("非同序必须产生映射")
+	}
+	if perm[0] != 4 || perm[1] != 0 || perm[4] != 3 {
+		t.Fatalf("基线映射错误: %v", perm)
+	}
+	// typo_memory 把显示第 5 位（是吗，index 4）提到第 1 位
+	display = mk("是吗", "是嘛", "事吗", "适马", "事妈")
+	perm = hoistPerm(perm, 4)
+	// 不变式：display[k] 的词必须等于 engine[perm[k]]
+	for k := range display {
+		if engine[perm[k]].Text != display[k].Text {
+			t.Fatalf("提顶后映射漂移: k=%d display=%s engine[perm]=%s",
+				k, display[k].Text, engine[perm[k]].Text)
+		}
+	}
+	// 空格 = 显示第 1 位 → 引擎里"是吗"的位置 3
+	if perm[0] != 3 {
+		t.Fatalf("提顶后空格应选中显示第 1 位（是吗，引擎 idx 3），got %v", perm)
+	}
+	// 边界：j=0 / 越界 / nil 原样返回
+	if got := hoistPerm(perm, 0); len(got) != len(perm) || got[0] != perm[0] {
+		t.Fatalf("j=0 应原样返回")
+	}
+	if got := hoistPerm(perm, 99); len(got) != len(perm) || got[0] != perm[0] {
+		t.Fatalf("越界应原样返回")
+	}
+	if got := hoistPerm(nil, 1); got != nil {
+		t.Fatalf("nil 应原样返回")
+	}
+}
+
+// 同序（perm=nil）+ 提顶：调用方生成恒等映射后再旋转——钉死"恒等被提顶
+// 打破后必须显式建映射"的行为（shims 实报的根因）。
+func TestHoistPermFromIdentityNil(t *testing.T) {
+	mk := func(xs ...string) []candidateItem {
+		out := make([]candidateItem, len(xs))
+		for i, s := range xs {
+			out[i] = candidateItem{Text: s}
+		}
+		return out
+	}
+	engine := mk("事吗", "适马", "事妈", "是吗", "是嘛")
+	if buildDisplayPerm(engine, mk("事吗", "适马", "事妈", "是吗", "是嘛")) != nil {
+		t.Fatalf("同序应返回 nil")
+	}
+	// 调用方语义：nil → 恒等 → 提顶 idx 4（是嘛）
+	perm := make([]int, 5)
+	for k := range perm {
+		perm[k] = k
+	}
+	perm = hoistPerm(perm, 4)
+	display := mk("是嘛", "事吗", "适马", "事妈", "是吗")
+	for k := range display {
+		if engine[perm[k]].Text != display[k].Text {
+			t.Fatalf("恒等+提顶映射漂移: k=%d display=%s engine[perm]=%s",
+				k, display[k].Text, engine[perm[k]].Text)
+		}
+	}
+	if perm[0] != 4 {
+		t.Fatalf("空格应选中显示第 1 位（是嘛，引擎 idx 4），got %v", perm)
+	}
+}
+
 // 用户实报 bug 的回归测试：整词（可以 整词证据高）不能被垃圾搭配（抗疫）
 // 挤掉——即使首名是组句垃圾（整词 0）。and shid 这类真赢面仍要提前。
 func TestMixedPairRerankRespectsWordEvidence(t *testing.T) {

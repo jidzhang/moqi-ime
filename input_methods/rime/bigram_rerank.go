@@ -863,3 +863,18 @@ func buildDisplayPerm(engineOrder, display []candidateItem) []int {
 	}
 	return perm
 }
+
+// hoistPerm 把"第 j 位提到第 1 位"同应用到显示位次→引擎位次映射上：
+// perm[0]=旧 perm[j]，其余顺延。nil/越界原样返回（同序无映射时无需动）。
+// 与 typo_memory 提顶/hoistCandidate 配套——提顶不改映射会导致空格/数字
+// 按提顶前顺序选错词（2026-11-02 用户实报 shima）。
+func hoistPerm(perm []int, j int) []int {
+	if len(perm) == 0 || j <= 0 || j >= len(perm) {
+		return perm
+	}
+	out := make([]int, 0, len(perm))
+	out = append(out, perm[j])
+	out = append(out, perm[:j]...)
+	out = append(out, perm[j+1:]...)
+	return out
+}

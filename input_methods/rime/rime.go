@@ -2503,10 +2503,31 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 		// 错字自适应记忆提顶（typo_memory.go）：同一 raw input 上次选过的词
 		// 若已在候选里，提到第 1 位（原第 1 顺延）。不新增候选、不参与引擎
 		// 打分；只在"用户带着同一错法再次输入"时生效，正确输入零扰动。
+		// 2026-11-02 修复：提顶改了显示顺序，displayPerm 必须同步旋转——
+		// 否则空格/数字仍按提顶前映射选（用户实报 shima：显示"是嘛"上屏
+		// "事吗"；与 C++ LocalEngine/DaemonEngine 同修）。
 		if ime.rawInputTracked != "" && len(resp.CandidateList) > 1 {
 			if remembered := typoMemory.lookup(ime.rawInputTracked); remembered != "" {
+				hoistFrom := -1
+				for i, entry := range resp.CandidateEntries {
+					if entry.Text == remembered {
+						hoistFrom = i
+						break
+					}
+				}
 				resp.CandidateList = hoistCandidate(resp.CandidateList, remembered)
 				resp.CandidateEntries = hoistCandidateEntry(resp.CandidateEntries, remembered)
+			if hoistFrom > 0 {
+				// buildDisplayPerm 在"同序"时返回 nil（=恒等映射）——提顶
+				// 恰恰打破恒等，必须显式生成旋转后的映射。
+				if len(ime.displayPerm) == 0 {
+					ime.displayPerm = make([]int, len(resp.CandidateEntries))
+					for k := range ime.displayPerm {
+						ime.displayPerm[k] = k
+					}
+				}
+				ime.displayPerm = hoistPerm(ime.displayPerm, hoistFrom)
+			}
 			}
 		}
 		if len(customPhraseCandidates) > 0 {
