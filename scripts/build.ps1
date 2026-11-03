@@ -334,7 +334,10 @@ try {
         @{ Path = Join-Path $PackageDir "input_methods\rime\data\zh-moqi.gram"; Label = "builtin small gram (inert, 7.3MB)" },
         # runtime reads the data/ copy only (bigram_rerank.go); the source copy
         # at the rime dir root must not ship
-        @{ Path = Join-Path $PackageDir "input_methods\rime\zh-bigram.tsv"; Label = "duplicate zh-bigram.tsv at rime root" }
+        @{ Path = Join-Path $PackageDir "input_methods\rime\zh-bigram.tsv"; Label = "duplicate zh-bigram.tsv at rime root" },
+        # Android-only prebuilt libs from the upstream Android port: arm64 ELF,
+        # never loaded on Windows. Keep them in the repo, drop from the package.
+        @{ Path = Join-Path $PackageDir "input_methods\rime\android"; Label = "Android arm64 rime libs (6.1MB, unused on Windows)" }
     )
     foreach ($entry in $pathsToRemove) {
         if (Test-Path -LiteralPath $entry.Path) {
