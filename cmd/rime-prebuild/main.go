@@ -39,6 +39,12 @@ func main() {
 
 	apply := func(set string) bool { return *patchSet == "all" || *patchSet == set }
 
+	// 包体精简（2026-11-04）：tencent 词库在 import_tables 里已注释，essay.txt
+	// 无任何运行时引用，二者只增加安装包体积。
+	if err := patchRemoveUnusedData(*dataDir); err != nil {
+		log.Printf("清理未使用数据失败，继续打包: %v", err)
+	}
+
 	if apply("bugfix") {
 		if err := patchSlashDirectCommit(*dataDir); err != nil {
 			log.Printf("斜杠直通补丁失败（继续）: %v", err)
@@ -131,6 +137,28 @@ func copyTree(src, dst string) error {
 		if err := os.WriteFile(filepath.Join(dst, e.Name()), body, 0o644); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// patchRemoveUnusedData 删除不参与产品的上游素材：
+//   - cn_dicts/tencent.dict.yaml：import_tables 中已注释，不参与编译；
+//   - essay.txt：上游仅注释提及，无运行时引用。
+func patchRemoveUnusedData(dataDir string) error {
+	unused := []string{
+		filepath.Join(dataDir, "cn_dicts", "tencent.dict.yaml"),
+		filepath.Join(dataDir, "essay.txt"),
+	}
+	removed := 0
+	for _, path := range unused {
+		if err := os.Remove(path); err == nil {
+			removed++
+		} else if !os.IsNotExist(err) {
+			return err
+		}
+	}
+	if removed > 0 {
+		fmt.Printf("[prebuild] removed %d unused data file(s)\n", removed)
 	}
 	return nil
 }
