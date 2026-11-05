@@ -64,6 +64,9 @@ func main() {
 		if err := installRareDemoteFilter(*dataDir); err != nil {
 			log.Printf("生僻字降位过滤器安装失败（继续）: %v", err)
 		}
+		if err := installContextReorder(*dataDir); err != nil {
+			log.Printf("跨提交上下文调频安装失败（继续）: %v", err)
+		}
 		if err := patchSyllablePrefixAbbrev(*dataDir); err != nil {
 			log.Printf("音节前缀规则补丁失败（继续）: %v", err)
 		}
@@ -646,6 +649,76 @@ func installRareDemoteFilter(dataDir string) error {
 	}
 	if patched > 0 {
 		fmt.Printf("[prebuild] rare-demote filter hooked into %d schema(s)\n", patched)
+	}
+	return nil
+}
+
+// installContextReorder 安装跨提交上下文调频（2026-11-05 PoC 定稿）：
+// 拷 patches/context_reorder.lua → <data>/lua/，并把
+//   processors 链尾(express_editor 之后)挂 lua_processor@*context_reorder*P
+//   filters   链尾(moqi_rare_demote 之后)挂 lua_filter@*context_reorder*F
+// 机制：P 在真实上屏时学 1/2-Gram(prev→word) 入独立 userdb
+// context_reorder.userdb；F 在有上文时对同码候选组前 50 项按学习计数重排。
+// 引擎级验收(42-交接)：F Δ_ctx +79.8 / M 混拼 +85.1，守卫零回归。
+// 幂等：lua 内容一致且两处 marker 已挂载则跳过。
+func installContextReorder(dataDir string) error {
+	src := filepath.Join("input_methods", "rime", "patches", "context_reorder.lua")
+	body, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	dst := filepath.Join(dataDir, "lua", "context_reorder.lua")
+	if cur, err := os.ReadFile(dst); err != nil || string(cur) != string(body) {
+		if err := os.WriteFile(dst, body, 0o644); err != nil {
+			return err
+		}
+		fmt.Printf("[prebuild] context-reorder lua installed -> %s\n", dst)
+	}
+	const procMarker = "lua_processor@*context_reorder*P"
+	const procAnchor = "- express_editor"
+	const filtMarker = "lua_filter@*context_reorder*F"
+	const filtAnchor = "- lua_filter@*moqi_rare_demote"
+	matches, _ := filepath.Glob(filepath.Join(dataDir, "rime_frost*.schema.yaml"))
+	procPatched, filtPatched := 0, 0
+	for _, schema := range matches {
+		b, err := os.ReadFile(schema)
+		if err != nil {
+			continue
+		}
+		text := string(b)
+		if strings.Contains(text, procMarker) && strings.Contains(text, filtMarker) {
+			continue
+		}
+		lines := strings.Split(text, "\n")
+		dirty := false
+		// 过滤器锚点兜底：rare_demote 行缺失（该补丁失败/被裁）时退挂 uniquifier 后
+		useUniquifierAnchor := !strings.Contains(text, filtAnchor)
+		for i, line := range lines {
+			trimmed := strings.TrimSpace(line)
+			if !strings.Contains(text, procMarker) && strings.HasPrefix(trimmed, procAnchor) {
+				indent := line[:len(line)-len(strings.TrimLeft(line, " \t"))]
+				lines[i] = line + "\n" + indent + "- " + procMarker + "  # 跨提交上下文学习（moqi 打包期；42-交接 PoC）"
+				procPatched++
+				dirty = true
+			}
+			filtHit := strings.HasPrefix(trimmed, filtAnchor) ||
+				(useUniquifierAnchor && strings.HasPrefix(trimmed, "- uniquifier"))
+			if !strings.Contains(text, filtMarker) && filtHit {
+				indent := line[:len(line)-len(strings.TrimLeft(line, " \t"))]
+				lines[i] = line + "\n" + indent + "- " + filtMarker + "  # 跨提交上下文调频（moqi 打包期；42-交接 PoC）"
+				filtPatched++
+				dirty = true
+			}
+		}
+		if !dirty {
+			continue
+		}
+		if err := os.WriteFile(schema, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
+			return err
+		}
+	}
+	if procPatched > 0 || filtPatched > 0 {
+		fmt.Printf("[prebuild] context-reorder hooked: processors=%d filters=%d schema(s)\n", procPatched, filtPatched)
 	}
 	return nil
 }
