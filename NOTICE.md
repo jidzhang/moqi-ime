@@ -12,6 +12,7 @@
 | 引擎 | [gaboolic/librime](https://github.com/gaboolic/librime)（源自 [rime/librime](https://github.com/rime/librime)） | BSD-3-Clause | Rime 引擎，多整句候选改版 |
 | 语法模型插件 | [lotem/librime-octagram](https://github.com/lotem/librime-octagram) | BSD-3-Clause | n-gram 语法模型 |
 | 默认词库 | [gaboolic/rime-frost](https://github.com/gaboolic/rime-frost) | GPL-3.0 | 白霜拼音词库（派生自 rime-ice） |
+| 上下文调频 | [amzxyz/rime-wanxiang](https://github.com/amzxyz/rime-wanxiang) | CC-BY-4.0 | `input_methods/rime/patches/context_reorder.lua`（移植裁剪，跨提交上下文） |
 | TSF 基础库 | libIME2 | LGPL-2.1 | 静态链接 |
 | 事件循环 / JSON | libuv (MIT) / jsoncpp (MIT) | MIT | 静态链接 |
 | 日志 / 序列化 | spdlog v1.2.1 (MIT) / protobuf 33.5 + abseil (BSD / Apache-2.0) | MIT / BSD / Apache-2.0 | FetchContent 拉取 |
