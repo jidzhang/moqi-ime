@@ -1,7 +1,10 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Build the moqi-ime runtime package.
+  Build the moqi-ime runtime tree for the installer (input_methods data,
+  rime.dll, prebuilt dictionaries). The Go backend MoqiIME.exe retired
+  2026-11-03: it is no longer built or shipped. Go is still required for
+  the rime-prebuild dictionary precompile step.
 
 .PARAMETER RepoRoot
   Root of moqi-ime (defaults to the parent directory of this script).
@@ -60,50 +63,6 @@ function Invoke-External {
     return $exitCode
 }
 
-function Get-GoToolExecutablePath {
-    param([string] $ToolName)
-
-    $command = Get-Command $ToolName -ErrorAction SilentlyContinue
-    if ($command) {
-        return $command.Source
-    }
-
-    $goBin = (& go env GOBIN).Trim()
-    if (-not $goBin) {
-        $goPath = (& go env GOPATH).Trim()
-        if (-not $goPath) {
-            throw "Unable to resolve GOPATH for Go tool installation."
-        }
-
-        $firstGoPath = $goPath.Split([System.IO.Path]::PathSeparator)[0]
-        $goBin = Join-Path $firstGoPath "bin"
-    }
-
-    return (Join-Path $goBin ($ToolName + ".exe"))
-}
-
-function Get-GoTool {
-    param(
-        [string] $ToolName,
-        [string] $ModuleAtVersion
-    )
-
-    $toolPath = Get-GoToolExecutablePath -ToolName $ToolName
-    if (Test-Path -LiteralPath $toolPath) {
-        return $toolPath
-    }
-
-    Write-Host "[INFO] Installing Go tool: $ModuleAtVersion"
-    $null = Invoke-External -FilePath "go" -ArgumentList @("install", $ModuleAtVersion)
-
-    $toolPath = Get-GoToolExecutablePath -ToolName $ToolName
-    if (-not (Test-Path -LiteralPath $toolPath)) {
-        throw "Installed Go tool was not found: $toolPath"
-    }
-
-    return $toolPath
-}
-
 function Copy-DirectoryContents {
     param(
         [string] $Source,
@@ -138,67 +97,6 @@ function Prepare-RimeData {
     Write-Host "[INFO] Packaged Rime shared data prepared at `"$PackageRimeDataDir`""
 }
 
-function Write-ServerVersionInfo {
-    param(
-        [string] $VersionInfoPath,
-        [string] $IconPath
-    )
-
-    $fileDescription = ([char]0x58A8).ToString() + ([char]0x5947) + ([char]0x8F93) + ([char]0x5165) + ([char]0x6CD5) + ([char]0x5F15) + ([char]0x64CE)
-    $productName = ([char]0x58A8).ToString() + ([char]0x5947) + ([char]0x8F93) + ([char]0x5165) + ([char]0x6CD5)
-
-    $versionInfo = [ordered]@{
-        FixedFileInfo  = [ordered]@{
-            FileVersion    = [ordered]@{
-                Major = 1
-                Minor = 0
-                Patch = 0
-                Build = 0
-            }
-            ProductVersion = [ordered]@{
-                Major = 1
-                Minor = 0
-                Patch = 0
-                Build = 0
-            }
-            FileFlagsMask  = "3f"
-            FileFlags      = "00"
-            FileOS         = "040004"
-            FileType       = "01"
-            FileSubType    = "00"
-        }
-        StringFileInfo = [ordered]@{
-            Comments         = ""
-            CompanyName      = ""
-            FileDescription  = $fileDescription
-            FileVersion      = "1.0.0.0"
-            InternalName     = "MoqiIME.exe"
-            LegalCopyright   = ""
-            LegalTrademarks  = ""
-            OriginalFilename = "MoqiIME.exe"
-            PrivateBuild     = ""
-            ProductName      = $productName
-            ProductVersion   = "1.0.0.0"
-            SpecialBuild     = ""
-        }
-        VarFileInfo    = [ordered]@{
-            Translation = [ordered]@{
-                LangID    = "0804"
-                CharsetID = "04B0"
-            }
-        }
-        IconPath       = $IconPath
-        ManifestPath   = ""
-    }
-
-    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText(
-        $VersionInfoPath,
-        ($versionInfo | ConvertTo-Json -Depth 6),
-        $utf8NoBom
-    )
-}
-
 $scriptRepoRoot = Join-Path $PSScriptRoot ".."
 if (-not $RepoRoot) { $RepoRoot = $scriptRepoRoot }
 $RepoRoot = [System.IO.Path]::GetFullPath($RepoRoot)
@@ -208,8 +106,6 @@ if (-not $PackageDir) { $PackageDir = Join-Path $BuildRoot "moqi-ime" }
 
 $BuildRoot = [System.IO.Path]::GetFullPath($BuildRoot)
 $PackageDir = [System.IO.Path]::GetFullPath($PackageDir)
-$ServerExe = Join-Path $PackageDir "MoqiIME.exe"
-$BackendSnippet = Join-Path $BuildRoot "backends.moqi-ime.json"
 $InputMethodsDir = Join-Path $RepoRoot "input_methods"
 $IconsDir = Join-Path $RepoRoot "icons"
 $RimeDir = Join-Path $InputMethodsDir "rime"
@@ -218,12 +114,9 @@ $LibrimeOctagramSrc = Join-Path $RepoRoot "..\librime\plugins\librime-octagram\s
 $RimeDataDir = Join-Path $RepoRoot "rime-frost"
 $PackageRimeDir = Join-Path $PackageDir "input_methods\rime"
 $PackageRimeDataDir = Join-Path $PackageRimeDir "data"
-$ServerIcon = Join-Path $IconsDir "mo.ico"
-$ServerVersionInfo = Join-Path $BuildRoot "server.versioninfo.json"
-$ServerResource = Join-Path $RepoRoot "resource_windows_amd64.syso"
 
 Write-Host "============================================"
-Write-Host " Moqi IME Go Backend Build Script"
+Write-Host " Moqi IME Runtime Build Script"
 Write-Host "============================================"
 
 if (-not (Get-Command go -ErrorAction SilentlyContinue)) {
@@ -256,38 +149,7 @@ try {
         Write-Warning "go mod tidy failed, continuing..."
     }
 
-    Write-Step -Title "Step 3: Build go-backend server"
-    Write-Host "[INFO] Building MoqiIME.exe with dynamic DLL loading ..."
-
-    $oldGoos = $env:GOOS
-    $oldGoarch = $env:GOARCH
-    $oldCgoEnabled = $env:CGO_ENABLED
-    $goversioninfo = Get-GoTool -ToolName "goversioninfo" -ModuleAtVersion "github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest"
-    $env:GOOS = "windows"
-    $env:GOARCH = "amd64"
-    $env:CGO_ENABLED = "0"
-
-    try {
-        if (-not (Test-Path -LiteralPath $ServerIcon)) {
-            throw "Missing server icon: `"$ServerIcon`""
-        }
-
-        Write-ServerVersionInfo -VersionInfoPath $ServerVersionInfo -IconPath $ServerIcon
-        Remove-IfExists -Path $ServerResource
-        $null = Invoke-External -FilePath $goversioninfo -ArgumentList @("-64", "-o", $ServerResource, $ServerVersionInfo)
-        $null = Invoke-External -FilePath "go" -ArgumentList @("build", "-ldflags", "-s -w", "-o", $ServerExe, ".")
-    }
-    finally {
-        Remove-IfExists -Path $ServerResource
-        Remove-IfExists -Path $ServerVersionInfo
-        $env:GOOS = $oldGoos
-        $env:GOARCH = $oldGoarch
-        $env:CGO_ENABLED = $oldCgoEnabled
-    }
-
-    Write-Host "[INFO] Built: `"$ServerExe`""
-
-    Write-Step -Title "Step 4: Copy packaged input_methods"
+    Write-Step -Title "Step 3: Copy packaged input_methods"
     if (-not (Test-Path -LiteralPath $RimeDir)) {
         throw "Missing Rime input method directory: `"$RimeDir`""
     }
@@ -297,7 +159,7 @@ try {
     Copy-DirectoryContents -Source $RimeDir -Destination (Join-Path $packageInputMethodsDir "rime")
     Write-Host "[INFO] Packaged only input_methods\rime"
 
-    Write-Step -Title "Step 5: Copy shared icons"
+    Write-Step -Title "Step 4: Copy shared icons"
     if (Test-Path -LiteralPath $IconsDir) {
         Copy-DirectoryContents -Source $IconsDir -Destination (Join-Path $PackageDir "icons")
         Write-Host "[INFO] icons copied"
@@ -306,7 +168,7 @@ try {
         Write-Warning "Missing icons directory: `"$IconsDir`""
     }
 
-    Write-Step -Title "Step 6: Prepare packaged Rime shared data"
+    Write-Step -Title "Step 5: Prepare packaged Rime shared data"
     Prepare-RimeData -RimeDataDir $RimeDataDir -PackageRimeDataDir $PackageRimeDataDir
 
     $sourceAppearanceThemes = Join-Path $RimeDir "appearance_themes.json"
@@ -372,25 +234,13 @@ try {
     Copy-Item -LiteralPath $rimeDll -Destination (Join-Path $PackageDir "input_methods\rime\rime.dll") -Force
     Write-Host "[INFO] Copied rime.dll into package output"
 
-    Write-Step -Title "Step 6.5: Prebuild Rime dictionaries (first-key latency fix)"
+    Write-Step -Title "Step 6: Prebuild Rime dictionaries (first-key latency fix)"
     $prebuildStart = Get-Date
     & go run ./cmd/rime-prebuild -data "$PackageRimeDataDir"
     if ($LASTEXITCODE -ne 0) {
         throw "rime-prebuild failed with exit code $LASTEXITCODE"
     }
     Write-Host ("[INFO] Prebuild completed in {0:mm} min {0:ss} s" -f ((Get-Date) - $prebuildStart))
-
-    Write-Step -Title "Step 7: Generate backends.json snippet"
-    @(
-        [ordered]@{
-            name       = "moqi-ime"
-            command    = "moqi-ime\MoqiIME.exe"
-            workingDir = "moqi-ime"
-            params     = ""
-        }
-    ) | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $BackendSnippet -Encoding UTF8
-
-    Write-Host "[INFO] Generated: `"$BackendSnippet`""
 }
 finally {
     Pop-Location
@@ -400,13 +250,5 @@ Write-Step -Title "Build completed"
 Write-Host "Output directory:"
 Write-Host "  `"$PackageDir`""
 Write-Host ""
-Write-Host "Install target:"
-Write-Host "  C:\Program Files (x86)\MoqiIM\moqi-ime"
-Write-Host ""
-Write-Host "Notes:"
-Write-Host "1. backends.json in this repo uses a top-level array."
-Write-Host "2. Ensure C:\Program Files (x86)\MoqiIM\backends.json includes moqi-ime."
-Write-Host "3. Ensure C:\Program Files (x86)\MoqiIM\moqi-ime\input_methods\*\ime.json exists."
-Write-Host "4. Re-register both MoqiTextService.dll files after copying."
-Write-Host "5. Ensure C:\Program Files (x86)\MoqiIM\moqi-ime\input_methods\rime contains rime.dll."
-Write-Host "6. Start or restart MoqiLaunch.exe after install."
+Write-Host "Packaging entry: moqi-im-windows\scripts\_all_in_package.ps1"
+Write-Host "(stages this tree; MoqiIME.exe is retired and not part of it)"
