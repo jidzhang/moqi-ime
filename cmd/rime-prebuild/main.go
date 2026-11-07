@@ -67,6 +67,9 @@ func main() {
 		if err := installRareDemoteFilter(*dataDir); err != nil {
 			log.Printf("生僻字降位过滤器安装失败（继续）: %v", err)
 		}
+		if err := installCalculatorGuard(*dataDir); err != nil {
+			log.Printf("计算器守卫补丁失败（继续）: %v", err)
+		}
 		if err := installContextReorder(*dataDir); err != nil {
 			log.Printf("跨提交上下文调频安装失败（继续）: %v", err)
 		}
@@ -687,6 +690,31 @@ func installRareDemoteFilter(dataDir string) error {
 	if patched > 0 {
 		fmt.Printf("[prebuild] rare-demote filter hooked into %d schema(s)\n", patched)
 	}
+	return nil
+}
+
+// installCalculatorGuard 整文件替换 calculator.lua（2026-11-07）：
+// trigger 配置缺省 'V' 且 init 自动补小写 'v'，任何 v 开头长度>=3 的普通
+// 拼音输入（vuole/vhulaide…）被当算式送 load()，纯字母式求值为 nil，
+// Candidate(text=nil) 让 LuaTranslation 每键报 "bad argument #5 (string
+// expected, got nil)"——产品里日常 v 开头输入每次会话都会落一个 glog
+// ERROR 文件（eval 复现链见 62 §十九）。补丁=算式须含数字+result nil
+// 守卫；代价 vpi 类字母常量失效（注释见 patches/calculator.lua 头部）。
+// calculator 上游已挂载，无需改 schema；幂等：内容一致跳过。
+func installCalculatorGuard(dataDir string) error {
+	src := filepath.Join("input_methods", "rime", "patches", "calculator.lua")
+	body, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	dst := filepath.Join(dataDir, "lua", "calculator.lua")
+	if cur, err := os.ReadFile(dst); err == nil && string(cur) == string(body) {
+		return nil
+	}
+	if err := os.WriteFile(dst, body, 0o644); err != nil {
+		return err
+	}
+	fmt.Printf("[prebuild] calculator guard installed -> %s\n", dst)
 	return nil
 }
 
