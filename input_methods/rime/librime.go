@@ -931,12 +931,13 @@ func RimeInit(datadir, userdir, appname, appver string, fullcheck bool) bool {
 	}
 	debugLogf("RIME RimeInit 加载DLL完成 elapsed=%s dllPath=%q", time.Since(dllStart), dllPath)
 
-	logDir := rimeLogDir()
-	if logDir != "" {
-		if err := os.MkdirAll(logDir, 0o755); err != nil {
-			log.Printf("创建 RIME 日志目录失败: %v", err)
-			logDir = ""
-		}
+	// glog 目录跟随本次调用的 userdir：RimeInit 只服务构建/评测工具
+	// （产品运行链在 C++ RimeCore，日志目录另配）。写到 %LOCALAPPDATA%\
+	// \MoqiIM\Log 会把构建期诊断灌进产品日志目录（2026-11-07 实测 103KB）。
+	logDir := filepath.Join(userdir, "log")
+	if err := os.MkdirAll(logDir, 0o755); err != nil {
+		log.Printf("创建 RIME 日志目录失败: %v", err)
+		logDir = ""
 	}
 
 	traits := RimeTraits{
@@ -961,12 +962,11 @@ func RimeInit(datadir, userdir, appname, appver string, fullcheck bool) bool {
 }
 
 func RimeRedeploy(datadir, userdir, appname, appver string) bool {
-	logDir := rimeLogDir()
-	if logDir != "" {
-		if err := os.MkdirAll(logDir, 0o755); err != nil {
-			log.Printf("创建 RIME 日志目录失败: %v", err)
-			logDir = ""
-		}
+	// 同 RimeInit：日志跟随 userdir，不落产品日志目录。
+	logDir := filepath.Join(userdir, "log")
+	if err := os.MkdirAll(logDir, 0o755); err != nil {
+		log.Printf("创建 RIME 日志目录失败: %v", err)
+		logDir = ""
 	}
 
 	traits := RimeTraits{

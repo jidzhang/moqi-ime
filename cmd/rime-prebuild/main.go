@@ -21,7 +21,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/gaboolic/moqi-ime/input_methods/rime"
@@ -36,6 +38,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "missing required flag: -data")
 		os.Exit(2)
 	}
+	cleanupStaleWorkspaces()
 
 	apply := func(set string) bool { return *patchSet == "all" || *patchSet == set }
 
@@ -103,7 +106,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("create temp user dir: %v", err)
 	}
-	defer os.RemoveAll(tmp)
+	defer removeDirAfterExit(tmp)
 
 	start := time.Now()
 	if !rime.RimeInit(*dataDir, tmp, "MoqiIM", "prebuild", true) {
@@ -119,6 +122,40 @@ func main() {
 		log.Fatalf("copy build artifacts: %v", err)
 	}
 	fmt.Printf("prebuilt artifacts installed to %s\n", dst)
+}
+
+// removeDirAfterExit 起一个分离的 cmd 进程，等约 7 秒（本进程退出、glog
+// 与引擎 mmap 的句柄全部释放；实测进程退出有数十秒级滞后，2 秒窗口会删
+// 早了）后 rmdir 整个工作区。进程内 RemoveAll 删不动自己打开的日志文件。
+// 设 MOQI_PREBUILD_KEEP_WORKSPACE=1 可保留工作区供排查。
+func removeDirAfterExit(dir string) {
+	if dir == "" || os.Getenv("MOQI_PREBUILD_KEEP_WORKSPACE") != "" {
+		return
+	}
+	del := exec.Command("cmd", "/c", "ping -n 8 127.0.0.1 >nul & rmdir /s /q \""+dir+"\"")
+	const detachedProcess = 0x00000008 // DETACHED_PROCESS（syscall 包未导出该常量）
+	del.SysProcAttr = &syscall.SysProcAttr{CreationFlags: detachedProcess}
+	if err := del.Start(); err != nil {
+		_ = os.RemoveAll(dir) // 分离进程起不来时退回进程内尽力删除
+	}
+}
+
+// cleanupStaleWorkspaces 清扫 %TEMP% 里超过 1 小时的本工具残留工作区
+// （延迟 rmdir 失败或进程被杀时的自愈）。1 小时年龄门槛避免误删并发运行
+// 的另一实例刚建的工作区。
+func cleanupStaleWorkspaces() {
+	pattern := filepath.Join(os.TempDir(), "moqi-rime-prebuild-*")
+	entries, err := filepath.Glob(pattern)
+	if err != nil {
+		return
+	}
+	cutoff := time.Now().Add(-time.Hour)
+	for _, entry := range entries {
+		if fi, err := os.Stat(entry); err != nil || fi.ModTime().After(cutoff) {
+			continue
+		}
+		_ = os.RemoveAll(entry)
+	}
 }
 
 func copyTree(src, dst string) error {
