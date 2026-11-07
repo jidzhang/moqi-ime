@@ -209,11 +209,33 @@ try {
         @{ Path = Join-Path $PackageDir "input_methods\rime\calibration_sentences.txt"; Label = "calibration sentences (test data)" },
         # .gitignore from the submodule, meaningless in the install directory
         @{ Path = Join-Path $PackageDir "input_methods\rime\data\.gitignore"; Label = ".gitignore in install directory" },
-        # Duplicate icons: moqi-ime/icons/* is a copy of input_methods/rime/icons/*
-        # (verified byte-identical). The daemon/TSF reads from input_methods/rime/icons.
-        @{ Path = Join-Path $PackageDir "icons"; Label = "duplicate icons directory (runtime reads input_methods/rime/icons)" },
-        # Go-era backend config: the C++ daemon/TSF never reads this file.
-        @{ Path = Join-Path $PackageDir "backends.json"; Label = "Go-era backends.json (C++ daemon never reads)" }
+        # NOTE — do NOT strip these from the package (2026-11-08 audit):
+        #   icons\ (moqi-ime\icons, incl. mo.ico): ime.json's icon field resolves
+        #     here; it is NOT a duplicate of input_methods\rime\icons.
+        #   input_methods\rime\ime.json + the backends.json staged by
+        #     install.ps1: DllRegisterServer needs both to register the TSF
+        #     language profile (regsvr32 path used by SetupHelper).
+        # Unused icon file: the daemon reads icons from data\icons\, not this.
+        @{ Path = Join-Path $PackageDir "input_methods\rime\icon.ico"; Label = "unused icon.ico (daemon reads data\icons\)" },
+        # Duplicate appearance themes: daemon reads the data\ copy (DaemonMenuService:350).
+        # The rime root copy is a fallback location that never triggers when data\ exists.
+        @{ Path = Join-Path $PackageDir "input_methods\rime\appearance_themes.json"; Label = "duplicate appearance_themes.json at rime root (data\ copy is primary)" },
+        # --- Standalone schemas nothing loads (2026-11-08 two-pass audit) ---
+        # Do NOT remove schemas just because schema_list omits them — active
+        # schemas pull dependencies at deploy time:
+        #   radical_pinyin + rime_frost_aux  ← every rime_frost* schema
+        #   cangjie5/stroke (moqi_single_xh's main/reverse dicts)
+        #     + luna_pinyin.dict (their reverse-lookup dict)
+        # Removing those spams glog ERROR per session start and breaks
+        # 拆字反查/辅码/音形 (fresh lite install 2026-11-07 19:24 log evidence).
+        # Only the six below are truly unreferenced (self + commented
+        # schema_list entries + others/recipes only):
+        @{ Path = Join-Path $PackageDir "input_methods\rime\data\bopomofo.schema.yaml"; Label = "dead schema: bopomofo (no active dependents)" },
+        @{ Path = Join-Path $PackageDir "input_methods\rime\data\bopomofo_express.schema.yaml"; Label = "dead schema: bopomofo_express" },
+        @{ Path = Join-Path $PackageDir "input_methods\rime\data\bopomofo_tw.schema.yaml"; Label = "dead schema: bopomofo_tw" },
+        @{ Path = Join-Path $PackageDir "input_methods\rime\data\cangjie5_express.schema.yaml"; Label = "dead schema: cangjie5_express (no active dependents)" },
+        @{ Path = Join-Path $PackageDir "input_methods\rime\data\rime_frost_double_pinyin_abc.schema.yaml"; Label = "dead schema: double_pinyin_abc (commented in schema_list)" },
+        @{ Path = Join-Path $PackageDir "input_methods\rime\data\rime_frost_double_pinyin_ziguang.schema.yaml"; Label = "dead schema: double_pinyin_ziguang (commented in schema_list)" }
     )
     foreach ($entry in $pathsToRemove) {
         if (Test-Path -LiteralPath $entry.Path) {
