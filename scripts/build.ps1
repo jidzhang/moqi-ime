@@ -211,7 +211,9 @@ try {
         @{ Path = Join-Path $PackageDir "input_methods\rime\data\.gitignore"; Label = ".gitignore in install directory" },
         # Duplicate icons: moqi-ime/icons/* is a copy of input_methods/rime/icons/*
         # (verified byte-identical). The daemon/TSF reads from input_methods/rime/icons.
-        @{ Path = Join-Path $PackageDir "icons"; Label = "duplicate icons directory (runtime reads input_methods/rime/icons)" }
+        @{ Path = Join-Path $PackageDir "icons"; Label = "duplicate icons directory (runtime reads input_methods/rime/icons)" },
+        # Go-era backend config: the C++ daemon/TSF never reads this file.
+        @{ Path = Join-Path $PackageDir "backends.json"; Label = "Go-era backends.json (C++ daemon never reads)" }
     )
     foreach ($entry in $pathsToRemove) {
         if (Test-Path -LiteralPath $entry.Path) {
