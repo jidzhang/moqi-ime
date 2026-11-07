@@ -199,7 +199,19 @@ try {
         @{ Path = Join-Path $PackageDir "input_methods\rime\zh-bigram.tsv"; Label = "duplicate zh-bigram.tsv at rime root" },
         # Android-only prebuilt libs from the upstream Android port: arm64 ELF,
         # never loaded on Windows. Keep them in the repo, drop from the package.
-        @{ Path = Join-Path $PackageDir "input_methods\rime\android"; Label = "Android arm64 rime libs (6.1MB, unused on Windows)" }
+        @{ Path = Join-Path $PackageDir "input_methods\rime\android"; Label = "Android arm64 rime libs (6.1MB, unused on Windows)" },
+        # Prebuild source directory: runtime copies already exist in data/
+        # (lua/*.lua via patches, cn_dicts/moqi_bigram via import). The patches/
+        # directory is the build-time source, not a runtime dependency.
+        @{ Path = Join-Path $PackageDir "input_methods\rime\patches"; Label = "prebuild source patches (runtime copies in data/)" },
+        # Calibration/test data, not needed at runtime
+        @{ Path = Join-Path $PackageDir "input_methods\rime\calibration_pairs.txt"; Label = "calibration pairs (test data)" },
+        @{ Path = Join-Path $PackageDir "input_methods\rime\calibration_sentences.txt"; Label = "calibration sentences (test data)" },
+        # .gitignore from the submodule, meaningless in the install directory
+        @{ Path = Join-Path $PackageDir "input_methods\rime\data\.gitignore"; Label = ".gitignore in install directory" },
+        # Duplicate icons: moqi-ime/icons/* is a copy of input_methods/rime/icons/*
+        # (verified byte-identical). The daemon/TSF reads from input_methods/rime/icons.
+        @{ Path = Join-Path $PackageDir "icons"; Label = "duplicate icons directory (runtime reads input_methods/rime/icons)" }
     )
     foreach ($entry in $pathsToRemove) {
         if (Test-Path -LiteralPath $entry.Path) {
