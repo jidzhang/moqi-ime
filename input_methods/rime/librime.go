@@ -328,6 +328,17 @@ func utf8Ptr(s string) *byte {
 	return ptr
 }
 
+// utf8PtrAllowEmpty 与 utf8Ptr 的差别：空串返回指向 NUL 的合法指针而非
+// nil。librime SetupLogging 用 "log_dir 非NULL且为空串" 表示 LogToStderr；
+// 传 nil 会落进 glog 默认行为（写 %TEMP%）。日志目录封送必须用它。
+func utf8PtrAllowEmpty(s string) *byte {
+	if s == "" {
+		ptr, _ := syscall.BytePtrFromString(s)
+		return ptr
+	}
+	return utf8Ptr(s)
+}
+
 func cString(ptr *byte) string {
 	if ptr == nil {
 		return ""
@@ -373,7 +384,7 @@ func Init(traits RimeTraits) bool {
 		DistributionVersion:  utf8Ptr(traits.DistributionVersion),
 		AppName:              utf8Ptr(traits.AppName),
 		MinLogLevel:          int32(traits.MinLogLevel),
-		LogDir:               utf8Ptr(traits.LogDir),
+		LogDir:               utf8PtrAllowEmpty(traits.LogDir),
 		PrebuiltDataDir:      utf8Ptr(traits.PrebuiltDataDir),
 		StagingDir:           utf8Ptr(traits.StagingDir),
 	}
@@ -931,14 +942,14 @@ func RimeInit(datadir, userdir, appname, appver string, fullcheck bool) bool {
 	}
 	debugLogf("RIME RimeInit 加载DLL完成 elapsed=%s dllPath=%q", time.Since(dllStart), dllPath)
 
-	// glog 目录跟随本次调用的 userdir：RimeInit 只服务构建/评测工具
-	// （产品运行链在 C++ RimeCore，日志目录另配）。写到 %LOCALAPPDATA%\
-	// \MoqiIM\Log 会把构建期诊断灌进产品日志目录（2026-11-07 实测 103KB）。
-	logDir := filepath.Join(userdir, "log")
-	if err := os.MkdirAll(logDir, 0o755); err != nil {
-		log.Printf("创建 RIME 日志目录失败: %v", err)
-		logDir = ""
-	}
+	// glog 走 stderr（LogDir 空串=SetupLogging 的 LogToStderr 语义）：
+	// RimeInit 只服务构建/评测工具，产品运行链在 C++ RimeCore 另配日志。
+	// ① 不能写 %LOCALAPPDATA%\MoqiIM\Log——构建期诊断会灌进产品日志目录
+	//   （2026-11-07 实测 103KB）；② 也不能跟随 userdir——评测目录名含
+	//   中文（fix-4-单字母延续-*），glog 在 CJK 路径创建文件抛 C++ 异常，
+	//   引擎 setup 直接崩（2026-11-08 实测 0xe06d7363）。stderr 无路径、
+	//   诊断可见、随进程消失。
+	logDir := ""
 
 	traits := RimeTraits{
 		SharedDataDir:        datadir,
@@ -962,12 +973,8 @@ func RimeInit(datadir, userdir, appname, appver string, fullcheck bool) bool {
 }
 
 func RimeRedeploy(datadir, userdir, appname, appver string) bool {
-	// 同 RimeInit：日志跟随 userdir，不落产品日志目录。
-	logDir := filepath.Join(userdir, "log")
-	if err := os.MkdirAll(logDir, 0o755); err != nil {
-		log.Printf("创建 RIME 日志目录失败: %v", err)
-		logDir = ""
-	}
+	// 同 RimeInit：glog 走 stderr（见 RimeInit 内注释）。
+	logDir := ""
 
 	traits := RimeTraits{
 		SharedDataDir:        datadir,
