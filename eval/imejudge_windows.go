@@ -79,20 +79,38 @@ func (j *IMEJudge) sendKey(keyCode, charCode int) *imecore.Response {
 	start := time.Now()
 	filterResp := j.ime.HandleRequest(req)
 	RecordKeyLatency(time.Since(start))
+	traceReqResp("filterKeyDown", keyCode, filterResp)
 	var downResp *imecore.Response
 	if filterResp.ReturnValue == 1 {
 		downResp = j.ime.HandleRequest(&imecore.Request{
 			Method:   "onKeyDown",
-			SeqNum:   nextIMESeq(),
-			KeyCode:  keyCode,
+			SeqNum:  nextIMESeq(),
+			KeyCode: keyCode,
 			CharCode: charCode,
 		})
+		traceReqResp("onKeyDown", keyCode, downResp)
 	} else {
 		downResp = filterResp
 	}
-	j.ime.HandleRequest(&imecore.Request{Method: "filterKeyUp", SeqNum: nextIMESeq(), KeyCode: keyCode, CharCode: charCode})
-	j.ime.HandleRequest(&imecore.Request{Method: "onKeyUp", SeqNum: nextIMESeq(), KeyCode: keyCode, CharCode: charCode})
+	upFilter := j.ime.HandleRequest(&imecore.Request{Method: "filterKeyUp", SeqNum: nextIMESeq(), KeyCode: keyCode, CharCode: charCode})
+	traceReqResp("filterKeyUp", keyCode, upFilter)
+	upResp := j.ime.HandleRequest(&imecore.Request{Method: "onKeyUp", SeqNum: nextIMESeq(), KeyCode: keyCode, CharCode: charCode})
+	traceReqResp("onKeyUp", keyCode, upResp)
 	return downResp
+}
+
+// traceReqResp 逐请求轨迹（MOQI_EVAL_TRACE=1 开启，stderr）：提交竞态的
+// 归因工具（62 §十九——同引擎排序下 36% 对提交结果不同）。
+func traceReqResp(method string, keyCode int, resp *imecore.Response) {
+	if os.Getenv("MOQI_EVAL_TRACE") == "" || resp == nil {
+		return
+	}
+	commit := resp.CommitString
+	if commit != "" {
+		commit = "COMMIT<" + commit + ">"
+	}
+	fmt.Fprintf(os.Stderr, "[trace] %s key=%d ret=%d %s comp=<%s>\n",
+		method, keyCode, resp.ReturnValue, commit, resp.CompositionString)
 }
 
 // Type 打一句：逐字母 + 空格提交，返回 commit 文本。
@@ -152,10 +170,13 @@ func (j *IMEJudge) Type(pinyin string) (string, bool) {
 // sendKeyDownOnly 只发 filterKeyDown→onKeyDown（诊断变体用）。
 func (j *IMEJudge) sendKeyDownOnly(keyCode, charCode int) *imecore.Response {
 	filterResp := j.ime.HandleRequest(&imecore.Request{Method: "filterKeyDown", SeqNum: nextIMESeq(), KeyCode: keyCode, CharCode: charCode})
+	traceReqResp("filterKeyDown", keyCode, filterResp)
 	if filterResp.ReturnValue != 1 {
 		return filterResp
 	}
-	return j.ime.HandleRequest(&imecore.Request{Method: "onKeyDown", SeqNum: nextIMESeq(), KeyCode: keyCode, CharCode: charCode})
+	resp := j.ime.HandleRequest(&imecore.Request{Method: "onKeyDown", SeqNum: nextIMESeq(), KeyCode: keyCode, CharCode: charCode})
+	traceReqResp("onKeyDown", keyCode, resp)
+	return resp
 }
 
 // MenuAfter 单字母场景：返回当前首三候选（不打空格）。

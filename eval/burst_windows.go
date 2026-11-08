@@ -70,7 +70,20 @@ func LoadBurstPairs(paths []string, topN int) ([]BurstPair, error) {
 	for k, c := range counts {
 		pairs = append(pairs, BurstPair{W1: k[0], W2: k[1], Count: c})
 	}
-	sort.Slice(pairs, func(i, j int) bool { return pairs[i].Count > pairs[j].Count })
+	// 计数降序 + (W1,W2) 字典序平局决胜（2026-11-08）：词对语料大量同计数
+	// 平局，原 sort.Slice 不稳定 + 上游 map 迭代随机，导致每次进程启动的
+	// 2000 对顺序不同——学习与短窗重排是顺序敏感的，d3 ime 同配置两轮
+	// 31-36% 对提交结果不同、聚合 ±0.7 假噪声（62 §二十一，曾误判为提交
+	// 竞态）。native 逐位复现恰好因为不提交不学习、顺序不敏感。
+	sort.Slice(pairs, func(i, j int) bool {
+		if pairs[i].Count != pairs[j].Count {
+			return pairs[i].Count > pairs[j].Count
+		}
+		if pairs[i].W1 != pairs[j].W1 {
+			return pairs[i].W1 < pairs[j].W1
+		}
+		return pairs[i].W2 < pairs[j].W2
+	})
 	if topN > 0 && len(pairs) > topN {
 		pairs = pairs[:topN]
 	}
