@@ -84,6 +84,9 @@ func main() {
 		if err := mergeBigramDictPatch(*dataDir); err != nil {
 			log.Printf("bigram 补充词典合入失败（继续预编译）: %v", err)
 		}
+		if err := mergeColloquialDictPatch(*dataDir); err != nil {
+			log.Printf("口语词典补丁合入失败（继续预编译）: %v", err)
+		}
 	}
 	if *patchSet == "all" {
 		if err := patchDefaultShiftR(*dataDir); err != nil {
@@ -641,8 +644,6 @@ func patchDisableRadicalLookup(dataDir string) error {
 	return os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o644)
 }
 
-// mergeBigramDictPatch 把高频口语 bigram 补充词典合入打包数据：
-// 拷 patches/bigram_dict.dict.yaml → <data>/cn_dicts/moqi_bigram.dict.yaml，
 // installRareDemoteFilter 安装生僻字降位 lua 过滤器并挂到 rime_frost 全系
 // schema 的 filters 链尾（uniquifier 之后）。
 // 背景：上游默认挂载 41448/GB18030-2022 字表（2026-06 起随子模块进包），
@@ -832,15 +833,33 @@ func patchSyllablePrefixAbbrev(dataDir string) error {
 	return os.WriteFile(path, []byte(out), 0o644)
 }
 
+// mergeBigramDictPatch 把高频口语 bigram 补充词典合入打包数据：
+// 拷 patches/bigram_dict.dict.yaml → <data>/cn_dicts/moqi_bigram.dict.yaml，
 // 并在 rime_frost.dict.yaml 的 import_tables 挂上（幂等：已挂则跳过）。
 // 与简拼补丁互补：本词典走主翻译器词典，全拼/混合输入即可整词命中
 // （简拼补丁只作用于两字母超级简拼）。生成方法见补丁文件头部注释。
 func mergeBigramDictPatch(dataDir string) error {
 	src := filepath.Join("input_methods", "rime", "patches", "bigram_dict.dict.yaml")
-	return installBigramDict(src, dataDir)
+	return installDictPatch(src, dataDir, "moqi_bigram", "- cn_dicts/base",
+		"高频口语 bigram 补充（moqi 打包期合入）")
 }
 
-func installBigramDict(src, dataDir string) error {
+// mergeColloquialDictPatch 把高频口语词典补丁合入打包数据（同 bigram 管线，
+// 幂等）。来源 patches/moqi_colloquial.dict.yaml（人工小集合，词条与权重
+// 依据见其头部注释）：补主词典缺失的高频口语词，如 是吗/是嘛——白霜主表
+// 无此词，仅有 cn_dicts_cell/luna 里权重 0 的残留条目，shime 输入时输给
+// 单字组句（shima top1=事吗，2026-11-08 用户报障）。
+func mergeColloquialDictPatch(dataDir string) error {
+	src := filepath.Join("input_methods", "rime", "patches", "moqi_colloquial.dict.yaml")
+	return installDictPatch(src, dataDir, "moqi_colloquial", "- cn_dicts/moqi_bigram",
+		"高频口语词典补丁（moqi 打包期合入）")
+}
+
+// installDictPatch 把一份词典补丁安装进打包数据并挂 import_tables。
+// dst = <data>/cn_dicts/<name>.dict.yaml；挂载行插在锚行 anchor 之后
+// （bigram 锚在 base，后到的补丁锚在自己的前驱补丁上，保持挂载顺序稳定）。
+// 幂等：内容一致且已挂载则跳过。
+func installDictPatch(src, dataDir, name, anchor, comment string) error {
 	body, err := os.ReadFile(src)
 	if err != nil {
 		return err
@@ -855,12 +874,12 @@ func installBigramDict(src, dataDir string) error {
 	if entries == 0 {
 		return nil // 空补丁，无事可做
 	}
-	dst := filepath.Join(dataDir, "cn_dicts", "moqi_bigram.dict.yaml")
+	dst := filepath.Join(dataDir, "cn_dicts", name+".dict.yaml")
 	if cur, err := os.ReadFile(dst); err != nil || string(cur) != string(body) {
 		if err := os.WriteFile(dst, body, 0o644); err != nil {
 			return err
 		}
-		fmt.Printf("[prebuild] bigram dict installed (%d entries) -> %s\n", entries, dst)
+		fmt.Printf("[prebuild] %s installed (%d entries) -> %s\n", name, entries, dst)
 	}
 
 	dictPath := filepath.Join(dataDir, "rime_frost.dict.yaml")
@@ -868,17 +887,15 @@ func installBigramDict(src, dataDir string) error {
 	if err != nil {
 		return err
 	}
-	const importMarker = "cn_dicts/moqi_bigram"
-	if strings.Contains(string(dictBody), importMarker) {
+	if strings.Contains(string(dictBody), "cn_dicts/"+name) {
 		return nil
 	}
 	lines := strings.Split(string(dictBody), "\n")
-	const anchor = "- cn_dicts/base"
 	inserted := false
 	for i, line := range lines {
 		if strings.HasPrefix(strings.TrimSpace(line), anchor) {
 			indent := line[:len(line)-len(strings.TrimLeft(line, " \t"))]
-			lines[i] = line + "\n" + indent + "- cn_dicts/moqi_bigram   # 高频口语 bigram 补充（moqi 打包期合入）"
+			lines[i] = line + "\n" + indent + "- cn_dicts/" + name + "   # " + comment
 			inserted = true
 			break
 		}
@@ -886,7 +903,7 @@ func installBigramDict(src, dataDir string) error {
 	if !inserted {
 		return fmt.Errorf("rime_frost.dict.yaml: anchor %q not found", anchor)
 	}
-	fmt.Printf("[prebuild] bigram dict hooked into import_tables\n")
+	fmt.Printf("[prebuild] %s hooked into import_tables\n", name)
 	return os.WriteFile(dictPath, []byte(strings.Join(lines, "\n")), 0o644)
 }
 

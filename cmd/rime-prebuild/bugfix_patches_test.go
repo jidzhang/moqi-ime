@@ -197,7 +197,7 @@ func TestMergeBigramDictPatch(t *testing.T) {
 	}
 	writeTempFile(t, dir, "rime_frost.dict.yaml", "---\nname: rime_frost\nimport_tables:\n  - cn_dicts/8105     # 字表\n  - cn_dicts/base     # 基础词库\n...\n")
 
-	if err := installBigramDict(src, dir); err != nil {
+	if err := installDictPatch(src, dir, "moqi_bigram", "- cn_dicts/base", "bigram 补充"); err != nil {
 		t.Fatal(err)
 	}
 	got := readTempFile(t, dir, "rime_frost.dict.yaml")
@@ -213,10 +213,54 @@ func TestMergeBigramDictPatch(t *testing.T) {
 	}
 
 	// 幂等：import 行不重复
-	if err := installBigramDict(src, dir); err != nil {
+	if err := installDictPatch(src, dir, "moqi_bigram", "- cn_dicts/base", "bigram 补充"); err != nil {
 		t.Fatal(err)
 	}
 	if c := strings.Count(readTempFile(t, dir, "rime_frost.dict.yaml"), "cn_dicts/moqi_bigram"); c != 1 {
 		t.Fatalf("import 行重复 %d 次", c)
+	}
+}
+
+// 口语词典补丁与 bigram 同走 installDictPatch：验证锚行挂载（锚在前驱补丁
+// moqi_bigram 上）、拷贝与幂等；缺锚（未先装 bigram）时报错不静默。
+func TestMergeColloquialDictPatch(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "cn_dicts"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	src := filepath.Join(t.TempDir(), "moqi_colloquial.dict.yaml")
+	if err := os.WriteFile(src, []byte("---\nname: moqi_colloquial\nversion: \"1\"\nsort: by_weight\n...\n是吗\tshi ma\t1615\n是嘛\tshi ma\t150\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	writeTempFile(t, dir, "rime_frost.dict.yaml", "---\nname: rime_frost\nimport_tables:\n  - cn_dicts/base     # 基础词库\n  - cn_dicts/moqi_bigram   # 高频口语 bigram 补充（moqi 打包期合入）\n...\n")
+
+	if err := installDictPatch(src, dir, "moqi_colloquial", "- cn_dicts/moqi_bigram", "口语词典补丁"); err != nil {
+		t.Fatal(err)
+	}
+	got := readTempFile(t, dir, "rime_frost.dict.yaml")
+	if !strings.Contains(got, "- cn_dicts/moqi_colloquial") {
+		t.Fatalf("import_tables 未挂上 moqi_colloquial:\n%s", got)
+	}
+	installed := readTempFile(t, dir, filepath.Join("cn_dicts", "moqi_colloquial.dict.yaml"))
+	if !strings.Contains(installed, "是吗\tshi ma\t1615") {
+		t.Fatalf("补丁词典未拷入 cn_dicts/:\n%s", installed)
+	}
+
+	// 幂等：import 行不重复
+	if err := installDictPatch(src, dir, "moqi_colloquial", "- cn_dicts/moqi_bigram", "口语词典补丁"); err != nil {
+		t.Fatal(err)
+	}
+	if c := strings.Count(readTempFile(t, dir, "rime_frost.dict.yaml"), "cn_dicts/moqi_colloquial"); c != 1 {
+		t.Fatalf("import 行重复 %d 次", c)
+	}
+
+	// 前驱锚缺失（未装 bigram 的干净数据）必须报错，不静默跳挂载
+	dir2 := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir2, "cn_dicts"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeTempFile(t, dir2, "rime_frost.dict.yaml", "---\nname: rime_frost\nimport_tables:\n  - cn_dicts/base     # 基础词库\n...\n")
+	if err := installDictPatch(src, dir2, "moqi_colloquial", "- cn_dicts/moqi_bigram", "口语词典补丁"); err == nil {
+		t.Fatalf("锚缺失时应报错")
 	}
 }

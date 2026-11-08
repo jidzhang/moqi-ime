@@ -2,6 +2,9 @@
 # 来源：四源语料 bigram 挖掘（subs/news/ted/leipzig），筛白霜词典缺失或
 # 权重为 0 的 2~4 字组合，聚合频次 ≥300。权重 = min(2.2×频次, 30000)，
 # 刻意低于真实高频词条（当然 176k / 但是 562k），不越权压制全拼排序。
+# 语气词尾验收门（2026-11-08）：末字为句末语气词（吗呢吧啊等）的组合，
+# 除非种子人工审选或白霜主词典正权重收录，一律拒收——分词噪声
+#（实证：事吗@1711 假高频压制真词是吗，shima 首选错词）。
 # 与简拼补丁互补：本词典挂主翻译器，全拼/混合/简拼均可整词命中。
 # 生成：eval-workspace/gen-bigram-dict.py；打包合入：rime-prebuild。
 ---
@@ -34,7 +37,6 @@ sort: by_weight
 的政治	de zheng zhi	11818
 你和	ni he	11305
 如果我们	ru guo wo men	11112
-的吗	de ma	10929
 最大的	zui da de	10656
 在我们	zai wo men	10621
 的影响	de ying xiang	10573
@@ -66,7 +68,6 @@ sort: by_weight
 的钱	de qian	7114
 的孩子	de hai zi	7026
 工作的	gong zuo de	6989
-我吗	wo ma	6938
 知道的	zhi dao de	6833
 政府的	zheng fu de	6778
 的一部分	de yi bu fen	6749
@@ -140,7 +141,6 @@ sort: by_weight
 复杂的	fu za de	4587
 的国际	de guo ji	4569
 的关键	de guan jian	4545
-你吗	ni ma	4538
 特朗普的	te lang pu de	4485
 的了	de le	4411
 危机的	wei ji de	4393
@@ -165,7 +165,6 @@ sort: by_weight
 这些国家	zhe xie guo jia	3955
 变化的	bian hua de	3935
 你真的	ni zhen de	3927
-的吧	de ba	3889
 地区的	di qu de	3887
 了它	le ta	3883
 的金融	de jin rong	3878
@@ -185,14 +184,12 @@ sort: by_weight
 的好	de hao	3718
 得到的	de dao de	3713
 的就是	de jiu shi	3696
-我吧	wo ba	3691
 的贸易	de mao yi	3678
 的基础	de ji chu	3658
 去的	qu de	3638
 所带来	suo dai lai	3627
 一个新	yi ge xin	3614
 提出的	ti chu de	3603
-的呢	de ne	3601
 但是我们	dan shi wo men	3579
 者的	zhe de	3553
 月的	yue de	3553
@@ -291,7 +288,6 @@ sort: by_weight
 服务的	fu wu de	2754
 的儿子	de er zi	2750
 的行动	de xing dong	2747
-了啊	le a	2745
 要的	yao de	2743
 说这	shuo zhe	2741
 国家都	guo jia dou	2736
@@ -389,7 +385,6 @@ sort: by_weight
 了许多	le xu duo	2244
 的权力	de quan li	2244
 行为的	xing wei de	2237
-上帝啊	shang di a	2233
 的资金	de zi jin	2233
 增长和	zeng zhang he	2228
 我以为你	wo yi wei ni	2226
@@ -441,7 +436,6 @@ sort: by_weight
 项目的	xiang mu de	2085
 实现这	shi xian zhe	2083
 的学生	de xue sheng	2083
-的啊	de a	2076
 不是的	bu shi de	2072
 认为我	ren wei wo	2070
 不会的	bu hui de	2068
@@ -519,7 +513,6 @@ sort: by_weight
 在一起的	zai yi qi de	1815
 面对的	mian dui de	1812
 能力的	neng li de	1801
-来吗	lai ma	1799
 和政府	he zheng fu	1797
 教育和	jiao yu he	1793
 其中包括	qi zhong bao kuo	1788
@@ -557,7 +550,6 @@ sort: by_weight
 疫情的	yi qing de	1718
 一定的	yi ding de	1713
 我们正	wo men zheng	1711
-事吗	shi ma	1711
 取得的	qu de de	1711
 来说是	lai shuo shi	1709
 家庭的	jia ting de	1709
@@ -584,7 +576,6 @@ sort: by_weight
 太可能	tai ke neng	1647
 债务的	zhai wu de	1647
 中最	zhong zui	1645
-去吗	qu ma	1636
 联盟的	lian meng de	1636
 的命令	de ming ling	1634
 类型的	lei xing de	1634
@@ -813,7 +804,6 @@ sort: by_weight
 选举的	xuan ju de	1287
 的生物	de sheng wu	1287
 地位的	di wei de	1282
-说吗	shuo ma	1280
 国家中	guo jia zhong	1280
 措施的	cuo shi de	1280
 其对	qi dui	1276
@@ -847,7 +837,6 @@ sort: by_weight
 没有得到	mei you de dao	1247
 这样我	zhe yang wo	1247
 想到的	xiang dao de	1247
-她吗	ta ma	1245
 但仍	dan reng	1245
 大家的	da jia de	1245
 回家的	hui jia de	1245
@@ -1090,7 +1079,6 @@ sort: by_weight
 为美国	wei mei guo	1045
 活力的	huo li de	1045
 是全球	shi quan qiu	1045
-这个吗	zhe ge ma	1040
 漫长的	man chang de	1040
 之一是	zhi yi shi	1040
 克的	ke de	1038
@@ -1114,7 +1102,6 @@ sort: by_weight
 灾难性的	zai nan xing de	1029
 这场危机	zhe chang wei ji	1025
 了你们	le ni men	1023
-他吧	ta ba	1023
 公民的	gong min de	1023
 规模的	gui mo de	1023
 惊讶的	jing ya de	1023
@@ -1135,7 +1122,6 @@ sort: by_weight
 后来我	hou lai wo	1012
 这的	zhe de	1009
 的话就	de hua jiu	1009
-听到吗	ting dao ma	1009
 年全球	nian quan qiu	1009
 来我	lai wo	1007
 不是来	bu shi lai	1007
@@ -1241,7 +1227,6 @@ sort: by_weight
 甚至可能	shen zhi ke neng	941
 特朗普在	te lang pu zai	941
 地方的	di fang de	939
-着吧	zhe ba	939
 时间了	shi jian le	939
 不过他	bu guo ta	939
 富有的	fu you de	939
@@ -1361,7 +1346,6 @@ sort: by_weight
 开发的	kai fa de	869
 一过程	yi guo cheng	869
 我们快	wo men kuai	866
-我们吗	wo men ma	866
 儿童的	er tong de	866
 这就像	zhe jiu xiang	864
 有这	you zhe	862
@@ -1412,7 +1396,6 @@ sort: by_weight
 身边的	shen bian de	844
 而这种	er zhe zhong	844
 和医疗	he yi liao	844
-还有呢	hai you ne	842
 外面的	wai mian de	842
 之后我	zhi hou wo	842
 我们这里	wo men zhe li	840
@@ -1560,7 +1543,6 @@ sort: by_weight
 得越	de yue	778
 工作和	gong zuo he	778
 于美国	yu mei guo	778
-什么事吗	shen me shi ma	778
 内贾	nei jia	778
 在同一	zai tong yi	776
 后我	hou wo	776
@@ -1572,7 +1554,6 @@ sort: by_weight
 和平与	he ping yu	774
 我与	wo yu	774
 疫情期间	yi qing qi jian	774
-这里吗	zhe li ma	772
 发明的	fa ming de	772
 原教	yuan jiao	772
 联合国的	lian he guo de	772
@@ -1711,7 +1692,6 @@ sort: by_weight
 创新和	chuang xin he	723
 他们走	ta men zou	721
 我们找到	wo men zhao dao	721
-事吧	shi ba	721
 明白的	ming bai de	721
 公司在	gong si zai	721
 方式的	fang shi de	721
@@ -1805,7 +1785,6 @@ sort: by_weight
 局的	ju de	693
 损失的	sun shi de	693
 灵活的	ling huo de	693
-了啦	le la	690
 现在却	xian zai que	690
 说自己	shuo zi ji	690
 人做	ren zuo	690
@@ -1850,7 +1829,6 @@ sort: by_weight
 所采取	suo cai qu	679
 意大利和	yi da li he	679
 看在	kan zai	677
-么呢	me ne	677
 一次的	yi ci de	677
 生产和	sheng chan he	677
 官员的	guan yuan de	677
@@ -1884,7 +1862,6 @@ sort: by_weight
 美国是	mei guo shi	671
 资源和	zi yuan he	671
 和贸易	he mao yi	671
-了嘛	le ma	668
 要你们	yao ni men	668
 将需要	jiang xu yao	668
 想他们	xiang ta men	668
@@ -1922,7 +1899,6 @@ sort: by_weight
 这些地方	zhe xie di fang	662
 好你	hao ni	662
 已经超过	yi jing chao guo	662
-进来吗	jin lai ma	662
 路克	lu ke	662
 希望他们	xi wang ta men	662
 感到非常	gan dao fei chang	662
