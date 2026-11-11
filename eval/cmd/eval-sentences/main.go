@@ -38,6 +38,8 @@ func main() {
 	burstDedupInput := flag.Bool("burstDedupInput", false, "burst: drop later pairs whose d3 input (W1 full pinyin + W2 initial) collides with an earlier pair; same-input golds cap top-2000 at 62.25%")
 	minLen := flag.Int("minLen", 5, "corpus minimum sentence length in runes")
 	pinyinCorpus := flag.String("pinyinCorpus", "", "TSV: gold句子<TAB>按键串；命中则跳过逐字推导（外部基准对齐用）")
+	readingsTSV := flag.String("readingsTSV", "", "黄金读音 sidecar 列表（逗号分隔，gold<TAB>音节...）；命中即跳过现算，多音字以定版为准")
+	requireFrozen := flag.Bool("requireFrozen", false, "验收门：考句/burst 词目必须全部命中冻结读音，缺一条即拒跑（正式出数必须开）")
 	flag.Parse()
 
 	if *pinyin == "" || *dataDir == "" || *userDir == "" || (*burstTSV == "" && *corpus == "") {
@@ -90,6 +92,33 @@ func main() {
 			eval.PinyinOverride[gold] = keys
 		}
 		fmt.Printf("pinyinCorpus loaded: %d overrides\n", len(eval.PinyinOverride))
+	}
+	if *readingsTSV != "" {
+		for _, p := range strings.Split(*readingsTSV, ",") {
+			if p == "" {
+				continue
+			}
+			n, err := eval.LoadReadingsOverrides(p)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "load readingsTSV:", err)
+				os.Exit(1)
+			}
+			fmt.Printf("readings loaded: %d entries from %s\n", n, p)
+		}
+	}
+	if *requireFrozen && *corpus != "" {
+		miss := eval.MissingFrozen(golds)
+		if len(miss) > 0 {
+			n := len(miss)
+			if n > 10 {
+				miss = miss[:10]
+			}
+			fmt.Fprintf(os.Stderr, "requireFrozen: %d 句无冻结读音，拒跑（考卷读音必须先 freeze+审读定版）。示例:\n", n)
+			for _, m := range miss {
+				fmt.Fprintln(os.Stderr, "  "+m)
+			}
+			os.Exit(1)
+		}
 	}
 
 	// native 裁判按需打开：同进程先后两次 RimeInit（native + ime）会互相
@@ -166,6 +195,32 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Printf("burst pairs=%d mode=%s stack=%s\n", len(pairs), *burstMode, *stack)
+		if *requireFrozen {
+			// mixed/continuation 对 W2 单独取音节（简拼/首字母派生），
+			// fragment 用拼接串——三类键都必须有冻结读音。
+			seenReq := map[string]bool{}
+			var req []string
+			for _, p := range pairs {
+				for _, k := range []string{p.W1 + p.W2, p.W1, p.W2} {
+					if k != "" && !seenReq[k] {
+						seenReq[k] = true
+						req = append(req, k)
+					}
+				}
+			}
+			miss := eval.MissingFrozen(req)
+			if len(miss) > 0 {
+				n := len(miss)
+				if n > 10 {
+					miss = miss[:10]
+				}
+				fmt.Fprintf(os.Stderr, "requireFrozen: %d 词目无冻结读音，拒跑。示例:\n", n)
+				for _, m := range miss {
+					fmt.Fprintln(os.Stderr, "  "+m)
+				}
+				os.Exit(1)
+			}
+		}
 		if *debugLog {
 			rime.SetDebugLoggingEnabled(true)
 		}

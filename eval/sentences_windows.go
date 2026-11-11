@@ -143,7 +143,11 @@ func LoadPhraseReadings(path string) (map[string][]string, error) {
 // goldSyllables 词级最长匹配定音（正向最大匹配）：每个位置优先取纠错词典/
 // 词表能命中的最长词的整词读音，不命中回退单字第一音。机制与黑盒考卷生成器
 // pypinyin 的分词定音一致（a1e2d1d 实证其为最长匹配），保证两套考卷口径一致。
+// 冻结读音（ReadingsOverride）整条命中时直接返回，不做任何现算。
 func goldSyllables(gold string, readings CharReadings) ([]string, bool) {
+	if syl, ok := ReadingsOverride[gold]; ok {
+		return append([]string(nil), syl...), true
+	}
 	runes := []rune(gold)
 	out := make([]string, 0, len(runes))
 	const maxPhraseLen = 16
@@ -177,6 +181,11 @@ func goldSyllables(gold string, readings CharReadings) ([]string, bool) {
 		}
 	}
 	return out, true
+}
+
+// GoldSyllables 导出定音管线（freeze-readings 审计工具与评测共用同一转音）。
+func GoldSyllables(gold string, readings CharReadings) ([]string, bool) {
+	return goldSyllables(gold, readings)
 }
 
 // GoldToPinyin 金句转连续小写拼音（无分隔）。多音字按词定音（goldSyllables）。
