@@ -87,6 +87,9 @@ func main() {
 		if err := mergeColloquialDictPatch(*dataDir); err != nil {
 			log.Printf("口语词典补丁合入失败（继续预编译）: %v", err)
 		}
+		if err := patchDemoteJunk(*dataDir); err != nil {
+			log.Printf("速朽热词降权失败（继续预编译）: %v", err)
+		}
 	}
 	if *patchSet == "all" {
 		if err := patchDefaultShiftR(*dataDir); err != nil {
@@ -905,6 +908,90 @@ func installDictPatch(src, dataDir, name, anchor, comment string) error {
 	}
 	fmt.Printf("[prebuild] %s hooked into import_tables\n", name)
 	return os.WriteFile(dictPath, []byte(strings.Join(lines, "\n")), 0o644)
+}
+
+// junkDemotions 速朽热词/粗口降权清单（2026-11-11 垃圾话全面自检定案，
+// 用户拍板方案 A：可打出=兼容，不出首页=不推广；清单与逐码证据见
+// eval-workspace/readings/junk_audit.py 与 69-交接 §九）。
+// 分档（当晚复议定稿）：①同码压制规范词的错字变体/过气梗 ②逼格族/婊类纯梗
+// ③屄形原字与谐音错写（煞笔/沙币/装比）。
+// 豁免：主流化词（人民日报级：内卷/躺平/硬核/逆袭/饭圈）；**逼形避讳借字
+// 在无规范词竞争的码上一律保留原权重**（装逼/牛逼/傻逼——"逼"是"屄"的
+// 委婉借字，属正当书写传统，这些概念没有更好的写法，用户 2026-11-11 拍板）。
+var junkDemotions = map[string]string{
+	"撕逼":  "si bi",   // 压过 四壁（有真规范词受害，不豁免）
+	"屌丝":  "diao si",  // 压过 吊死
+	"逼格":  "bi ge",    // 逼格族（无原字对应的纯造词，非避讳）
+	"高逼格": "gao bi ge",
+	"有逼格": "you bi ge",
+	"煞笔":  "sha bi",   // 傻逼的谐音错写，避讳借字之下再降一档
+	"沙币":  "sha bi",   // 同上
+	"傻屄":  "sha bi",   // 屄形原字
+	"牛屄":  "niu bi",   // 同上
+	"装比":  "zhuang bi", // 装逼的谐音错写
+	"绿茶婊": "lv cha biao",
+	"神马":  "shen ma",  // 压过 神码
+	"舔狗":  "tian gou", // 压过 天狗
+	"盆友":  "pen you",  // 压过 喷油
+	"鸡娃":  "ji wa",    // 压过 脊瓦
+	"酱紫":  "jiang zi",
+	"夺笋":  "duo sun",  // 压过 多损
+}
+
+// patchDemoteJunk 把清单词条在打包词库里的权重压到 1（页尾仍可打出）。
+// 只认 word+code 双匹配，只降不升（幂等：权重已为 1 则零改动）。
+func patchDemoteJunk(dataDir string) error {
+	demoted := 0
+	for _, name := range []string{"base.dict.yaml", "ext.dict.yaml"} {
+		p := filepath.Join(dataDir, "cn_dicts", name)
+		body, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		lines := strings.Split(string(body), "\n")
+		changed := false
+		for i, raw := range lines {
+			hasCR := strings.HasSuffix(raw, "\r")
+			line := strings.TrimSuffix(raw, "\r")
+			f := strings.Split(line, "\t")
+			if len(f) < 3 {
+				continue
+			}
+			code, ok := junkDemotions[f[0]]
+			if !ok || f[1] != code || !isPositiveInt(f[2]) || f[2] == "1" {
+				continue
+			}
+			f[2] = "1"
+			lines[i] = strings.Join(f, "\t")
+			if hasCR {
+				lines[i] += "\r"
+			}
+			changed = true
+			demoted++
+		}
+		if changed {
+			fmt.Printf("[prebuild] junk demoted in %s\n", name)
+			if err := os.WriteFile(p, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
+				return err
+			}
+		}
+	}
+	if demoted > 0 {
+		fmt.Printf("[prebuild] junk demotion: %d entries\n", demoted)
+	}
+	return nil
+}
+
+func isPositiveInt(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // mergeJianpinPatch 把简拼高频组合补丁合并进打包数据目录的

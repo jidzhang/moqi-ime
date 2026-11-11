@@ -264,3 +264,43 @@ func TestMergeColloquialDictPatch(t *testing.T) {
 		t.Fatalf("锚缺失时应报错")
 	}
 }
+
+func TestPatchDemoteJunk(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "cn_dicts"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	sample := "---\nname: base\n...\n" +
+		"撕逼\tsi bi\t3059\n" +
+		"四壁\tsi bi\t112\n" +
+		"绿茶婊\tlv cha biao\t240\n" +
+		"四壁\t\t别的\t列\n" + // word 相同但格式不匹配的行不动
+		"正常\tzheng chang\t500\n"
+	if err := os.WriteFile(filepath.Join(dir, "cn_dicts", "base.dict.yaml"), []byte(sample), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "cn_dicts", "ext.dict.yaml"),
+		[]byte("---\nname: ext\n...\n高逼格\tgao bi ge\t636\r\n别的\tbie de\t9\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := patchDemoteJunk(dir); err != nil {
+		t.Fatal(err)
+	}
+	base := readTempFile(t, dir, filepath.Join("cn_dicts", "base.dict.yaml"))
+	for _, want := range []string{"撕逼\tsi bi\t1\n", "四壁\tsi bi\t112\n", "正常\tzheng chang\t500\n"} {
+		if !strings.Contains(base, want) {
+			t.Fatalf("base 降权结果不符（缺 %q）:\n%s", want, base)
+		}
+	}
+	ext := readTempFile(t, dir, filepath.Join("cn_dicts", "ext.dict.yaml"))
+	if !strings.Contains(ext, "高逼格\tgao bi ge\t1\r\n") {
+		t.Fatalf("ext CRLF 降权结果不符:\n%q", ext)
+	}
+	// 幂等：再跑零改动（以已降权行不再重复计——直接验证文件内容不变）
+	if err := patchDemoteJunk(dir); err != nil {
+		t.Fatal(err)
+	}
+	if got := readTempFile(t, dir, filepath.Join("cn_dicts", "base.dict.yaml")); got != base {
+		t.Fatalf("幂等失败，第二次运行改写了文件:\n%s", got)
+	}
+}
