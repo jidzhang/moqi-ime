@@ -933,7 +933,9 @@ func RimeInit(datadir, userdir, appname, appver string, fullcheck bool) bool {
 
 	dllStart := time.Now()
 	dllPath := filepath.Join(filepath.Dir(datadir), "rime.dll")
-	if _, err := os.Stat(dllPath); err != nil {
+	if override := strings.TrimSpace(os.Getenv("MOQI_RIME_DLL_PATH")); override != "" {
+		dllPath = override
+	} else if _, err := os.Stat(dllPath); err != nil {
 		dllPath = "rime.dll"
 	}
 	if err := loadRimeDLL(dllPath); err != nil {

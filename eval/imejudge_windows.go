@@ -299,7 +299,7 @@ func (j *IMEJudge) MenuAfterDetailed(letter byte) (respList, menuList []string) 
 }
 
 // Evaluate 整句评估（与 NativeJudge.Evaluate 同口径，但走全栈管线）。
-func (j *IMEJudge) Evaluate(golds []string, readings CharReadings, limit int) Report {
+func (j *IMEJudge) Evaluate(golds []string, readings CharReadings, limit int, maxFails ...int) Report {
 	var results []SentenceResult
 	n := 0
 	for _, gold := range golds {
@@ -320,7 +320,11 @@ func (j *IMEJudge) Evaluate(golds []string, readings CharReadings, limit int) Re
 		results = append(results, ScoreSentence(gold, got))
 		n++
 	}
-	return Summarize(results, 20)
+	failLimit := 20
+	if len(maxFails) > 0 {
+		failLimit = maxFails[0]
+	}
+	return Summarize(results, failLimit)
 }
 
 var mixedDumpPath string

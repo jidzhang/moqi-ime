@@ -25,6 +25,7 @@ func main() {
 	userDir := flag.String("user", "", "rime user dir (writable)")
 	limit := flag.Int("limit", 400, "max sentences (<=0 for all)")
 	debug := flag.Bool("debug", false, "print per-sentence detail for the first 3 sentences")
+	allFails := flag.Bool("allFails", false, "print every per-sentence failure (for paired A/B analysis)")
 	burstTSV := flag.String("burst", "", "bigram TSV(s), comma-separated: run burst eval instead of sentence eval")
 	burstMode := flag.String("burstMode", "fragment", "burst mode: fragment | continuation")
 	stack := flag.String("stack", "native", "judge stack: native (rime.dll direct) | ime (full Go pipeline)")
@@ -41,6 +42,13 @@ func main() {
 	readingsTSV := flag.String("readingsTSV", "", "黄金读音 sidecar 列表（逗号分隔，gold<TAB>音节...）；命中即跳过现算，多音字以定版为准")
 	requireFrozen := flag.Bool("requireFrozen", false, "验收门：考句/burst 词目必须全部命中冻结读音，缺一条即拒跑（正式出数必须开）")
 	flag.Parse()
+
+	// --noFastPath applies to all ime-stack evaluations, including sentences.
+	// Previously it was only honored inside the burst branch, so sentence A/Bs
+	// silently measured RimeSetInput fast injection while reporting full IME stack.
+	if *noFastPath {
+		eval.EvalFastTypingOff()
+	}
 
 	if *pinyin == "" || *dataDir == "" || *userDir == "" || (*burstTSV == "" && *corpus == "") {
 		fmt.Fprintln(os.Stderr, "missing required flags: --corpus/--burst --pinyin --data --user")
@@ -150,7 +158,11 @@ func main() {
 		}
 		defer imeJudge.Close()
 		eval.InputMode = *input
-		rep := imeJudge.Evaluate(golds, readings, *limit)
+		failLimit := 20
+		if *allFails {
+			failLimit = 0
+		}
+		rep := imeJudge.Evaluate(golds, readings, *limit, failLimit)
 		fmt.Printf("fast-path: hit=%d missSet=%d missCommit=%d warmup=%d\n",
 			eval.FastPathStats.Hits, eval.FastPathStats.MissSet, eval.FastPathStats.MissCommit, eval.FastPathStats.Warmups)
 		fmt.Printf("top-1 %.2f%% (%d/%d) macroCER %.4f\n",
@@ -272,6 +284,8 @@ func main() {
 				os.Exit(1)
 			}
 			rep, h3, hPage := ij.EvaluateMixedTop(pairs, readings)
+			fmt.Printf("fast-path: hit=%d missSet=%d missCommit=%d warmup=%d\n",
+				eval.FastPathStats.Hits, eval.FastPathStats.MissSet, eval.FastPathStats.MissCommit, eval.FastPathStats.Warmups)
 			fmt.Printf("mixedTop hit@1 %.2f%% (%d/%d) hit@3 %.2f%% (%d/%d) hit@page %.2f%% (%d/%d)\n",
 				100*float64(rep.FragmentOK)/float64(rep.Total), rep.FragmentOK, rep.Total,
 				100*float64(h3)/float64(rep.Total), h3, rep.Total,
@@ -295,6 +309,8 @@ func main() {
 			fmt.Printf("fragment top-1 %.2f%% (%d/%d)\n",
 				100*float64(rep.FragmentOK)/float64(rep.Total), rep.FragmentOK, rep.Total)
 		}
+		fmt.Printf("fast-path: hit=%d missSet=%d missCommit=%d warmup=%d\n",
+			eval.FastPathStats.Hits, eval.FastPathStats.MissSet, eval.FastPathStats.MissCommit, eval.FastPathStats.Warmups)
 		for _, s := range rep.Samples {
 			fmt.Println("  MISS", s)
 		}
@@ -302,7 +318,11 @@ func main() {
 	}
 
 	eval.InputMode = *input
-	rep := openNative().Evaluate(golds, readings, *limit)
+	failLimit := 20
+	if *allFails {
+		failLimit = 0
+	}
+	rep := openNative().Evaluate(golds, readings, *limit, failLimit)
 	fmt.Printf("top-1 %.2f%% (%d/%d) macroCER %.4f\n",
 		100*rep.Accuracy(), rep.Matched, rep.Total, rep.MacroCER)
 	if avg, p95, mx, n := eval.LatencyReport(); n > 0 {

@@ -403,7 +403,7 @@ func (j *NativeJudge) DebugType(pinyin string) (string, bool) {
 }
 
 // Evaluate 跑全部金句，返回汇总；limit<=0 跑全量。
-func (j *NativeJudge) Evaluate(golds []string, readings CharReadings, limit int) Report {
+func (j *NativeJudge) Evaluate(golds []string, readings CharReadings, limit int, maxFails ...int) Report {
 	var results []SentenceResult
 	n := 0
 	for _, gold := range golds {
@@ -425,5 +425,9 @@ func (j *NativeJudge) Evaluate(golds []string, readings CharReadings, limit int)
 		results = append(results, res)
 		n++
 	}
-	return Summarize(results, 20)
+	failLimit := 20
+	if len(maxFails) > 0 {
+		failLimit = maxFails[0]
+	}
+	return Summarize(results, failLimit)
 }
