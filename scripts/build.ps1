@@ -273,6 +273,7 @@ try {
     # "%1 is not a valid Win32 application" and kills Nightly/Release. The x86
     # engine is consumed only by MoqiDaemon, straight from
     # librime\build-x86\bin\Release\rime.dll - never from this path.
+    # ASCII only on purpose: PS 5.1 reads BOM-less files as ANSI/GBK.
     $peBytes = [System.IO.File]::ReadAllBytes($rimeDll)
     $peOffset = [System.BitConverter]::ToInt32($peBytes, 0x3C)
     $machine = [System.BitConverter]::ToUInt16($peBytes, $peOffset + 4)
