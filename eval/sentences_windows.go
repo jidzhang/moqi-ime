@@ -316,6 +316,13 @@ func DebugTypeSentence(session rime.RimeSessionId, pinyin string) (string, bool)
 
 // LoadGoldSentences 读语料：每行一句，纯汉字、长度>=minLen。
 func LoadGoldSentences(path string, minLen int) ([]string, error) {
+	return LoadGoldSentencesMax(path, minLen, 0)
+}
+
+// LoadGoldSentencesMax 同 LoadGoldSentences，额外限制长度<=maxLen（<=0 不限）。
+// 2026-11-16 用户定调：不关心超过 10 字的长句正确性，评测用 maxLen=10 可砍掉
+// 45% 句子（3466→1888），d5 从 40+ 分钟降到约 20 分钟。
+func LoadGoldSentencesMax(path string, minLen, maxLen int) ([]string, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -327,6 +334,9 @@ func LoadGoldSentences(path string, minLen int) ([]string, error) {
 	for sc.Scan() {
 		line := strings.Trim(strings.TrimSpace(sc.Text()), "\"'“”‘’")
 		if !isPureHanzi(line) || runeLen(line) < minLen {
+			continue
+		}
+		if maxLen > 0 && runeLen(line) > maxLen {
 			continue
 		}
 		out = append(out, line)

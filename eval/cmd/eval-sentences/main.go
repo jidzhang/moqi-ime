@@ -38,6 +38,7 @@ func main() {
 	noFastPath := flag.Bool("noFastPath", false, "disable fast-path typing so Go-side rerank/lift run (A/B Go pipeline features)")
 	burstDedupInput := flag.Bool("burstDedupInput", false, "burst: drop later pairs whose d3 input (W1 full pinyin + W2 initial) collides with an earlier pair; same-input golds cap top-2000 at 62.25%")
 	minLen := flag.Int("minLen", 5, "corpus minimum sentence length in runes")
+	maxLen := flag.Int("maxLen", 0, "corpus maximum sentence length in runes (0 = no limit); 2026-11-16 用户不关心 >10 字长句，评测建议 10")
 	pinyinCorpus := flag.String("pinyinCorpus", "", "TSV: gold句子<TAB>按键串；命中则跳过逐字推导（外部基准对齐用）")
 	readingsTSV := flag.String("readingsTSV", "", "黄金读音 sidecar 列表（逗号分隔，gold<TAB>音节...）；命中即跳过现算，多音字以定版为准")
 	requireFrozen := flag.Bool("requireFrozen", false, "验收门：考句/burst 词目必须全部命中冻结读音，缺一条即拒跑（正式出数必须开）")
@@ -59,7 +60,7 @@ func main() {
 	var golds []string
 	if *corpus != "" {
 		var err error
-		golds, err = eval.LoadGoldSentences(*corpus, *minLen)
+		golds, err = eval.LoadGoldSentencesMax(*corpus, *minLen, *maxLen)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "load corpus:", err)
 			os.Exit(1)
