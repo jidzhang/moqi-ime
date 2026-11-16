@@ -267,6 +267,20 @@ try {
         (Get-Item -LiteralPath $LibrimeOctagramSrc).LastWriteTime -gt (Get-Item -LiteralPath $rimeDll).LastWriteTime) {
         throw "rime.dll is OLDER than octagram.cc - rebuild librime (rebuild-librime2.bat) before packaging"
     }
+    # Architecture hard gate (2026-11-16): input_methods/rime/rime.dll MUST be
+    # x64. rime-prebuild is a 64-bit Go program and the 64-bit TSF host loads
+    # this dll directly; an x86 build here makes rime-prebuild fail with
+    # "%1 is not a valid Win32 application" and kills Nightly/Release. The x86
+    # engine is consumed only by MoqiDaemon, straight from
+    # librime\build-x86\bin\Release\rime.dll - never from this path.
+    $peBytes = [System.IO.File]::ReadAllBytes($rimeDll)
+    $peOffset = [System.BitConverter]::ToInt32($peBytes, 0x3C)
+    $machine = [System.BitConverter]::ToUInt16($peBytes, $peOffset + 4)
+    if ($machine -ne 0x8664) {
+        throw ("input_methods\rime\rime.dll must be x64 (PE machine 0x8664), got 0x{0:X4}. " -f $machine) +
+              "Rebuild with rebuild-librime2.bat (x64); the x86 engine belongs to the daemon only."
+    }
+    Write-Host "[INFO] rime.dll architecture gate: x64 OK"
     Copy-Item -LiteralPath $rimeDll -Destination (Join-Path $PackageDir "input_methods\rime\rime.dll") -Force
     Write-Host "[INFO] Copied rime.dll into package output"
 
