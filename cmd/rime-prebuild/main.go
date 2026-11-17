@@ -87,6 +87,15 @@ func main() {
 		if err := mergeColloquialDictPatch(*dataDir); err != nil {
 			log.Printf("口语词典补丁合入失败（继续预编译）: %v", err)
 		}
+		if err := mergeProperNounsDictPatch(*dataDir); err != nil {
+			log.Printf("专名词典补丁合入失败（继续预编译）: %v", err)
+		}
+		if err := mergeUserDictPatch(*dataDir); err != nil {
+			log.Printf("用户积累词库补丁合入失败（继续预编译）: %v", err)
+		}
+		if err := mergePlaceWeightPatch(*dataDir); err != nil {
+			log.Printf("地名权重提升补丁合入失败（继续预编译）: %v", err)
+		}
 		if err := patchDemoteJunk(*dataDir); err != nil {
 			log.Printf("速朽热词降权失败（继续预编译）: %v", err)
 		}
@@ -856,6 +865,42 @@ func mergeColloquialDictPatch(dataDir string) error {
 	src := filepath.Join("input_methods", "rime", "patches", "moqi_colloquial.dict.yaml")
 	return installDictPatch(src, dataDir, "moqi_colloquial", "- cn_dicts/moqi_bigram",
 		"高频口语词典补丁（moqi 打包期合入）")
+}
+
+// mergeProperNounsDictPatch 把专名词典补丁合入打包数据（同 bigram 管线，幂等）。
+// 来源 patches/moqi_propernouns.dict.yaml（2026-11-17 生成，数据源与审计
+// 流程见其头部注释）：补主词典缺的行政区划/铁路车站/机场/企业软件名。
+// 起因：用户报"浩辰""中望"这类知名公司名打不出，连带审计出省市区县
+// 缺 173 条、铁路车站缺 2107 条（含"XX站"形式共 4076 条）。
+// 权重刻意压低（车站 40/机场 80/企业 150，远低于同码常用词的万级），
+// 保证可打出但不抢正常候选位——与 patchDemoteJunk 的价值观一致。
+func mergeProperNounsDictPatch(dataDir string) error {
+	src := filepath.Join("input_methods", "rime", "patches", "moqi_propernouns.dict.yaml")
+	return installDictPatch(src, dataDir, "moqi_propernouns", "- cn_dicts/moqi_colloquial",
+		"专名词典补丁：地名/车站/机场/企业名（moqi 打包期合入）")
+}
+
+// mergeUserDictPatch 把用户积累词库补丁合入打包数据（同 bigram 管线，幂等）。
+// 来源 patches/moqi_userdict.dict.yaml（142169 条，清洗流程见其头部注释）。
+// 权重统一 3：只保证「能打出来」，永不与常用词争候选位——实测 11712 条
+// 存在权重更高的同码竞争词，补丁一律排在后面，不影响正常输入体验。
+func mergeUserDictPatch(dataDir string) error {
+	src := filepath.Join("input_methods", "rime", "patches", "moqi_userdict.dict.yaml")
+	return installDictPatch(src, dataDir, "moqi_userdict", "- cn_dicts/moqi_propernouns",
+		"用户积累词库补丁（moqi 打包期合入）")
+}
+
+// mergePlaceWeightPatch 合入地名权重提升补丁（同 bigram 管线，幂等）。
+// 来源 patches/moqi_place_weight.dict.yaml（3855 条，策略见其头部注释）。
+// 问题：词库里已有省市地名但权重 1-3，与普通词同码时被压过——实测
+// chengdu 首选"程度"、luohe 首选"络合"，地级市打不出来。本补丁只对
+// 已有词条提权（省 80000 / 省会 50000 / 地级市 20000 / 区县 3000），
+// 不新增词。用户定调：一样/程度这类 10 万级超高频词压过地级市可接受，
+// 地级市不能输给化学术语这类低频词。
+func mergePlaceWeightPatch(dataDir string) error {
+	src := filepath.Join("input_methods", "rime", "patches", "moqi_place_weight.dict.yaml")
+	return installDictPatch(src, dataDir, "moqi_place_weight", "- cn_dicts/moqi_userdict",
+		"地名权重提升补丁（moqi 打包期合入）")
 }
 
 // installDictPatch 把一份词典补丁安装进打包数据并挂 import_tables。

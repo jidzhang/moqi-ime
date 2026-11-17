@@ -1,0 +1,4329 @@
+# 专名词库补丁（地名/车站/机场/企业软件名）
+# 生成方式：eval-workspace/propernoun-audit/ 下的审计脚本（2026-11-17）
+#   数据源：民政部行政区划（modood/Administrative-divisions-of-China）
+#          全国铁路车站（undef-i/China-Railway-Station-Database，4582 站）
+#          国内机场（lyh2668/station-cities）
+#   读音：freeze-readings（pinyin-data + phrase-pinyin-data）生成，
+#         再对多音字人工审读定版（长/都/圩/漯/襄/信 等 30+ 处修正）
+# 权重依据：车站 40（低于地级市 400/区县 120，高于普通词），
+#          机场 80，企业软件名 150（用户日常高频提及）
+# 注意：只补词库缺口，不与既有词条冲突（生成时已过滤）。
+---
+name: moqi_propernouns
+version: "1"
+sort: by_weight
+...
+361度	san liu yi du	150
+一步滩	yi bu tan	40
+一步滩站	yi bu tan zhan	40
+一间堡	yi jian bao	40
+一间堡站	yi jian bao zhan	40
+一面坡	yi mian po	40
+一面坡北	yi mian po bei	40
+一面坡北站	yi mian po bei zhan	40
+一面坡站	yi mian po zhan	40
+丁家园	ding jia yuan	40
+丁家园站	ding jia yuan zhan	40
+七台河西	qi tai he xi	40
+七台河西站	qi tai he xi zhan	40
+七家子	qi jia zi	40
+七家子站	qi jia zi zhan	40
+七泉湖	qi quan hu	40
+七泉湖站	qi quan hu zhan	40
+七甸	qi dian	40
+七甸站	qi dian zhan	40
+七苏木	qi su mu	40
+七苏木站	qi su mu zhan	40
+七营	qi ying	40
+七营站	qi ying zhan	40
+七龙星	qi long xing	40
+七龙星站	qi long xing zhan	40
+万发屯	wan fa tun	40
+万发屯站	wan fa tun zhan	40
+万家屯	wan jia tun	40
+万家屯站	wan jia tun zhan	40
+三义井	san yi jing	40
+三义井站	san yi jing zhan	40
+三井子	san jing zi	40
+三井子站	san jing zi zhan	40
+三元坝	san yuan ba	40
+三元坝站	san yuan ba zhan	40
+三元西	san yuan xi	40
+三元西站	san yuan xi zhan	40
+三关口	san guan kou	40
+三关口站	san guan kou zhan	40
+三十里堡	san shi li pu	40
+三十里堡站	san shi li pu zhan	40
+三合庄	san he zhuang	40
+三合庄站	san he zhuang zhan	40
+三堂集	san tang ji	40
+三堂集站	san tang ji zhan	40
+三堆子	san dui zi	40
+三堆子站	san dui zi zhan	40
+三家寨	san jia zhai	40
+三家寨站	san jia zhai zhan	40
+三星存储	san xing cun chu	150
+三水北	san shui bei	40
+三水北站	san shui bei zhan	40
+三水南	san shui nan	40
+三水南站	san shui nan zhan	40
+三汇坝	san hui ba	40
+三汇坝站	san hui ba zhan	40
+三江南	san jiang nan	40
+三江南站	san jiang nan zhan	40
+三源浦	san yuan pu	40
+三源浦站	san yuan pu zhan	40
+三灶东	san zao dong	40
+三灶东站	san zao dong zhan	40
+三花石	san hua shi	40
+三花石站	san hua shi zhan	40
+三营	san ying	40
+三营站	san ying zhan	40
+三道堰	san dao yan	40
+三道堰站	san dao yan zhan	40
+三道湖	san dao hu	40
+三道湖站	san dao hu zhan	40
+三道营	san dao ying	40
+三道营站	san dao ying zhan	40
+三门峡西	san men xia xi	40
+三门峡西站	san men xia xi zhan	40
+上仓	shang cang	40
+上仓站	shang cang zhan	40
+上安	shang an	40
+上安站	shang an zhan	40
+上店	shang dian	40
+上店站	shang dian zhan	40
+上普雄	shang pu xiong	40
+上普雄站	shang pu xiong zhan	40
+上板城	shang ban cheng	40
+上板城南	shang ban cheng nan	40
+上板城南站	shang ban cheng nan zhan	40
+上板城站	shang ban cheng zhan	40
+上海南	shang hai nan	40
+上海南站	shang hai nan zhan	40
+上腰墩	shang yao dun	40
+上腰墩站	shang yao dun zhan	40
+上虞北	shang yu bei	40
+上虞北站	shang yu bei zhan	40
+上虞区	shang yu qu	120
+上虞南	shang yu nan	40
+上虞南站	shang yu nan zhan	40
+上西铺	shang xi pu	40
+上西铺站	shang xi pu zhan	40
+上郭关	shang guo guan	40
+上郭关站	shang guo guan zhan	40
+上高镇	shang gao zhen	40
+上高镇站	shang gao zhen zhan	40
+下两	xia liang	40
+下两站	xia liang zhan	40
+下台子	xia tai zi	40
+下台子站	xia tai zi zhan	40
+下坑子	xia keng zi	40
+下坑子站	xia keng zi zhan	40
+下城子	xia cheng zi	40
+下城子站	xia cheng zi zhan	40
+下普雄	xia pu xiong	40
+下普雄站	xia pu xiong zhan	40
+下板城	xia ban cheng	40
+下板城站	xia ban cheng zhan	40
+下社	xia she	40
+下社站	xia she zhan	40
+下花园北	xia hua yuan bei	40
+下花园北站	xia hua yuan bei zhan	40
+下马塘	xia ma tang	40
+下马塘站	xia ma tang zhan	40
+丙谷	bing gu	40
+丙谷站	bing gu zhan	40
+东二道河	dong er dao he	40
+东二道河站	dong er dao he zhan	40
+东佳木斯	dong jia mu si	40
+东佳木斯站	dong jia mu si zhan	40
+东元庆	dong yuan qing	40
+东元庆站	dong yuan qing zhan	40
+东升坝	dong sheng ba	40
+东升坝站	dong sheng ba zhan	40
+东南营子	dong nan ying zi	40
+东南营子站	dong nan ying zi zhan	40
+东城南	dong cheng nan	40
+东城南站	dong cheng nan zhan	40
+东壕	dong hao	40
+东壕站	dong hao zhan	40
+东大坝	dong da ba	40
+东大坝站	dong da ba zhan	40
+东安东	dong an dong	40
+东安东站	dong an dong zhan	40
+东岔	dong cha	40
+东岔站	dong cha zhan	40
+东戌	dong xu	40
+东戌站	dong xu zhan	40
+东明村	dong ming cun	40
+东明村站	dong ming cun zhan	40
+东沟门	dong gou men	40
+东沟门站	dong gou men zhan	40
+东淤地	dong yu di	40
+东淤地站	dong yu di zhan	40
+东港北	dong gang bei	40
+东港北站	dong gang bei zhan	40
+东田良	dong tian liang	40
+东田良站	dong tian liang zhan	40
+东胜东	dong sheng dong	40
+东胜东站	dong sheng dong zhan	40
+东胜西	dong sheng xi	40
+东胜西站	dong sheng xi zhan	40
+东花园北	dong hua yuan bei	40
+东花园北站	dong hua yuan bei zhan	40
+东莞南	dong guan nan	40
+东莞南站	dong guan nan zhan	40
+东莞西	dong guan xi	40
+东莞西站	dong guan xi zhan	40
+东营南	dong ying nan	40
+东营南站	dong ying nan zhan	40
+东营子	dong ying zi	40
+东营子站	dong ying zi zhan	40
+东营经济技术开发区	dong ying jing ji ji shu kai fa qu	120
+东边井	dong bian jing	40
+东边井站	dong bian jing zhan	40
+东通化	dong tong hua	40
+东通化站	dong tong hua zhan	40
+东阳关	dong yang guan	40
+东阳关站	dong yang guan zhan	40
+东阳北	dong yang bei	40
+东阳北站	dong yang bei zhan	40
+东风南	dong feng nan	40
+东风南站	dong feng nan zhan	40
+两所屯	liang suo tun	40
+两所屯站	liang suo tun zhan	40
+中卫南	zhong wei nan	40
+中卫南站	zhong wei nan zhan	40
+中台子	zhong tai zi	40
+中台子站	zhong tai zi zhan	40
+中嘴	zhong zui	40
+中嘴站	zhong zui zhan	40
+中国中铁	zhong guo zhong tie	150
+中宁东	zhong ning dong	40
+中宁东站	zhong ning dong zhan	40
+中宁南	zhong ning nan	40
+中宁南站	zhong ning nan zhan	40
+中寨	zhong zhai	40
+中寨站	zhong zhai zhan	40
+中新苏滁高新技术产业开发区	zhong xin su chu gao xin ji shu chan ye kai fa qu	120
+中望	zhong wang	150
+中沙群岛的岛礁及其海域	zhong sha qun dao de dao jiao ji qi hai yu	120
+丰乐镇	feng le zhen	40
+丰乐镇站	feng le zhen zhan	40
+丰城东	feng cheng dong	40
+丰城东站	feng cheng dong zhan	40
+丰城南	feng cheng nan	40
+丰城南站	feng cheng nan zhan	40
+丰广	feng guang	40
+丰广站	feng guang zhan	40
+丰林县	feng lin xian	120
+丰水村	feng shui cun	40
+丰水村站	feng shui cun zhan	40
+丰顺东	feng shun dong	40
+丰顺东站	feng shun dong zhan	40
+串子沟	chuan zi gou	40
+串子沟站	chuan zi gou zhan	40
+临巴溪	lin ba xi	40
+临巴溪站	lin ba xi zhan	40
+临平区	lin ping qu	120
+临平南	lin ping nan	40
+临平南站	lin ping nan zhan	40
+临桂区	lin gui qu	120
+临江场	lin jiang chang	40
+临江场站	lin jiang chang zhan	40
+临江寺	lin jiang si	40
+临江寺站	lin jiang si zhan	40
+临江溪	lin jiang xi	40
+临江溪站	lin jiang xi zhan	40
+临汾西	lin fen xi	40
+临汾西站	lin fen xi zhan	40
+临沂东	lin yi dong	40
+临沂东站	lin yi dong zhan	40
+临沂高新技术产业开发区	lin yi gao xin ji shu chan ye kai fa qu	120
+临泽南	lin ze nan	40
+临泽南站	lin ze nan zhan	40
+临海南	lin hai nan	40
+临海南站	lin hai nan zhan	40
+临高南	lin gao nan	40
+临高南站	lin gao nan zhan	40
+丹东西	dan dong xi	40
+丹东西站	dan dong xi zhan	40
+丹阳北	dan yang bei	40
+丹阳北站	dan yang bei zhan	40
+乃托	nai tuo	40
+乃托站	nai tuo zhan	40
+乃林	nai lin	40
+乃林站	nai lin zhan	40
+么铺	me pu	40
+么铺站	me pu zhan	40
+义井	yi jing	40
+义井站	yi jing zhan	40
+义县西	yi xian xi	40
+义县西站	yi xian xi zhan	40
+乌兰丘	wu lan qiu	40
+乌兰丘站	wu lan qiu zhan	40
+乌兰昭	wu lan zhao	40
+乌兰昭站	wu lan zhao zhan	40
+乌兰木图	wu lan mu tu	40
+乌兰木图站	wu lan mu tu zhan	40
+乌兰胡同	wu lan hu tong	40
+乌兰胡同站	wu lan hu tong zhan	40
+乌力吉尔	wu li ji er	40
+乌力吉尔站	wu li ji er zhan	40
+乌固诺尔	wu gu nuo er	40
+乌固诺尔站	wu gu nuo er zhan	40
+乌奴耳	wu nu er	40
+乌奴耳站	wu nu er zhan	40
+乌尔旗汗	wu er qi han	40
+乌尔旗汗站	wu er qi han zhan	40
+乌拉盖管理区管委会	wu la gai guan li qu guan wei hui	120
+乌斯土	wu si tu	40
+乌斯土站	wu si tu zhan	40
+乌海北	wu hai bei	40
+乌海北站	wu hai bei zhan	40
+乌翠区	wu cui qu	120
+乌西	wu xi	40
+乌西站	wu xi zhan	40
+乌鲁布铁	wu lu bu tie	40
+乌鲁布铁站	wu lu bu tie zhan	40
+乌龙泉南	wu long quan nan	40
+乌龙泉南站	wu long quan nan zhan	40
+乐同	le tong	40
+乐同站	le tong zhan	40
+乐善村	le shan cun	40
+乐善村站	le shan cun zhan	40
+乐坝	le ba	40
+乐坝站	le ba zhan	40
+乐山北	le shan bei	40
+乐山北站	le shan bei zhan	40
+乐平北	le ping bei	40
+乐平北站	le ping bei zhan	40
+乐昌东	le chang dong	40
+乐昌东站	le chang dong zhan	40
+乐清东	yue qing dong	40
+乐清东站	yue qing dong zhan	40
+乐素河	le su he	40
+乐素河站	le su he zhan	40
+乐跃	le yue	40
+乐跃站	le yue zhan	40
+乐都南	le du nan	40
+乐都南站	le du nan zhan	40
+乔庄东	qiao zhuang dong	40
+乔庄东站	qiao zhuang dong zhan	40
+九台南	jiu tai nan	40
+九台南站	jiu tai nan zhan	40
+九营	jiu ying	40
+九营站	jiu ying zhan	40
+九郎山	jiu lang shan	40
+九郎山站	jiu lang shan zhan	40
+乳山南	ru shan nan	40
+乳山南站	ru shan nan zhan	40
+乾安	qian an	40
+乾安站	qian an zhan	40
+了墩	le dun	40
+了墩站	le dun zhan	40
+二密河	er mi he	40
+二密河站	er mi he zhan	40
+二岔	er cha	40
+二岔站	er cha zhan	40
+二营	er ying	40
+二营子	er ying zi	40
+二营子站	er ying zi zhan	40
+二营站	er ying zhan	40
+二道岗	er dao gang	40
+二道岗站	er dao gang zhan	40
+二道岩	er dao yan	40
+二道岩站	er dao yan zhan	40
+二道沙河	er dao sha he	40
+二道沙河站	er dao sha he zhan	40
+二道沟门	er dao gou men	40
+二道沟门站	er dao gou men zhan	40
+二道湾	er dao wan	40
+二道湾站	er dao wan zhan	40
+二龙山屯	er long shan tun	40
+二龙山屯站	er long shan tun zhan	40
+二龙村	er long cun	40
+二龙村站	er long cun zhan	40
+于都北	yu dou bei	40
+于都北站	yu dou bei zhan	40
+云从	yun cong	150
+云彩岭	yun cai ling	40
+云彩岭站	yun cai ling zhan	40
+云梦东	yun meng dong	40
+云梦东站	yun meng dong zhan	40
+云浮东	yun fu dong	40
+云浮东站	yun fu dong zhan	40
+云田乡	yun tian xiang	40
+云田乡站	yun tian xiang zhan	40
+五十家子	wu shi jia zi	40
+五十家子站	wu shi jia zi zhan	40
+五叉沟	wu cha gou	40
+五叉沟站	wu cha gou zhan	40
+五府山	wu fu shan	40
+五府山站	wu fu shan zhan	40
+五林	wu lin	40
+五林站	wu lin zhan	40
+五桥	wu qiao	40
+五桥站	wu qiao zhan	40
+五道沟	wu dao gou	40
+五道沟站	wu dao gou zhan	40
+五道河	wu dao he	40
+五道河站	wu dao he zhan	40
+五龙背东	wu long bei dong	40
+五龙背东站	wu long bei dong zhan	40
+井南	jing nan	40
+井南站	jing nan zhan	40
+井店	jing dian	40
+井店站	jing dian zhan	40
+井湾	jing wan	40
+井湾站	jing wan zhan	40
+亚复	ya fu	40
+亚复站	ya fu zhan	40
+亚布力南	ya bu li nan	40
+亚布力南站	ya bu li nan zhan	40
+亚布力西	ya bu li xi	40
+亚布力西站	ya bu li xi zhan	40
+亚沟	ya gou	40
+亚沟站	ya gou zhan	40
+亚河	ya he	40
+亚河站	ya he zhan	40
+亭亮	ting liang	40
+亭亮站	ting liang zhan	40
+亮兵台	liang bing tai	40
+亮兵台站	liang bing tai zhan	40
+亿帆	yi fan	150
+什邡西	shen fang xi	40
+什邡西站	shen fang xi zhan	40
+什里店	shen li dian	40
+什里店站	shen li dian zhan	40
+介休东	jie xiu dong	40
+介休东站	jie xiu dong zhan	40
+仙居南	xian ju nan	40
+仙居南站	xian ju nan zhan	40
+仙桃西	xian tao xi	40
+仙桃西站	xian tao xi zhan	40
+代湾	dai wan	40
+代湾站	dai wan zhan	40
+代马沟	dai ma gou	40
+代马沟站	dai ma gou zhan	40
+以勒	yi lei	40
+以勒站	yi lei zhan	40
+以岭	yi ling	150
+任家店	ren jia dian	40
+任家店站	ren jia dian zhan	40
+任泽区	ren ze qu	120
+伊宁东	yi ning dong	40
+伊宁东站	yi ning dong zhan	40
+伊拉哈	yi la ha	40
+伊拉哈站	yi la ha zhan	40
+伊敏	yi min	40
+伊敏站	yi min zhan	40
+伊美区	yi mei qu	120
+会昌北	hui chang bei	40
+会昌北站	hui chang bei zhan	40
+会理市	hui li shi	120
+低庄	di zhuang	40
+低庄站	di zhuang zhan	40
+低窝铺	di wo pu	40
+低窝铺站	di wo pu zhan	40
+何三家	he san jia	40
+何三家站	he san jia zhan	40
+余姚北	yu yao bei	40
+余姚北站	yu yao bei zhan	40
+余粮堡	yu liang bao	40
+余粮堡站	yu liang bao zhan	40
+佛岭	fu ling	40
+佛岭站	fu ling zhan	40
+佟家	tong jia	40
+佟家站	tong jia zhan	40
+佳木斯西	jia mu si xi	40
+佳木斯西站	jia mu si xi zhan	40
+依吞布拉克	yi tun bu la ke	40
+依吞布拉克站	yi tun bu la ke zhan	40
+依图	yi tu	150
+侯家坪	hou jia ping	40
+侯家坪站	hou jia ping zhan	40
+侯杖子	hou zhang zi	40
+侯杖子站	hou zhang zi zhan	40
+侯马西	hou ma xi	40
+侯马西站	hou ma xi zhan	40
+保定高新技术产业开发区	bao ding gao xin ji shu chan ye kai fa qu	120
+保家楼	bao jia lou	40
+保家楼站	bao jia lou zhan	40
+俞冲	yu chong	40
+俞冲站	yu chong zhan	40
+信丰西	xin feng xi	40
+信丰西站	xin feng xi zhan	40
+信都区	xin du qu	120
+信阳高新技术产业开发区	xin yang gao xin ji shu chan ye kai fa qu	120
+修武西	xiu wu xi	40
+修武西站	xiu wu xi zhan	40
+倭肯	wo ken	40
+倭肯站	wo ken zhan	40
+偃师区	yan shi qu	120
+偏岭	pian ling	40
+偏岭站	pian ling zhan	40
+偏店	pian dian	40
+偏店站	pian dian zhan	40
+元田坝	yuan tian ba	40
+元田坝站	yuan tian ba zhan	40
+元谋西	yuan mou xi	40
+元谋西站	yuan mou xi zhan	40
+兆芯	zhao xin	150
+光威	guang wei	150
+克一河	ke yi he	40
+克一河站	ke yi he zhan	40
+免渡河	mian du he	40
+免渡河站	mian du he zhan	40
+兑镇	dui zhen	40
+兑镇站	dui zhen zhan	40
+兖州区	yan zhou qu	120
+全州南	quan zhou nan	40
+全州南站	quan zhou nan zhan	40
+八仙筒	ba xian tong	40
+八仙筒站	ba xian tong zhan	40
+八家子	ba jia zi	40
+八家子站	ba jia zi zhan	40
+八方山	ba fang shan	40
+八方山站	ba fang shan zhan	40
+八盘峡	ba pan xia	40
+八盘峡站	ba pan xia zhan	40
+八苏木	ba su mu	40
+八苏木站	ba su mu zhan	40
+八虎力	ba hu li	40
+八虎力站	ba hu li zhan	40
+八里甸子	ba li dian zi	40
+八里甸子站	ba li dian zi zhan	40
+八面城	ba mian cheng	40
+八面城站	ba mian cheng zhan	40
+八面通	ba mian tong	40
+八面通站	ba mian tong zhan	40
+公主埂	gong zhu geng	40
+公主埂站	gong zhu geng zhan	40
+公主岭南	gong zhu ling nan	40
+公主岭南站	gong zhu ling nan zhan	40
+公兴	gong xing	40
+公兴站	gong xing zhan	40
+公庙子	gong miao zi	40
+公庙子站	gong miao zi zhan	40
+公积坂	gong ji ban	40
+公积坂站	gong ji ban zhan	40
+公营子	gong ying zi	40
+公营子站	gong ying zi zhan	40
+六个鸡	liu ge ji	40
+六个鸡站	liu ge ji zhan	40
+六合镇	liu he zhen	40
+六合镇站	liu he zhen zhan	40
+六地沟	liu di gou	40
+六地沟站	liu di gou zhan	40
+六枝南	liu zhi nan	40
+六枝南站	liu zhi nan zhan	40
+六盘水东	liu pan shui dong	40
+六盘水东站	liu pan shui dong zhan	40
+六盘水南	liu pan shui nan	40
+六盘水南站	liu pan shui nan zhan	40
+六道河	liu dao he	40
+六道河子	liu dao he zi	40
+六道河子站	liu dao he zi zhan	40
+六道河站	liu dao he zhan	40
+兰家屯	lan jia tun	40
+兰家屯站	lan jia tun zhan	40
+兰岗	lan gang	40
+兰岗站	lan gang zhan	40
+兰岭	lan ling	40
+兰岭站	lan ling zhan	40
+兰棱	lan leng	40
+兰棱站	lan leng zhan	40
+兰考南	lan kao nan	40
+兰考南站	lan kao nan zhan	40
+兰陵北	lan ling bei	40
+兰陵北站	lan ling bei zhan	40
+关寨	guan zhai	40
+关寨站	guan zhai zhan	40
+关村坝	guan cun ba	40
+关村坝站	guan cun ba zhan	40
+关林	guan lin	40
+关林站	guan lin zhan	40
+兴凯	xing kai	40
+兴凯站	xing kai zhan	40
+兴和北	xing he bei	40
+兴和北站	xing he bei zhan	40
+兴和西	xing he xi	40
+兴和西站	xing he xi zhan	40
+兴国西	xing guo xi	40
+兴国西站	xing guo xi zhan	40
+兴城西	xing cheng xi	40
+兴城西站	xing cheng xi zhan	40
+兴安北	xing an bei	40
+兴安北站	xing an bei zhan	40
+兴文南	xing wen nan	40
+兴文南站	xing wen nan zhan	40
+兴无	xing wu	40
+兴无站	xing wu zhan	40
+兴泉堡	xing quan bao	40
+兴泉堡站	xing quan bao zhan	40
+兴福	xing fu	40
+兴福站	xing fu zhan	40
+兴莲	xing lian	40
+兴莲站	xing lian zhan	40
+兴隆县西	xing long xian xi	40
+兴隆县西站	xing long xian xi zhan	40
+兴隆店	xing long dian	40
+兴隆店站	xing long dian zhan	40
+养马河	yang ma he	40
+养马河站	yang ma he zhan	40
+内江东	nei jiang dong	40
+内江东站	nei jiang dong zhan	40
+内江北	nei jiang bei	40
+内江北站	nei jiang bei zhan	40
+内江南	nei jiang nan	40
+内江南站	nei jiang nan zhan	40
+内蒙古阿拉善高新技术产业开发区	nei meng gu a la shan gao xin ji shu chan ye kai fa qu	120
+冕山	mian shan	40
+冕山站	mian shan zhan	40
+军粮城北	jun liang cheng bei	40
+军粮城北站	jun liang cheng bei zhan	40
+冠豸山	guan zhi shan	40
+冠豸山南	guan zhi shan nan	40
+冠豸山南站	guan zhi shan nan zhan	40
+冠豸山站	guan zhi shan zhan	40
+冯家山	feng jia shan	40
+冯家山站	feng jia shan zhan	40
+冯屯	feng tun	40
+冯屯站	feng tun zhan	40
+冷坝	leng ba	40
+冷坝站	leng ba zhan	40
+冷水江东	leng shui jiang dong	40
+冷水江东站	leng shui jiang dong zhan	40
+准东	zhun dong	40
+准东站	zhun dong zhan	40
+准沙日乌苏	zhun sha ri wu su	40
+准沙日乌苏站	zhun sha ri wu su zhan	40
+凉红	liang hong	40
+凉红站	liang hong zhan	40
+凉雾	liang wu	40
+凉雾站	liang wu zhan	40
+凌海南	ling hai nan	40
+凌海南站	ling hai nan zhan	40
+凌源东	ling yuan dong	40
+凌源东站	ling yuan dong zhan	40
+凤台南	feng tai nan	40
+凤台南站	feng tai nan zhan	40
+凤城东	feng cheng dong	40
+凤城东站	feng cheng dong zhan	40
+凤州	feng zhou	40
+凤州站	feng zhou zhan	40
+凯北	kai bei	40
+凯北站	kai bei zhan	40
+刀尔登	dao er deng	40
+刀尔登站	dao er deng zhan	40
+刘屯	liu tun	40
+刘屯站	liu tun zhan	40
+刘沟	liu gou	40
+刘沟站	liu gou zhan	40
+创业村	chuang ye cun	40
+创业村站	chuang ye cun zhan	40
+利州区	li zhou qu	120
+利津南	li jin nan	40
+利津南站	li jin nan zhan	40
+别山	bie shan	40
+别山站	bie shan zhan	40
+到保	dao bao	40
+到保站	dao bao zhan	40
+前磨头	qian mo tou	40
+前磨头站	qian mo tou zhan	40
+前窑	qian yao	40
+前窑站	qian yao zhan	40
+前苇塘	qian wei tang	40
+前苇塘站	qian wei tang zhan	40
+前锋区	qian feng qu	120
+加劳	jia lao	40
+加劳站	jia lao zhan	40
+加南	jia nan	40
+加南站	jia nan zhan	40
+励家	li jia	40
+励家站	li jia zhan	40
+劳动屯	lao dong tun	40
+劳动屯站	lao dong tun zhan	40
+包头稀土高新技术产业开发区	bao tou xi tu gao xin ji shu chan ye kai fa qu	120
+包头西一场	bao tou xi yi chang	40
+包头西一场站	bao tou xi yi chang zhan	40
+包头西下行乘将所	bao tou xi xia xing cheng jiang suo	40
+包头西下行乘将所站	bao tou xi xia xing cheng jiang suo zhan	40
+包头西五场	bao tou xi wu chang	40
+包头西五场站	bao tou xi wu chang zhan	40
+化念	hua nian	40
+化念站	hua nian zhan	40
+北义井	bei yi jing	40
+北义井站	bei yi jing zhan	40
+北井子	bei jing zi	40
+北井子站	bei jing zi zhan	40
+北兴安	bei xing an	40
+北兴安站	bei xing an zhan	40
+北台	bei tai	40
+北台子	bei tai zi	40
+北台子站	bei tai zi zhan	40
+北台站	bei tai zhan	40
+北头河	bei tou he	40
+北头河站	bei tou he zhan	40
+北岗	bei gang	40
+北岗站	bei gang zhan	40
+北板桥	bei ban qiao	40
+北板桥站	bei ban qiao zhan	40
+北滘	bei jiao	40
+北滘站	bei jiao zhan	40
+北滩	bei tan	40
+北滩站	bei tan zhan	40
+北牟	bei mou	40
+北牟站	bei mou zhan	40
+北磴	bei deng	40
+北磴站	bei deng zhan	40
+北票南	bei piao nan	40
+北票南站	bei piao nan zhan	40
+北舍	bei she	40
+北舍站	bei she zhan	40
+北马圈子	bei ma juan zi	40
+北马圈子站	bei ma juan zi zhan	40
+十八台	shi ba tai	40
+十八台站	shi ba tai zhan	40
+十家子	shi jia zi	40
+十家子站	shi jia zi zhan	40
+千河	qian he	40
+千河站	qian he zhan	40
+升昌	sheng chang	40
+升昌站	sheng chang zhan	40
+午汲	wu ji	40
+午汲站	wu ji zhan	40
+半截店	ban jie dian	40
+半截店站	ban jie dian zhan	40
+半截河	ban jie he	40
+半截河站	ban jie he zhan	40
+华孚	hua fu	150
+华容东	hua rong dong	40
+华容东站	hua rong dong zhan	40
+华容南	hua rong nan	40
+华容南站	hua rong nan zhan	40
+华州	hua zhou	40
+华州站	hua zhou zhan	40
+华菱	hua ling	150
+协荣	xie rong	40
+协荣站	xie rong zhan	40
+卓资东	zhuo zi dong	40
+卓资东站	zhuo zi dong zhan	40
+南仇	nan chou	40
+南仇站	nan chou zhan	40
+南充东	nan chong dong	40
+南充东站	nan chong dong zhan	40
+南关岭	nan guan ling	40
+南关岭站	nan guan ling zhan	40
+南兴安	nan xing an	40
+南兴安站	nan xing an zhan	40
+南华北	nan hua bei	40
+南华北站	nan hua bei zhan	40
+南博山	nan bo shan	40
+南博山站	nan bo shan zhan	40
+南口前	nan kou qian	40
+南口前站	nan kou qian zhan	40
+南城司	nan cheng si	40
+南城司站	nan cheng si zhan	40
+南堡北	nan bao bei	40
+南堡北站	nan bao bei zhan	40
+南大庙	nan da miao	40
+南大庙站	nan da miao zhan	40
+南宁西	nan ning xi	40
+南宁西站	nan ning xi zhan	40
+南安北	nan an bei	40
+南安北站	nan an bei zhan	40
+南宫东	nan gong dong	40
+南宫东站	nan gong dong zhan	40
+南尔岗	nan er gang	40
+南尔岗站	nan er gang zhan	40
+南山北	nan shan bei	40
+南山北站	nan shan bei zhan	40
+南岸坝	nan an ba	40
+南岸坝站	nan an ba zhan	40
+南峧	nan jiao	40
+南峧站	nan jiao zhan	40
+南峪	nan yu	40
+南峪站	nan yu zhan	40
+南平北	nan ping bei	40
+南平北站	nan ping bei zhan	40
+南平南	nan ping nan	40
+南平南站	nan ping nan zhan	40
+南张村	nan zhang cun	40
+南张村站	nan zhang cun zhan	40
+南彭	nan peng	40
+南彭站	nan peng zhan	40
+南昌东	nan chang dong	40
+南昌东站	nan chang dong zhan	40
+南昌南	nan chang nan	40
+南昌南站	nan chang nan zhan	40
+南曹	nan cao	40
+南曹站	nan cao zhan	40
+南朗	nan lang	40
+南朗站	nan lang zhan	40
+南木	nan mu	40
+南木站	nan mu zhan	40
+南杂木	nan za mu	40
+南杂木站	nan za mu zhan	40
+南江口	nan jiang kou	40
+南江口站	nan jiang kou zhan	40
+南汤	nan tang	40
+南汤站	nan tang zhan	40
+南沟	nan gou	40
+南沟站	nan gou zhan	40
+南河川	nan he chuan	40
+南河川站	nan he chuan zhan	40
+南洼	nan wa	40
+南洼站	nan wa zhan	40
+南洼营	nan wa ying	40
+南洼营站	nan wa ying zhan	40
+南湖东	nan hu dong	40
+南湖东站	nan hu dong zhan	40
+南湾子	nan wan zi	40
+南湾子站	nan wan zi zhan	40
+南溪北	nan xi bei	40
+南溪北站	nan xi bei zhan	40
+南甸村	nan dian cun	40
+南甸村站	nan dian cun zhan	40
+南翔北	nan xiang bei	40
+南翔北站	nan xiang bei zhan	40
+南芬北	nan fen bei	40
+南芬北站	nan fen bei zhan	40
+南观村	nan guan cun	40
+南观村站	nan guan cun zhan	40
+南通经济技术开发区	nan tong jing ji ji shu kai fa qu	120
+南阳寨	nan yang zhai	40
+南阳寨站	nan yang zhai zhan	40
+南阳市城乡一体化示范区	nan yang shi cheng xiang yi ti hua shi fan qu	120
+南阳高新技术产业开发区	nan yang gao xin ji shu chan ye kai fa qu	120
+南陈铺	nan chen pu	40
+南陈铺站	nan chen pu zhan	40
+博乐东	bo le dong	40
+博乐东站	bo le dong zhan	40
+博罗北	bo luo bei	40
+博罗北站	bo luo bei zhan	40
+博超	bo chao	150
+卡路屯	ka lu tun	40
+卡路屯站	ka lu tun zhan	40
+卧牛河	wo niu he	40
+卧牛河站	wo niu he zhan	40
+卧虎屯	wo hu tun	40
+卧虎屯站	wo hu tun zhan	40
+卧里屯	wo li tun	40
+卧里屯站	wo li tun zhan	40
+卫辉南	wei hui nan	40
+卫辉南站	wei hui nan zhan	40
+即墨北	ji mo bei	40
+即墨北站	ji mo bei zhan	40
+厉家寨	li jia zhai	40
+厉家寨站	li jia zhai zhan	40
+厚街	hou jie	40
+厚街站	hou jie zhan	40
+原平西	yuan ping xi	40
+原平西站	yuan ping xi zhan	40
+厦门高崎	xia men gao qi	40
+厦门高崎站	xia men gao qi zhan	40
+双凤驿	shuang feng yi	40
+双凤驿站	shuang feng yi zhan	40
+双城北	shuang cheng bei	40
+双城北站	shuang cheng bei zhan	40
+双子河	shuang zi he	40
+双子河站	shuang zi he zhan	40
+双安屯	shuang an tun	40
+双安屯站	shuang an tun zhan	40
+双峰北	shuang feng bei	40
+双峰北站	shuang feng bei zhan	40
+双泡子	shuang pao zi	40
+双泡子站	shuang pao zi zhan	40
+双洋	shuang yang	40
+双洋站	shuang yang zhan	40
+双流西	shuang liu xi	40
+双流西站	shuang liu xi zhan	40
+双石桥	shuang shi qiao	40
+双石桥站	shuang shi qiao zhan	40
+双羊店	shuang yang dian	40
+双羊店站	shuang yang dian zhan	40
+双鸭山西	shuang ya shan xi	40
+双鸭山西站	shuang ya shan xi zhan	40
+双龙南	shuang long nan	40
+双龙南站	shuang long nan zhan	40
+双龙山	shuang long shan	40
+双龙山站	shuang long shan zhan	40
+叙永北	xu yong bei	40
+叙永北站	xu yong bei zhan	40
+古丈西	gu zhang xi	40
+古丈西站	gu zhang xi zhan	40
+古东	gu dong	40
+古东站	gu dong zhan	40
+古城东	gu cheng dong	40
+古城东站	gu cheng dong zhan	40
+古城子	gu cheng zi	40
+古城子站	gu cheng zi zhan	40
+古家沱	gu jia tuo	40
+古家沱站	gu jia tuo zhan	40
+古尔班	gu er ban	40
+古尔班站	gu er ban zhan	40
+古源	gu yuan	40
+古源站	gu yuan zhan	40
+古田北	gu tian bei	40
+古田北站	gu tian bei zhan	40
+古茗	gu ming	150
+古路	gu lu	40
+古路站	gu lu zhan	40
+古里金	gu li jin	40
+古里金站	gu li jin zhan	40
+句容西	ju rong xi	40
+句容西站	ju rong xi zhan	40
+台安南	tai an nan	40
+台安南站	tai an nan zhan	40
+台州西	tai zhou xi	40
+台州西站	tai zhou xi zhan	40
+台集屯	tai ji tun	40
+台集屯站	tai ji tun zhan	40
+史家铺	shi jia pu	40
+史家铺站	shi jia pu zhan	40
+叶柏寿	ye bai shou	40
+叶柏寿站	ye bai shou zhan	40
+叶榭	ye xie	40
+叶榭站	ye xie zhan	40
+司家岭	si jia ling	40
+司家岭站	si jia ling zhan	40
+合肥新站高新技术产业开发区	he fei xin zhan gao xin ji shu chan ye kai fa qu	120
+合肥经济技术开发区	he fei jing ji ji shu kai fa qu	120
+合肥高新技术产业开发区	he fei gao xin ji shu chan ye kai fa qu	120
+合阳北	he yang bei	40
+合阳北站	he yang bei zhan	40
+吉兰太	ji lan tai	40
+吉兰太站	ji lan tai zhan	40
+吉安西	ji an xi	40
+吉安西站	ji an xi zhan	40
+吉新河	ji xin he	40
+吉新河站	ji xin he zhan	40
+吉林中国新加坡食品区	ji lin zhong guo xin jia po shi pin qu	120
+吉林松原经济开发区	ji lin song yuan jing ji kai fa qu	120
+吉林白城经济开发区	ji lin bai cheng jing ji kai fa qu	120
+吉林经济开发区	ji lin jing ji kai fa qu	120
+吉林高新技术产业开发区	ji lin gao xin ji shu chan ye kai fa qu	120
+吉水西	ji shui xi	40
+吉水西站	ji shui xi zhan	40
+吉首东	ji shou dong	40
+吉首东站	ji shou dong zhan	40
+同望	tong wang	150
+后寨	hou zhai	40
+后寨站	hou zhai zhan	40
+吐列毛杜	tu lie mao du	40
+吐列毛杜站	tu lie mao du zhan	40
+吐鲁番北	tu lu fan bei	40
+吐鲁番北站	tu lu fan bei zhan	40
+君实	jun shi	150
+含山南	han shan nan	40
+含山南站	han shan nan zhan	40
+吴圩	wu wei	40
+吴圩站	wu wei zhan	40
+吴场	wu chang	40
+吴场站	wu chang zhan	40
+吴官田	wu guan tian	40
+吴官田站	wu guan tian zhan	40
+吴家屯	wu jia tun	40
+吴家屯站	wu jia tun zhan	40
+吴家川	wu jia chuan	40
+吴家川站	wu jia chuan zhan	40
+周口东	zhou kou dong	40
+周口东站	zhou kou dong zhan	40
+周口临港开发区	zhou kou lin gang kai fa qu	120
+周士庄	zhou shi zhuang	40
+周士庄站	zhou shi zhuang zhan	40
+周家屯	zhou jia tun	40
+周家屯站	zhou jia tun zhan	40
+呼和浩特经济技术开发区	hu he hao te jing ji ji shu kai fa qu	120
+呼尔吉音	hu er ji yin	40
+呼尔吉音站	hu er ji yin zhan	40
+呼源	hu yuan	40
+呼源站	hu yuan zhan	40
+呼鲁斯太	hu lu si tai	40
+呼鲁斯太站	hu lu si tai zhan	40
+咋子	za zi	40
+咋子站	za zi zhan	40
+和什托洛盖	he shen tuo luo gai	40
+和什托洛盖站	he shen tuo luo gai zhan	40
+和平北	he ping bei	40
+和平北站	he ping bei zhan	40
+咸宁东	xian ning dong	40
+咸宁东站	xian ning dong zhan	40
+咸宁北	xian ning bei	40
+咸宁北站	xian ning bei zhan	40
+咸宁南	xian ning nan	40
+咸宁南站	xian ning nan zhan	40
+咸阳北	xian yang bei	40
+咸阳北站	xian yang bei zhan	40
+咸阳秦都	xian yang qin dou	40
+咸阳秦都站	xian yang qin dou zhan	40
+咸阳西	xian yang xi	40
+咸阳西站	xian yang xi zhan	40
+哈业胡同	ha ye hu tong	40
+哈业胡同站	ha ye hu tong zhan	40
+哈力图	ha li tu	40
+哈力图站	ha li tu zhan	40
+哈尔巴岭	ha er ba ling	40
+哈尔巴岭站	ha er ba ling zhan	40
+哈尔滨北	ha er bin bei	40
+哈尔滨北站	ha er bin bei zhan	40
+哈尔盖	ha er gai	40
+哈尔盖站	ha er gai zhan	40
+哈川	ha chuan	40
+哈川站	ha chuan zhan	40
+哈拉沟	ha la gou	40
+哈拉沟站	ha la gou zhan	40
+哈拉苏	ha la su	40
+哈拉苏站	ha la su zhan	40
+哈拉黑	ha la hei	40
+哈拉黑站	ha la hei zhan	40
+哈日努拉	ha ri nu la	40
+哈日努拉站	ha ri nu la zhan	40
+哈福	ha fu	40
+哈福站	ha fu zhan	40
+哈达山	ha da shan	40
+哈达山站	ha da shan zhan	40
+哈达阳	ha da yang	40
+哈达阳站	ha da yang zhan	40
+哲里木	zhe li mu	40
+哲里木站	zhe li mu zhan	40
+唐山市汉沽管理区	tang shan shi han gu guan li qu	120
+唐山西	tang shan xi	40
+唐山西站	tang shan xi zhan	40
+唐山高新技术产业开发区	tang shan gao xin ji shu chan ye kai fa qu	120
+唐海南	tang hai nan	40
+唐海南站	tang hai nan zhan	40
+商丘东	shang qiu dong	40
+商丘东站	shang qiu dong zhan	40
+商丘南	shang qiu nan	40
+商丘南站	shang qiu nan zhan	40
+商洛北	shang luo bei	40
+商洛北站	shang luo bei zhan	40
+喀喇其	ka la qi	40
+喀喇其站	ka la qi zhan	40
+喇嘛山	la ma shan	40
+喇嘛山站	la ma shan zhan	40
+喇嘛甸	la ma dian	40
+喇嘛甸站	la ma dian zhan	40
+喜德西	xi de xi	40
+喜德西站	xi de xi zhan	40
+嘉峪关南	jia yu guan nan	40
+嘉峪关南站	jia yu guan nan zhan	40
+嘉峰	jia feng	40
+嘉峰站	jia feng zhan	40
+嘉川	jia chuan	40
+嘉川站	jia chuan zhan	40
+嘉祥北	jia xiang bei	40
+嘉祥北站	jia xiang bei zhan	40
+嘎什吐	ga shen tu	40
+嘎什吐站	ga shen tu zhan	40
+嘎什甸子	ga shen dian zi	40
+嘎什甸子站	ga shen dian zi zhan	40
+嘎拉德斯汰	ga la de si tai	40
+嘎拉德斯汰站	ga la de si tai zhan	40
+四分地	si fen di	40
+四分地站	si fen di zhan	40
+四分滩	si fen tan	40
+四分滩站	si fen tan zhan	40
+四台子	si tai zi	40
+四台子站	si tai zi zhan	40
+四合永	si he yong	40
+四合永站	si he yong zhan	40
+四平东	si ping dong	40
+四平东站	si ping dong zhan	40
+四道湾	si dao wan	40
+四道湾站	si dao wan zhan	40
+四马架	si ma jia	40
+四马架站	si ma jia zhan	40
+回龙庵	hui long an	40
+回龙庵站	hui long an zhan	40
+团林	tuan lin	40
+团林站	tuan lin zhan	40
+园墩	yuan dun	40
+园墩站	yuan dun zhan	40
+固安东	gu an dong	40
+固安东站	gu an dong zhan	40
+图们北	tu men bei	40
+图们北站	tu men bei zhan	40
+土们岭	tu men ling	40
+土们岭站	tu men ling zhan	40
+土地堂东	tu di tang dong	40
+土地堂东站	tu di tang dong zhan	40
+土桥子	tu qiao zi	40
+土桥子站	tu qiao zi zhan	40
+土溪	tu xi	40
+土溪站	tu xi zhan	40
+土牧尔台	tu mu er tai	40
+土牧尔台站	tu mu er tai zhan	40
+土贵乌拉	tu gui wu la	40
+土贵乌拉站	tu gui wu la zhan	40
+土门子	tu men zi	40
+土门子站	tu men zi zhan	40
+圣浪	sheng lang	40
+圣浪站	sheng lang zhan	40
+坂尾	ban wei	40
+坂尾站	ban wei zhan	40
+坝梁	ba liang	40
+坝梁站	ba liang zhan	40
+坡底下	po di xia	40
+坡底下站	po di xia zhan	40
+坡底村	po di cun	40
+坡底村站	po di cun zhan	40
+坦甸	tan dian	40
+坦甸站	tan dian zhan	40
+埃岱	ai dai	40
+埃岱站	ai dai zhan	40
+城固北	cheng gu bei	40
+城固北站	cheng gu bei zhan	40
+城子坦	cheng zi tan	40
+城子坦站	cheng zi tan zhan	40
+堡子湾	bu zi wan	40
+堡子湾站	bu zi wan zhan	40
+塔哈	ta ha	40
+塔哈站	ta ha zhan	40
+塔尔根	ta er gen	40
+塔尔根站	ta er gen zhan	40
+塔尔气	ta er qi	40
+塔尔气站	ta er qi zhan	40
+塔崖驿	ta ya yi	40
+塔崖驿站	ta ya yi zhan	40
+塔斯汀	ta si ting	150
+塔源	ta yuan	40
+塔源站	ta yuan zhan	40
+塔石嘴	ta shi zui	40
+塔石嘴站	ta shi zui zhan	40
+塔虎城	ta hu cheng	40
+塔虎城站	ta hu cheng zhan	40
+塘豹	tang bao	40
+塘豹站	tang bao zhan	40
+墨冲	mo chong	40
+墨冲站	mo chong zhan	40
+墨池坝	mo chi ba	40
+墨池坝站	mo chi ba zhan	40
+壁仞	bi ren	150
+壶镇	hu zhen	40
+壶镇站	hu zhen zhan	40
+夏坝	xia ba	40
+夏坝站	xia ba zhan	40
+夏家河	xia jia he	40
+夏家河站	xia jia he zhan	40
+夏拉哈马	xia la ha ma	40
+夏拉哈马站	xia la ha ma zhan	40
+夏格庄	xia ge zhuang	40
+夏格庄站	xia ge zhuang zhan	40
+夏石	xia shi	40
+夏石站	xia shi zhan	40
+大乌苏	da wu su	40
+大乌苏站	da wu su zhan	40
+大兴沟	da xing gou	40
+大兴沟站	da xing gou zhan	40
+大其拉哈	da qi la ha	40
+大其拉哈站	da qi la ha zhan	40
+大冶北	da ye bei	40
+大冶北站	da ye bei zhan	40
+大刘家	da liu jia	40
+大刘家站	da liu jia zhan	40
+大口屯	da kou tun	40
+大口屯站	da kou tun zhan	40
+大口钦	da kou qin	40
+大口钦站	da kou qin zhan	40
+大同东	da tong dong	40
+大同东站	da tong dong zhan	40
+大安北	da an bei	40
+大安北站	da an bei zhan	40
+大官屯	da guan tun	40
+大官屯站	da guan tun zhan	40
+大庆东	da qing dong	40
+大庆东站	da qing dong zhan	40
+大庆西	da qing xi	40
+大庆西站	da qing xi zhan	40
+大庆高新技术产业开发区	da qing gao xin ji shu chan ye kai fa qu	120
+大徐屯	da xu tun	40
+大徐屯站	da xu tun zhan	40
+大扬气	da yang qi	40
+大扬气站	da yang qi zhan	40
+大拟	da ni	40
+大拟站	da ni zhan	40
+大方南	da fang nan	40
+大方南站	da fang nan zhan	40
+大杖子	da zhang zi	40
+大杖子站	da zhang zi zhan	40
+大杨树东	da yang shu dong	40
+大杨树东站	da yang shu dong zhan	40
+大栗子	da li zi	40
+大栗子站	da li zi zhan	40
+大民屯	da min tun	40
+大民屯站	da min tun zhan	40
+大涧	da jian	40
+大涧站	da jian zhan	40
+大港南	da gang nan	40
+大港南站	da gang nan zhan	40
+大湾子	da wan zi	40
+大湾子站	da wan zi zhan	40
+大滩	da tan	40
+大滩站	da tan zhan	40
+大王滩	da wang tan	40
+大王滩站	da wang tan zhan	40
+大田北	da tian bei	40
+大田北站	da tian bei zhan	40
+大田边	da tian bian	40
+大田边站	da tian bian zhan	40
+大甸	da dian	40
+大甸站	da dian zhan	40
+大盘石	da pan shi	40
+大盘石站	da pan shi zhan	40
+大石头南	da shi tou nan	40
+大石头南站	da shi tou nan zhan	40
+大石寨	da shi zhai	40
+大石寨站	da shi zhai zhan	40
+大磴沟	da deng gou	40
+大磴沟站	da deng gou zhan	40
+大禾塘	da he tang	40
+大禾塘站	da he tang zhan	40
+大竹园	da zhu yuan	40
+大竹园站	da zhu yuan zhan	40
+大罕	da han	40
+大罕站	da han zhan	40
+大英东	da ying dong	40
+大英东站	da ying dong zhan	40
+大苴	da ju	40
+大苴站	da ju zhan	40
+大荒地	da huang di	40
+大荒地站	da huang di zhan	40
+大荔北	da li bei	40
+大荔北站	da li bei zhan	40
+大观岭	da guan ling	40
+大观岭站	da guan ling zhan	40
+大足南	da zu nan	40
+大足南站	da zu nan zhan	40
+大蹬沟	da deng gou	40
+大蹬沟站	da deng gou zhan	40
+大通西	da tong xi	40
+大通西站	da tong xi zhan	40
+大阳	da yang	40
+大阳站	da yang zhan	40
+大陆号	da lu hao	40
+大陆号站	da lu hao zhan	40
+大雅河	da ya he	40
+大雅河站	da ya he zhan	40
+大青沟	da qing gou	40
+大青沟站	da qing gou zhan	40
+天岗	tian gang	40
+天岗站	tian gang zhan	40
+天德泉	tian de quan	40
+天德泉站	tian de quan zhan	40
+天桥岭	tian qiao ling	40
+天桥岭站	tian qiao ling zhan	40
+天河街	tian he jie	40
+天河街站	tian he jie zhan	40
+天津北	tian jin bei	40
+天津北站	tian jin bei zhan	40
+天祝	tian zhu	40
+天祝站	tian zhu zhan	40
+天西	tian xi	40
+天西站	tian xi zhan	40
+天门南	tian men nan	40
+天门南站	tian men nan zhan	40
+太仓南	tai cang nan	40
+太仓南站	tai cang nan zhan	40
+太原北	tai yuan bei	40
+太原北站	tai yuan bei zhan	40
+太和东	tai he dong	40
+太和东站	tai he dong zhan	40
+太和北	tai he bei	40
+太和北站	tai he bei zhan	40
+太岭	tai ling	40
+太岭站	tai ling zhan	40
+太平庄	tai ping zhuang	40
+太平庄站	tai ping zhuang zhan	40
+太谷东	tai gu dong	40
+太谷东站	tai gu dong zhan	40
+太谷西	tai gu xi	40
+太谷西站	tai gu xi zhan	40
+头地	tou di	40
+头地站	tou di zhan	40
+头道桥	tou dao qiao	40
+头道桥站	tou dao qiao zhan	40
+夹心子	jia xin zi	40
+夹心子站	jia xin zi zhan	40
+奇峰塔	qi feng ta	40
+奇峰塔站	qi feng ta zhan	40
+奈林皋	nai lin gao	40
+奈林皋站	nai lin gao zhan	40
+奎山	kui shan	40
+奎山站	kui shan zhan	40
+好鲁库	hao lu ku	40
+好鲁库站	hao lu ku zhan	40
+如皋南	ru gao nan	40
+如皋南站	ru gao nan zhan	40
+姑家堡	gu jia bao	40
+姑家堡站	gu jia bao zhan	40
+姚千户屯	yao qian hu tun	40
+姚千户屯站	yao qian hu tun zhan	40
+姚渡	yao du	40
+姚渡站	yao du zhan	40
+威岭	wei ling	40
+威岭站	wei ling zhan	40
+威海临港经济技术开发区	wei hai lin gang jing ji ji shu kai fa qu	120
+威海北	wei hai bei	40
+威海北站	wei hai bei zhan	40
+威海火炬高技术产业开发区	wei hai huo ju gao ji shu chan ye kai fa qu	120
+威海经济技术开发区	wei hai jing ji ji shu kai fa qu	120
+威箐	wei qing	40
+威箐站	wei qing zhan	40
+威舍	wei she	40
+威舍站	wei she zhan	40
+威虎岭北	wei hu ling bei	40
+威虎岭北站	wei hu ling bei zhan	40
+娄山关南	lou shan guan nan	40
+娄山关南站	lou shan guan nan zhan	40
+孔家沟	kong jia gou	40
+孔家沟站	kong jia gou zhan	40
+孔滩	kong tan	40
+孔滩站	kong tan zhan	40
+孙镇	sun zhen	40
+孙镇站	sun zhen zhan	40
+孝西	xiao xi	40
+孝西站	xiao xi zhan	40
+孟关	meng guan	40
+孟关站	meng guan zhan	40
+孟塬	meng yuan	40
+孟塬站	meng yuan zhan	40
+孟家岗	meng jia gang	40
+孟家岗站	meng jia gang zhan	40
+孟津区	meng jin qu	120
+孤家子	gu jia zi	40
+孤家子站	gu jia zi zhan	40
+孤山子	gu shan zi	40
+孤山子站	gu shan zi zhan	40
+孤店子	gu dian zi	40
+孤店子站	gu dian zi zhan	40
+学庄	xue zhuang	40
+学庄站	xue zhuang zhan	40
+宁东	ning dong	40
+宁东南	ning dong nan	40
+宁东南站	ning dong nan zhan	40
+宁东站	ning dong zhan	40
+宁乡西	ning xiang xi	40
+宁乡西站	ning xiang xi zhan	40
+宁强南	ning qiang nan	40
+宁强南站	ning qiang nan zhan	40
+宁村	ning cun	40
+宁村站	ning cun zhan	40
+宇宙地	yu zhou di	40
+宇宙地站	yu zhou di zhan	40
+宇视	yu shi	150
+安亭北	an ting bei	40
+安亭北站	an ting bei zhan	40
+安亭西	an ting xi	40
+安亭西站	an ting xi zhan	40
+安匠	an jiang	40
+安匠站	an jiang zhan	40
+安口窑	an kou yao	40
+安口窑站	an kou yao zhan	40
+安图西	an tu xi	40
+安图西站	an tu xi zhan	40
+安家庄	an jia zhuang	40
+安家庄站	an jia zhuang zhan	40
+安家湾	an jia wan	40
+安家湾站	an jia wan zhan	40
+安富镇	an fu zhen	40
+安富镇站	an fu zhen zhan	40
+安川	an chuan	150
+安州	an zhou	40
+安州站	an zhou zhan	40
+安庆沟	an qing gou	40
+安庆沟站	an qing gou zhan	40
+安庆西	an qing xi	40
+安庆西站	an qing xi zhan	40
+安徽安庆经济开发区	an hui an qing jing ji kai fa qu	120
+安徽芜湖三山经济开发区	an hui wu hu san shan jing ji kai fa qu	120
+安江东	an jiang dong	40
+安江东站	an jiang dong zhan	40
+安溪东	an xi dong	40
+安溪东站	an xi dong zhan	40
+安阳高新技术产业开发区	an yang gao xin ji shu chan ye kai fa qu	120
+安陆西	an lu xi	40
+安陆西站	an lu xi zhan	40
+宏克力	hong ke li	40
+宏克力站	hong ke li zhan	40
+宏庆	hong qing	40
+宏庆站	hong qing zhan	40
+官厅西	guan ting xi	40
+官厅西站	guan ting xi zhan	40
+官字井	guan zi jing	40
+官字井站	guan zi jing zhan	40
+官高	guan gao	40
+官高站	guan gao zhan	40
+定南南	ding nan nan	40
+定南南站	ding nan nan zhan	40
+定州东	ding zhou dong	40
+定州东站	ding zhou dong zhan	40
+宜宾东	yi bin dong	40
+宜宾东站	yi bin dong zhan	40
+宜宾南	yi bin nan	40
+宜宾南站	yi bin nan zhan	40
+宜春西	yi chun xi	40
+宜春西站	yi chun xi zhan	40
+宜耐	yi nai	40
+宜耐站	yi nai zhan	40
+宜良北	yi liang bei	40
+宜良北站	yi liang bei zhan	40
+宝东	bao dong	40
+宝东站	bao dong zhan	40
+宝坻北	bao di bei	40
+宝坻北站	bao di bei zhan	40
+宝坻南	bao di nan	40
+宝坻南站	bao di nan zhan	40
+宝拉格	bao la ge	40
+宝拉格站	bao la ge zhan	40
+宝日格	bao ri ge	40
+宝日格站	bao ri ge zhan	40
+宝木吐	bao mu tu	40
+宝木吐站	bao mu tu zhan	40
+宝武	bao wu	150
+宝泉岭	bao quan ling	40
+宝泉岭站	bao quan ling zhan	40
+宝老山	bao lao shan	40
+宝老山站	bao lao shan zhan	40
+宝龙山	bao long shan	40
+宝龙山站	bao long shan zhan	40
+宣化北	xuan hua bei	40
+宣化北站	xuan hua bei zhan	40
+宣城市经济开发区	xuan cheng shi jing ji kai fa qu	120
+宣家沟	xuan jia gou	40
+宣家沟站	xuan jia gou zhan	40
+宽沟	kuan gou	40
+宽沟站	kuan gou zhan	40
+宾西北	bin xi bei	40
+宾西北站	bin xi bei zhan	40
+宿州东	su zhou dong	40
+宿州东站	su zhou dong zhan	40
+宿州经济技术开发区	su zhou jing ji ji shu kai fa qu	120
+宿州马鞍山现代产业园区	su zhou ma an shan xian dai chan ye yuan qu	120
+宿松东	su song dong	40
+宿松东站	su song dong zhan	40
+宿迁经济技术开发区	su qian jing ji ji shu kai fa qu	120
+密云北	mi yun bei	40
+密云北站	mi yun bei zhan	40
+密山西	mi shan xi	40
+密山西站	mi shan xi zhan	40
+富县东	fu xian dong	40
+富县东站	fu xian dong zhan	40
+富庄子	fu zhuang zi	40
+富庄子站	fu zhuang zi zhan	40
+富江镇	fu jiang zhen	40
+富江镇站	fu jiang zhen zhan	40
+富源北	fu yuan bei	40
+富源北站	fu yuan bei zhan	40
+富阳西	fu yang xi	40
+富阳西站	fu yang xi zhan	40
+寒岭	han ling	40
+寒岭站	han ling zhan	40
+寒葱沟	han cong gou	40
+寒葱沟站	han cong gou zhan	40
+察汗诺	cha han nuo	40
+察汗诺站	cha han nuo zhan	40
+察素齐	cha su qi	40
+察素齐站	cha su qi zhan	40
+寮步	liao bu	40
+寮步站	liao bu zhan	40
+小中甸	xiao zhong dian	40
+小中甸站	xiao zhong dian zhan	40
+小儿坪	xiao er ping	40
+小儿坪站	xiao er ping zhan	40
+小关溪	xiao guan xi	40
+小关溪站	xiao guan xi zhan	40
+小兴隆地	xiao xing long di	40
+小兴隆地站	xiao xing long di zhan	40
+小南垭	xiao nan ya	40
+小南垭站	xiao nan ya zhan	40
+小合隆	xiao he long	40
+小合隆站	xiao he long zhan	40
+小哨	xiao shao	40
+小哨站	xiao shao zhan	40
+小岭	xiao ling	40
+小岭站	xiao ling zhan	40
+小得江	xiao de jiang	40
+小得江站	xiao de jiang zhan	40
+小扬气	xiao yang qi	40
+小扬气站	xiao yang qi zhan	40
+小月旧	xiao yue jiu	40
+小月旧站	xiao yue jiu zhan	40
+小榄	xiao lan	40
+小榄站	xiao lan zhan	40
+小榆树	xiao yu shu	40
+小榆树站	xiao yu shu zhan	40
+小湾东	xiao wan dong	40
+小湾东站	xiao wan dong zhan	40
+小西堡	xiao xi bao	40
+小西堡站	xiao xi bao zhan	40
+小西庄	xiao xi zhuang	40
+小西庄站	xiao xi zhuang zhan	40
+小雨谷	xiao yu gu	40
+小雨谷站	xiao yu gu zhan	40
+尔赛河	er sai he	40
+尔赛河站	er sai he zhan	40
+尚家	shang jia	40
+尚家站	shang jia zhan	40
+尚志南	shang zhi nan	40
+尚志南站	shang zhi nan zhan	40
+尹地	yin di	40
+尹地站	yin di zhan	40
+尼波	ni bo	40
+尼波站	ni bo zhan	40
+山坡东	shan po dong	40
+山坡东站	shan po dong zhan	40
+山市	shan shi	40
+山市站	shan shi zhan	40
+山河屯	shan he tun	40
+山河屯站	shan he tun zhan	40
+山湾子	shan wan zi	40
+山湾子站	shan wan zi zhan	40
+山西大同经济开发区	shan xi da tong jing ji kai fa qu	120
+山西朔州经济开发区	shan xi shuo zhou jing ji kai fa qu	120
+山西转型综合改革示范区	shan xi zhuan xing zong he gai ge shi fan qu	120
+岔江	cha jiang	40
+岔江站	cha jiang zhan	40
+岔河	cha he	40
+岔河站	cha he zhan	40
+岗嘎	gang ga	40
+岗嘎站	gang ga zhan	40
+岚山西	lan shan xi	40
+岚山西站	lan shan xi zhan	40
+岩会	yan hui	40
+岩会站	yan hui zhan	40
+岳家井	yue jia jing	40
+岳家井站	yue jia jing zhan	40
+岳阳市屈原管理区	yue yang shi qu yuan guan li qu	120
+峨边	e bian	40
+峨边南	e bian nan	40
+峨边南站	e bian nan zhan	40
+峨边站	e bian zhan	40
+峰洞	feng dong	40
+峰洞站	feng dong zhan	40
+峰高铺	feng gao pu	40
+峰高铺站	feng gao pu zhan	40
+崇左南	chong zuo nan	40
+崇左南站	chong zuo nan zhan	40
+崔黄口	cui huang kou	40
+崔黄口站	cui huang kou zhan	40
+嵊州北	sheng zhou bei	40
+嵊州北站	sheng zhou bei zhan	40
+嵊州新昌	sheng zhou xin chang	40
+嵊州新昌站	sheng zhou xin chang zhan	40
+嵯岗	cuo gang	40
+嵯岗站	cuo gang zhan	40
+巢湖东	chao hu dong	40
+巢湖东站	chao hu dong zhan	40
+工农湖	gong nong hu	40
+工农湖站	gong nong hu zhan	40
+巨亭	ju ting	40
+巨亭站	ju ting zhan	40
+巨宝	ju bao	40
+巨宝站	ju bao zhan	40
+巨野北	ju ye bei	40
+巨野北站	ju ye bei zhan	40
+巩义南	gong yi nan	40
+巩义南站	gong yi nan zhan	40
+巴中东	ba zhong dong	40
+巴中东站	ba zhong dong zhan	40
+巴图营	ba tu ying	40
+巴图营站	ba tu ying zhan	40
+巴宜区	ba yi qu	120
+巴州区	ba zhou qu	120
+巴彦郭勒	ba yan guo lei	40
+巴彦郭勒站	ba yan guo lei zhan	40
+巴彦高勒	ba yan gao lei	40
+巴彦高勒站	ba yan gao lei zhan	40
+布列开	bu lie kai	40
+布列开站	bu lie kai zhan	40
+布敦化	bu dun hua	40
+布敦化站	bu dun hua zhan	40
+布海	bu hai	40
+布海站	bu hai zhan	40
+布苏里	bu su li	40
+布苏里站	bu su li zhan	40
+师庄	shi zhuang	40
+师庄站	shi zhuang zhan	40
+常平	chang ping	40
+常平东	chang ping dong	40
+常平东站	chang ping dong zhan	40
+常平南	chang ping nan	40
+常平南站	chang ping nan zhan	40
+常平站	chang ping zhan	40
+常德市西洞庭管理区	chang de shi xi dong ting guan li qu	120
+常村	chang cun	40
+常村站	chang cun zhan	40
+帽儿山西	mao er shan xi	40
+帽儿山西站	mao er shan xi zhan	40
+干塘	gan tang	40
+干塘站	gan tang zhan	40
+干溪沟	gan xi gou	40
+干溪沟站	gan xi gou zhan	40
+平关	ping guan	40
+平关站	ping guan zhan	40
+平凉南	ping liang nan	40
+平凉南站	ping liang nan zhan	40
+平南南	ping nan nan	40
+平南南站	ping nan nan zhan	40
+平原东	ping yuan dong	40
+平原东站	ping yuan dong zhan	40
+平原堡	ping yuan bao	40
+平原堡站	ping yuan bao zhan	40
+平坊	ping fang	40
+平坊站	ping fang zhan	40
+平坝南	ping ba nan	40
+平坝南站	ping ba nan zhan	40
+平峪	ping yu	40
+平峪站	ping yu zhan	40
+平川西	ping chuan xi	40
+平川西站	ping chuan xi zhan	40
+平庄	ping zhuang	40
+平庄北	ping zhuang bei	40
+平庄北站	ping zhuang bei zhan	40
+平庄南	ping zhuang nan	40
+平庄南站	ping zhuang nan zhan	40
+平庄站	ping zhuang zhan	40
+平度西	ping du xi	40
+平度西站	ping du xi zhan	40
+平旺	ping wang	40
+平旺站	ping wang zhan	40
+平河口	ping he kou	40
+平河口站	ping he kou zhan	40
+平泉北	ping quan bei	40
+平泉北站	ping quan bei zhan	40
+平洋	ping yang	40
+平洋站	ping yang zhan	40
+平社	ping she	40
+平社站	ping she zhan	40
+平顶山市城乡一体化示范区	ping ding shan shi cheng xiang yi ti hua shi fan qu	120
+平顶山高新技术产业开发区	ping ding shan gao xin ji shu chan ye kai fa qu	120
+平顶庙	ping ding miao	40
+平顶庙站	ping ding miao zhan	40
+广元东	guang yuan dong	40
+广元东站	guang yuan dong zhan	40
+广元南	guang yuan nan	40
+广元南站	guang yuan nan zhan	40
+广南卫	guang nan wei	40
+广南卫站	guang nan wei zhan	40
+广宁寺	guang ning si	40
+广宁寺南	guang ning si nan	40
+广宁寺南站	guang ning si nan zhan	40
+广宁寺站	guang ning si zhan	40
+广安区	guang an qu	120
+广安南	guang an nan	40
+广安南站	guang an nan zhan	40
+广德南	guang de nan	40
+广德南站	guang de nan zhan	40
+广德号	guang de hao	40
+广德号站	guang de hao zhan	40
+广汉北	guang han bei	40
+广汉北站	guang han bei zhan	40
+广通北	guang tong bei	40
+广通北站	guang tong bei zhan	40
+广顺场	guang shun chang	40
+广顺场站	guang shun chang zhan	40
+庄寨	zhuang zhai	40
+庄寨站	zhuang zhai zhan	40
+庄河北	zhuang he bei	40
+庄河北站	zhuang he bei zhan	40
+庆阳山	qing yang shan	40
+庆阳山站	qing yang shan zhan	40
+庐江西	lu jiang xi	40
+庐江西站	lu jiang xi zhan	40
+库尔木依	ku er mu yi	40
+库尔木依站	ku er mu yi zhan	40
+库都尔	ku dou er	40
+库都尔站	ku dou er zhan	40
+庙台子	miao tai zi	40
+庙台子站	miao tai zi zhan	40
+庙城	miao cheng	40
+庙城站	miao cheng zhan	40
+庙子沟	miao zi gou	40
+庙子沟站	miao zi gou zhan	40
+庙宫	miao gong	40
+庙宫站	miao gong zhan	40
+庙山	miao shan	40
+庙山站	miao shan zhan	40
+庙岭	miao ling	40
+庙岭站	miao ling zhan	40
+庙庄	miao zhuang	40
+庙庄站	miao zhuang zhan	40
+庙阳	miao yang	40
+庙阳站	miao yang zhan	40
+康巴什区	kang ba shen qu	120
+康熙岭	kang xi ling	40
+康熙岭站	kang xi ling zhan	40
+康金井	kang jin jing	40
+康金井站	kang jin jing zhan	40
+廊坊北	lang fang bei	40
+廊坊北站	lang fang bei zhan	40
+廊坊经济技术开发区	lang fang jing ji ji shu kai fa qu	120
+延平东	yan ping dong	40
+延平东站	yan ping dong zhan	40
+延平西	yan ping xi	40
+延平西站	yan ping xi zhan	40
+建宁南	jian ning nan	40
+建宁南站	jian ning nan zhan	40
+建宁县北	jian ning xian bei	40
+建宁县北站	jian ning xian bei zhan	40
+建瓯东	jian ou dong	40
+建瓯东站	jian ou dong zhan	40
+建瓯西	jian ou xi	40
+建瓯西站	jian ou xi zhan	40
+开原西	kai yuan xi	40
+开原西站	kai yuan xi zhan	40
+开安	kai an	40
+开安站	kai an zhan	40
+开封北	kai feng bei	40
+开封北站	kai feng bei zhan	40
+开平南	kai ping nan	40
+开平南站	kai ping nan zhan	40
+开远南	kai yuan nan	40
+开远南站	kai yuan nan zhan	40
+弓棚子	gong peng zi	40
+弓棚子站	gong peng zi zhan	40
+引镇	yin zhen	40
+引镇站	yin zhen zhan	40
+张三营	zhang san ying	40
+张三营站	zhang san ying zhan	40
+张台子	zhang tai zi	40
+张台子站	zhang tai zi zhan	40
+张家口南	zhang jia kou nan	40
+张家口南站	zhang jia kou nan zhan	40
+张家口市塞北管理区	zhang jia kou shi sai bei guan li qu	120
+张家口市察北管理区	zhang jia kou shi cha bei guan li qu	120
+张家口经济开发区	zhang jia kou jing ji kai fa qu	120
+张家界西	zhang jia jie xi	40
+张家界西站	zhang jia jie xi zhan	40
+张家祠	zhang jia ci	40
+张家祠站	zhang jia ci zhan	40
+张家船	zhang jia chuan	40
+张家船站	zhang jia chuan zhan	40
+张掖西	zhang ye xi	40
+张掖西站	zhang ye xi zhan	40
+张桥	zhang qiao	40
+张桥站	zhang qiao zhan	40
+张百湾	zhang bai wan	40
+张百湾站	zhang bai wan zhan	40
+张维屯	zhang wei tun	40
+张维屯站	zhang wei tun zhan	40
+张辛	zhang xin	40
+张辛站	zhang xin zhan	40
+弯坵	wan qiu	40
+弯坵站	wan qiu zhan	40
+归德乡	gui de xiang	40
+归德乡站	gui de xiang zhan	40
+归流河	gui liu he	40
+归流河站	gui liu he zhan	40
+当涂东	dang tu dong	40
+当涂东站	dang tu dong zhan	40
+彝良南	yi liang nan	40
+彝良南站	yi liang nan zhan	40
+彬州	bin zhou	40
+彬州东	bin zhou dong	40
+彬州东站	bin zhou dong zhan	40
+彬州站	bin zhou zhan	40
+彬江	bin jiang	40
+彬江站	bin jiang zhan	40
+彭山北	peng shan bei	40
+彭山北站	peng shan bei zhan	40
+彭州南	peng zhou nan	40
+彭州南站	peng zhou nan zhan	40
+影壁山	ying bi shan	40
+影壁山站	ying bi shan zhan	40
+待王	dai wang	40
+待王站	dai wang zhan	40
+徐家坪	xu jia ping	40
+徐家坪站	xu jia ping zhan	40
+徐家店	xu jia dian	40
+徐家店站	xu jia dian zhan	40
+徐州经济技术开发区	xu zhou jing ji ji shu kai fa qu	120
+得耳布尔	de er bu er	40
+得耳布尔站	de er bu er zhan	40
+得胜台	de sheng tai	40
+得胜台站	de sheng tai zhan	40
+得莫利	de mo li	40
+得莫利站	de mo li zhan	40
+徘徊北	pai huai bei	40
+徘徊北站	pai huai bei zhan	40
+微子镇	wei zi zhen	40
+微子镇站	wei zi zhen zhan	40
+德伯斯	de bo si	40
+德伯斯站	de bo si zhan	40
+德兴东	de xing dong	40
+德兴东站	de xing dong zhan	40
+德州天衢新区	de zhou tian qu xin qu	120
+德惠西	de hui xi	40
+德惠西站	de hui xi zhan	40
+德日斯图	de ri si tu	40
+德日斯图站	de ri si tu zhan	40
+德昌西	de chang xi	40
+德昌西站	de chang xi zhan	40
+德清西	de qing xi	40
+德清西站	de qing xi zhan	40
+忆捷	yi jie	150
+忠工屯	zhong gong tun	40
+忠工屯站	zhong gong tun zhan	40
+忻州西	xin zhou xi	40
+忻州西站	xin zhou xi zhan	40
+怀仁东	huai ren dong	40
+怀仁东站	huai ren dong zhan	40
+怀化市洪江管理区	huai hua shi hong jiang guan li qu	120
+怀柔北	huai rou bei	40
+怀柔北站	huai rou bei zhan	40
+怀柔南	huai rou nan	40
+怀柔南站	huai rou nan zhan	40
+恒地营	heng di ying	40
+恒地营站	heng di ying zhan	40
+恩华	en hua	150
+恩阳区	en yang qu	120
+惠东南	hui dong nan	40
+惠东南站	hui dong nan zhan	40
+惠安堡	hui an bao	40
+惠安堡站	hui an bao zhan	40
+惠州南	hui zhou nan	40
+惠州南站	hui zhou nan zhan	40
+惠州西	hui zhou xi	40
+惠州西站	hui zhou xi zhan	40
+惠环	hui huan	40
+惠环站	hui huan zhan	40
+成都西	cheng du xi	40
+成都西站	cheng du xi zhan	40
+成高子	cheng gao zi	40
+成高子站	cheng gao zi zhan	40
+扎布其尔	zha bu qi er	40
+扎布其尔站	zha bu qi er zhan	40
+扎罗木得	zha luo mu de	40
+扎罗木得站	zha luo mu de zhan	40
+扎赉诺尔西	zha lai nuo er xi	40
+扎赉诺尔西站	zha lai nuo er xi zhan	40
+扎音河	zha yin he	40
+扎音河站	zha yin he zhan	40
+打柴沟	da chai gou	40
+打柴沟站	da chai gou zhan	40
+打羊	da yang	40
+打羊站	da yang zhan	40
+托克托东	tuo ke tuo dong	40
+托克托东站	tuo ke tuo dong zhan	40
+扬州东	yang zhou dong	40
+扬州东站	yang zhou dong zhan	40
+扬州经济技术开发区	yang zhou jing ji ji shu kai fa qu	120
+扶余北	fu yu bei	40
+扶余北站	fu yu bei zhan	40
+扶沟南	fu gou nan	40
+扶沟南站	fu gou nan zhan	40
+扶绥南	fu sui nan	40
+扶绥南站	fu sui nan zhan	40
+承德东	cheng de dong	40
+承德东站	cheng de dong zhan	40
+承德南	cheng de nan	40
+承德南站	cheng de nan zhan	40
+承德县北	cheng de xian bei	40
+承德县北站	cheng de xian bei zhan	40
+承德高新技术产业开发区	cheng de gao xin ji shu chan ye kai fa qu	120
+抚州东	fu zhou dong	40
+抚州东站	fu zhou dong zhan	40
+抚州北	fu zhou bei	40
+抚州北站	fu zhou bei zhan	40
+抚远东	fu yuan dong	40
+抚远东站	fu yuan dong zhan	40
+抚顺北	fu shun bei	40
+抚顺北站	fu shun bei zhan	40
+拉古	la gu	40
+拉古站	la gu zhan	40
+拉哈	la ha	40
+拉哈站	la ha zhan	40
+拉林	la lin	40
+拉林站	la lin zhan	40
+拉白	la bai	40
+拉白站	la bai zhan	40
+拉萨经济技术开发区	la sa jing ji ji shu kai fa qu	120
+拉鲊	la zha	40
+拉鲊站	la zha zhan	40
+招柏	zhao bai	40
+招柏站	zhao bai zhan	40
+捏掌	nie zhang	40
+捏掌站	nie zhang zhan	40
+揭阳南	jie yang nan	40
+揭阳南站	jie yang nan zhan	40
+揭阳机场	jie yang ji chang	40
+揭阳机场站	jie yang ji chang zhan	40
+摩尔线程	mo er xian cheng	150
+播明	bo ming	40
+播明站	bo ming zhan	40
+攀枝花南	pan zhi hua nan	40
+攀枝花南站	pan zhi hua nan zhan	40
+攸县南	you xian nan	40
+攸县南站	you xian nan zhan	40
+敖力布告	ao li bu gao	40
+敖力布告站	ao li bu gao zhan	40
+敖头	ao tou	40
+敖头站	ao tou zhan	40
+敖日布格图	ao ri bu ge tu	40
+敖日布格图站	ao ri bu ge tu zhan	40
+敖来	ao lai	40
+敖来站	ao lai zhan	40
+敬梓场	jing zi chang	40
+敬梓场站	jing zi chang zhan	40
+文地	wen di	40
+文地站	wen di zhan	40
+文庄村	wen zhuang cun	40
+文庄村站	wen zhuang cun zhan	40
+文登东	wen deng dong	40
+文登东站	wen deng dong zhan	40
+文登南	wen deng nan	40
+文登南站	wen deng nan zhan	40
+斗沟子	dou gou zi	40
+斗沟子站	dou gou zi zhan	40
+斜河涧	xie he jian	40
+斜河涧站	xie he jian zhan	40
+新乡南	xin xiang nan	40
+新乡南站	xin xiang nan zhan	40
+新乡市平原城乡一体化示范区	xin xiang shi ping yuan cheng xiang yi ti hua shi fan qu	120
+新乡经济技术开发区	xin xiang jing ji ji shu kai fa qu	120
+新乡高新技术产业开发区	xin xiang gao xin ji shu chan ye kai fa qu	120
+新余北	xin yu bei	40
+新余北站	xin yu bei zhan	40
+新化南	xin hua nan	40
+新化南站	xin hua nan zhan	40
+新华屯	xin hua tun	40
+新华屯站	xin hua tun zhan	40
+新南沟	xin nan gou	40
+新南沟站	xin nan gou zhan	40
+新固镇	xin gu zhen	40
+新固镇站	xin gu zhen zhan	40
+新坪田	xin ping tian	40
+新坪田站	xin ping tian zhan	40
+新塘南	xin tang nan	40
+新塘南站	xin tang nan zhan	40
+新安庄	xin an zhuang	40
+新安庄站	xin an zhuang zhan	40
+新寒岭	xin han ling	40
+新寒岭站	xin han ling zhan	40
+新岭	xin ling	40
+新岭站	xin ling zhan	40
+新帐房	xin zhang fang	40
+新帐房站	xin zhang fang zhan	40
+新干东	xin gan dong	40
+新干东站	xin gan dong zhan	40
+新平坝	xin ping ba	40
+新平坝站	xin ping ba zhan	40
+新彦	xin yan	40
+新彦站	xin yan zhan	40
+新昌北	xin chang bei	40
+新昌北站	xin chang bei zhan	40
+新昌县	xin chang xian	120
+新星市	xin xing shi	120
+新晃西	xin huang xi	40
+新晃西站	xin huang xi zhan	40
+新李	xin li	40
+新李站	xin li zhan	40
+新杖子	xin zhang zi	40
+新杖子站	xin zhang zi zhan	40
+新松浦	xin song pu	40
+新松浦站	xin song pu zhan	40
+新民北	xin min bei	40
+新民北站	xin min bei zhan	40
+新民场	xin min chang	40
+新民场站	xin min chang zhan	40
+新沂南	xin yi nan	40
+新沂南站	xin yi nan zhan	40
+新津南	xin jin nan	40
+新津南站	xin jin nan zhan	40
+新窝铺	xin wo pu	40
+新窝铺站	xin wo pu zhan	40
+新绰源	xin chuo yuan	40
+新绰源站	xin chuo yuan zhan	40
+新肇	xin zhao	40
+新肇站	xin zhao zhan	40
+新贤城	xin xian cheng	40
+新贤城站	xin xian cheng zhan	40
+新都东	xin dou dong	40
+新都东站	xin dou dong zhan	40
+新铁村	xin tie cun	40
+新铁村站	xin tie cun zhan	40
+新阳镇	xin yang zhen	40
+新阳镇站	xin yang zhen zhan	40
+新香坊	xin xiang fang	40
+新香坊北	xin xiang fang bei	40
+新香坊北站	xin xiang fang bei zhan	40
+新香坊站	xin xiang fang zhan	40
+施家嘴	shi jia zui	40
+施家嘴站	shi jia zui zhan	40
+旗下营	qi xia ying	40
+旗下营南	qi xia ying nan	40
+旗下营南站	qi xia ying nan zhan	40
+旗下营站	qi xia ying zhan	40
+无为南	wu wei nan	40
+无为南站	wu wei nan zhan	40
+日照经济技术开发区	ri zhao jing ji ji shu kai fa qu	120
+旧庄窝	jiu zhuang wo	40
+旧庄窝东	jiu zhuang wo dong	40
+旧庄窝东站	jiu zhuang wo dong zhan	40
+旧庄窝站	jiu zhuang wo zhan	40
+旧庙	jiu miao	40
+旧庙站	jiu miao zhan	40
+旬阳北	xun yang bei	40
+旬阳北站	xun yang bei zhan	40
+旭辉	xu hui	150
+昂乃	ang nai	40
+昂乃站	ang nai zhan	40
+昆都仑召	kun dou lun zhao	40
+昆都仑召站	kun dou lun zhao zhan	40
+昆都庙	kun dou miao	40
+昆都庙站	kun dou miao zhan	40
+昌图西	chang tu xi	40
+昌图西站	chang tu xi zhan	40
+昌平北	chang ping bei	40
+昌平北站	chang ping bei zhan	40
+明水河	ming shui he	40
+明水河站	ming shui he zhan	40
+明港东	ming gang dong	40
+明港东站	ming gang dong zhan	40
+星朗	xing lang	40
+星朗站	xing lang zhan	40
+映众	ying zhong	150
+春亭阁	chun ting ge	40
+春亭阁站	chun ting ge zhan	40
+春湾	chun wan	40
+春湾站	chun wan zhan	40
+昭化	zhao hua	40
+昭化区	zhao hua qu	120
+昭化站	zhao hua zhan	40
+昭山	zhao shan	40
+昭山站	zhao shan zhan	40
+昭通北	zhao tong bei	40
+昭通北站	zhao tong bei zhan	40
+昭通南	zhao tong nan	40
+昭通南站	zhao tong nan zhan	40
+晋城东	jin cheng dong	40
+晋城东站	jin cheng dong zhan	40
+晋城北	jin cheng bei	40
+晋城北站	jin cheng bei zhan	40
+晏城	yan cheng	40
+晏城站	yan cheng zhan	40
+晏家坝	yan jia ba	40
+晏家坝站	yan jia ba zhan	40
+晨明	chen ming	40
+晨明站	chen ming zhan	40
+普洱渡	pu er du	40
+普洱渡站	pu er du zhan	40
+普湾	pu wan	40
+普湾站	pu wan zhan	40
+普雄	pu xiong	40
+普雄站	pu xiong zhan	40
+景州	jing zhou	40
+景州站	jing zhou zhan	40
+晶科	jing ke	150
+智飞	zhi fei	150
+暖泉	nuan quan	40
+暖泉站	nuan quan zhan	40
+曲家店	qu jia dian	40
+曲家店站	qu jia dian zhan	40
+曲阜南	qu fu nan	40
+曲阜南站	qu fu nan zhan	40
+曲靖北	qu jing bei	40
+曲靖北站	qu jing bei zhan	40
+曹妃甸东	cao fei dian dong	40
+曹妃甸东站	cao fei dian dong zhan	40
+曹子里	cao zi li	40
+曹子里站	cao zi li zhan	40
+曹家伙场	cao jia huo chang	40
+曹家伙场站	cao jia huo chang zhan	40
+曹家营子	cao jia ying zi	40
+曹家营子站	cao jia ying zi zhan	40
+曾口	ceng kou	40
+曾口站	ceng kou zhan	40
+曾家坪子	ceng jia ping zi	40
+曾家坪子站	ceng jia ping zi zhan	40
+月亮田	yue liang tian	40
+月亮田站	yue liang tian zhan	40
+朋普	peng pu	40
+朋普站	peng pu zhan	40
+朗乡	lang xiang	40
+朗乡站	lang xiang zhan	40
+朝原	chao yuan	40
+朝原站	chao yuan zhan	40
+朝天南	chao tian nan	40
+朝天南站	chao tian nan zhan	40
+朝格温多尔	chao ge wen duo er	40
+朝格温多尔站	chao ge wen duo er zhan	40
+朝阳南	zhao yang nan	40
+朝阳南站	zhao yang nan zhan	40
+朝阳地	zhao yang di	40
+朝阳地站	zhao yang di zhan	40
+朝阳川	zhao yang chuan	40
+朝阳川站	zhao yang chuan zhan	40
+朝阳村	zhao yang cun	40
+朝阳村站	zhao yang cun zhan	40
+朝阳湖	zhao yang hu	40
+朝阳湖站	zhao yang hu zhan	40
+木头营子	mu tou ying zi	40
+木头营子站	mu tou ying zi zhan	40
+木竹河	mu zhu he	40
+木竹河站	mu zhu he zhan	40
+木里图	mu li tu	40
+木里图站	mu li tu zhan	40
+本井	ben jing	40
+本井站	ben jing zhan	40
+本溪新城	ben xi xin cheng	40
+本溪新城站	ben xi xin cheng zhan	40
+朱嘎	zhu ga	40
+朱嘎站	zhu ga zhan	40
+朱家窑	zhu jia yao	40
+朱家窑站	zhu jia yao zhan	40
+朱杨溪	zhu yang xi	40
+朱杨溪站	zhu yang xi zhan	40
+朱石寨	zhu shi zhai	40
+朱石寨站	zhu shi zhai zhan	40
+杉松岗	shan song gang	40
+杉松岗站	shan song gang zhan	40
+李子沟	li zi gou	40
+李子沟站	li zi gou zhan	40
+李家坪	li jia ping	40
+李家坪站	li jia ping zhan	40
+李家屯	li jia tun	40
+李家屯站	li jia tun zhan	40
+李石寨	li shi zhai	40
+李石寨站	li shi zhai zhan	40
+杏树屯	xing shu tun	40
+杏树屯站	xing shu tun zhan	40
+杜尔基	du er ji	40
+杜尔基站	du er ji zhan	40
+杜桥	du qiao	40
+杜桥站	du qiao zhan	40
+杜赵	du zhao	40
+杜赵站	du zhao zhan	40
+来宾北	lai bin bei	40
+来宾北站	lai bin bei zhan	40
+来舟	lai zhou	40
+来舟站	lai zhou zhan	40
+杨各庄	yang ge zhuang	40
+杨各庄站	yang ge zhuang zhan	40
+杨家店	yang jia dian	40
+杨家店站	yang jia dian zhan	40
+杨家营	yang jia ying	40
+杨家营站	yang jia ying zhan	40
+杨岗	yang gang	40
+杨岗站	yang gang zhan	40
+杨木山	yang mu shan	40
+杨木山站	yang mu shan zhan	40
+杨村	yang cun	40
+杨村站	yang cun zhan	40
+杨杖子	yang zhang zi	40
+杨杖子站	yang zhang zi zhan	40
+杨树岭	yang shu ling	40
+杨树岭站	yang shu ling zhan	40
+杨树湾	yang shu wan	40
+杨树湾站	yang shu wan zhan	40
+杨源	yang yuan	40
+杨源站	yang yuan zhan	40
+杨漩	yang xuan	40
+杨漩站	yang xuan zhan	40
+杨陵南	yang ling nan	40
+杨陵南站	yang ling nan zhan	40
+松原北	song yuan bei	40
+松原北站	song yuan bei zhan	40
+松坎	song kan	40
+松坎站	song kan zhan	40
+松坝	song ba	40
+松坝站	song ba zhan	40
+松山湖北	song shan hu bei	40
+松山湖北站	song shan hu bei zhan	40
+松树台	song shu tai	40
+松树台站	song shu tai zhan	40
+松树镇	song shu zhen	40
+松树镇站	song shu zhen zhan	40
+松江南	song jiang nan	40
+松江南站	song jiang nan zhan	40
+松江河	song jiang he	40
+松江河站	song jiang he zhan	40
+松河	song he	40
+松河站	song he zhan	40
+板塘	ban tang	40
+板塘站	ban tang zhan	40
+板石河	ban shi he	40
+板石河站	ban shi he zhan	40
+枕头峰	zhen tou feng	40
+枕头峰站	zhen tou feng zhan	40
+林东	lin dong	40
+林东站	lin dong zhan	40
+林口南	lin kou nan	40
+林口南站	lin kou nan zhan	40
+林子头	lin zi tou	40
+林子头站	lin zi tou zhan	40
+林家台	lin jia tai	40
+林家台站	lin jia tai zhan	40
+林盛堡	lin sheng bao	40
+林盛堡站	lin sheng bao zhan	40
+果松	guo song	40
+果松站	guo song zhan	40
+果珠	guo zhu	40
+果珠站	guo zhu zhan	40
+枝江北	zhi jiang bei	40
+枝江北站	zhi jiang bei zhan	40
+枣子林	zao zi lin	40
+枣子林站	zao zi lin zhan	40
+枣庄东	zao zhuang dong	40
+枣庄东站	zao zhuang dong zhan	40
+枫叶岭	feng ye ling	40
+枫叶岭站	feng ye ling zhan	40
+柏村	bai cun	40
+柏村站	bai cun zhan	40
+柏果	bai guo	40
+柏果站	bai guo zhan	40
+柒牌	qi pai	150
+染牌	ran pai	150
+柘皋	zhe gao	40
+柘皋站	zhe gao zhan	40
+查布嘎	cha bu ga	40
+查布嘎站	cha bu ga zhan	40
+查干哈达	cha gan ha da	40
+查干哈达站	cha gan ha da zhan	40
+查干浑迪	cha gan hun di	40
+查干浑迪站	cha gan hun di zhan	40
+查干特格	cha gan te ge	40
+查干特格站	cha gan te ge zhan	40
+查干芒和	cha gan mang he	40
+查干芒和站	cha gan mang he zhan	40
+柯柯	ke ke	40
+柯柯站	ke ke zhan	40
+柳园南	liu yuan nan	40
+柳园南站	liu yuan nan zhan	40
+柳林南	liu lin nan	40
+柳林南站	liu lin nan zhan	40
+柳树泉	liu shu quan	40
+柳树泉站	liu shu quan zhan	40
+柳毛	liu mao	40
+柳毛沟	liu mao gou	40
+柳毛沟站	liu mao gou zhan	40
+柳毛站	liu mao zhan	40
+柴岗	chai gang	40
+柴岗站	chai gang zhan	40
+栟茶	ben cha	40
+栟茶站	ben cha zhan	40
+株洲南	zhu zhou nan	40
+株洲南站	zhu zhou nan zhan	40
+格勒森德	ge lei sen de	40
+格勒森德站	ge lei sen de zhan	40
+格口	ge kou	40
+格口站	ge kou zhan	40
+格尔木藏青工业园区	ge er mu zang qing gong ye yuan qu	120
+桂林西	gui lin xi	40
+桂林西站	gui lin xi zhan	40
+桃映	tao ying	40
+桃映站	tao ying zhan	40
+桃村北	tao cun bei	40
+桃村北站	tao cun bei zhan	40
+桐城东	tong cheng dong	40
+桐城东站	tong cheng dong zhan	40
+桐城南	tong cheng nan	40
+桐城南站	tong cheng nan zhan	40
+桐子林	tong zi lin	40
+桐子林站	tong zi lin zhan	40
+桐庐东	tong lu dong	40
+桐庐东站	tong lu dong zhan	40
+桐木寨	tong mu zhai	40
+桐木寨站	tong mu zhai zhan	40
+桐梓东	tong zi dong	40
+桐梓东站	tong zi dong zhan	40
+桐梓北	tong zi bei	40
+桐梓北站	tong zi bei zhan	40
+桑园子	sang yuan zi	40
+桑园子站	sang yuan zi zhan	40
+桑根达来	sang gen da lai	40
+桑根达来东	sang gen da lai dong	40
+桑根达来东站	sang gen da lai dong zhan	40
+桑根达来站	sang gen da lai zhan	40
+桓龙湖	huan long hu	40
+桓龙湖站	huan long hu zhan	40
+桦南东	hua nan dong	40
+桦南东站	hua nan dong zhan	40
+桦皮厂	hua pi chang	40
+桦皮厂站	hua pi chang zhan	40
+梁平南	liang ping nan	40
+梁平南站	liang ping nan zhan	40
+梁底下	liang di xia	40
+梁底下站	liang di xia zhan	40
+梅子铺	mei zi pu	40
+梅子铺站	mei zi pu zhan	40
+梧州南	wu zhou nan	40
+梧州南站	wu zhou nan zhan	40
+梨树湾	li shu wan	40
+梨树湾站	li shu wan zhan	40
+棕溪	zong xi	40
+棕溪站	zong xi zhan	40
+棠海	tang hai	40
+棠海站	tang hai zhan	40
+椑木镇	bei mu zhen	40
+椑木镇站	bei mu zhen zhan	40
+楚山	chu shan	40
+楚山站	chu shan zhan	40
+楚雄南	chu xiong nan	40
+楚雄南站	chu xiong nan zhan	40
+楚鲁图	chu lu tu	40
+楚鲁图站	chu lu tu zhan	40
+榆树台	yu shu tai	40
+榆树台站	yu shu tai zhan	40
+榆树屯	yu shu tun	40
+榆树屯站	yu shu tun zhan	40
+榆树川	yu shu chuan	40
+榆树川站	yu shu chuan zhan	40
+榆树沟	yu shu gou	40
+榆树沟站	yu shu gou zhan	40
+榆社西	yu she xi	40
+榆社西站	yu she xi zhan	40
+樟木头东	zhang mu tou dong	40
+樟木头东站	zhang mu tou dong zhan	40
+樟树东	zhang shu dong	40
+樟树东站	zhang shu dong zhan	40
+横州市	heng zhou shi	120
+横沟桥东	heng gou qiao dong	40
+横沟桥东站	heng gou qiao dong zhan	40
+横琴北	heng qin bei	40
+横琴北站	heng qin bei zhan	40
+横道河子东	heng dao he zi dong	40
+横道河子东站	heng dao he zi dong zhan	40
+欧里	ou li	40
+欧里站	ou li zhan	40
+欧龙山	ou long shan	40
+欧龙山站	ou long shan zhan	40
+歙县北	she xian bei	40
+歙县北站	she xian bei zhan	40
+武义北	wu yi bei	40
+武义北站	wu yi bei zhan	40
+武乡东	wu xiang dong	40
+武乡东站	wu xiang dong zhan	40
+武夷山北	wu yi shan bei	40
+武夷山北站	wu yi shan bei zhan	40
+武威南	wu wei nan	40
+武威南站	wu wei nan zhan	40
+武当山西	wu dang shan xi	40
+武当山西站	wu dang shan xi zhan	40
+武穴北	wu xue bei	40
+武穴北站	wu xue bei zhan	40
+歪头山	wai tou shan	40
+歪头山站	wai tou shan zhan	40
+段家	duan jia	40
+段家站	duan jia zhan	40
+段甲岭	duan jia ling	40
+段甲岭站	duan jia ling zhan	40
+毕克齐	bi ke qi	40
+毕克齐站	bi ke qi zhan	40
+毛告吐	mao gao tu	40
+毛告吐站	mao gao tu zhan	40
+毛坝	mao ba	40
+毛坝关	mao ba guan	40
+毛坝关站	mao ba guan zhan	40
+毛坝站	mao ba zhan	40
+毛陈	mao chen	40
+毛陈站	mao chen zhan	40
+民和南	min he nan	40
+民和南站	min he nan zhan	40
+民权北	min quan bei	40
+民权北站	min quan bei zhan	40
+民福寺	min fu si	40
+民福寺站	min fu si zhan	40
+氡泉	dong quan	40
+氡泉站	dong quan zhan	40
+水城区	shui cheng qu	120
+水家湖	shui jia hu	40
+水家湖站	shui jia hu zhan	40
+水江	shui jiang	40
+水江站	shui jiang zhan	40
+水洋	shui yang	40
+水洋站	shui yang zhan	40
+水茜	shui qian	40
+水茜站	shui qian zhan	40
+水车湾	shui che wan	40
+水车湾站	shui che wan zhan	40
+永丰营	yong feng ying	40
+永丰营站	yong feng ying zhan	40
+永嘉堡	yong jia bao	40
+永嘉堡站	yong jia bao zhan	40
+永城北	yong cheng bei	40
+永城北站	yong cheng bei zhan	40
+永安南	yong an nan	40
+永安南站	yong an nan zhan	40
+永寿西	yong shou xi	40
+永寿西站	yong shou xi zhan	40
+永川东	yong chuan dong	40
+永川东站	yong chuan dong zhan	40
+永州市回龙圩管理区	yong zhou shi hui long xu guan li qu	120
+永州经济技术开发区	yong zhou jing ji ji shu kai fa qu	120
+永康南	yong kang nan	40
+永康南站	yong kang nan zhan	40
+永济北	yong ji bei	40
+永济北站	yong ji bei zhan	40
+永清东	yong qing dong	40
+永清东站	yong qing dong zhan	40
+永甸	yong dian	40
+永甸站	yong dian zhan	40
+永福南	yong fu nan	40
+永福南站	yong fu nan zhan	40
+汇塘河	hui tang he	40
+汇塘河站	hui tang he zhan	40
+汇流河	hui liu he	40
+汇流河站	hui liu he zhan	40
+汇顶	hui ding	150
+汉寿南	han shou nan	40
+汉寿南站	han shou nan zhan	40
+汉沟镇	han gou zhen	40
+汉沟镇站	han gou zhen zhan	40
+汉王山	han wang shan	40
+汉王山站	han wang shan zhan	40
+汐子	xi zi	40
+汐子站	xi zi zhan	40
+汕头南	shan tou nan	40
+汕头南站	shan tou nan zhan	40
+汗苏鲁	han su lu	40
+汗苏鲁站	han su lu zhan	40
+汝箕沟	ru ji gou	40
+汝箕沟站	ru ji gou zhan	40
+江宁西	jiang ning xi	40
+江宁西站	jiang ning xi zhan	40
+江家岭	jiang jia ling	40
+江家岭站	jiang jia ling zhan	40
+江密峰	jiang mi feng	40
+江密峰站	jiang mi feng zhan	40
+江所田	jiang suo tian	40
+江所田站	jiang suo tian zhan	40
+江油北	jiang you bei	40
+江油北站	jiang you bei zhan	40
+江西村	jiang xi cun	40
+江西村站	jiang xi cun zhan	40
+江门东	jiang men dong	40
+江门东站	jiang men dong zhan	40
+池河	chi he	40
+池河站	chi he zhan	40
+汤头沟	tang tou gou	40
+汤头沟站	tang tou gou zhan	40
+汤山城	tang shan cheng	40
+汤山城站	tang shan cheng zhan	40
+汤旺县	tang wang xian	120
+汤河	tang he	40
+汤河站	tang he zhan	40
+汨罗东	mi luo dong	40
+汨罗东站	mi luo dong zhan	40
+沁河北	qin he bei	40
+沁河北站	qin he bei zhan	40
+沃皮	wo pi	40
+沃皮站	wo pi zhan	40
+沈丘北	shen qiu bei	40
+沈丘北站	shen qiu bei zhan	40
+沈家河	shen jia he	40
+沈家河站	shen jia he zhan	40
+沈阳西	shen yang xi	40
+沈阳西站	shen yang xi zhan	40
+沐滂	mu pang	40
+沐滂站	mu pang zhan	40
+沙井西	sha jing xi	40
+沙井西站	sha jing xi zhan	40
+沙力	sha li	40
+沙力站	sha li zhan	40
+沙县区	sha xian qu	120
+沙后所	sha hou suo	40
+沙后所站	sha hou suo zhan	40
+沙坨子	sha tuo zi	40
+沙坨子站	sha tuo zi zhan	40
+沙子河	sha zi he	40
+沙子河站	sha zi he zhan	40
+沙日乃	sha ri nai	40
+沙日乃站	sha ri nai zhan	40
+沙桥	sha qiao	40
+沙桥站	sha qiao zhan	40
+沙沁塔拉	sha qin ta la	40
+沙沁塔拉站	sha qin ta la zhan	40
+沙沙坡	sha sha po	40
+沙沙坡站	sha sha po zhan	40
+沙沱	sha tuo	40
+沙沱站	sha tuo zhan	40
+沙湾南	sha wan nan	40
+沙湾南站	sha wan nan zhan	40
+沙湾市	sha wan shi	40
+沙湾市站	sha wan shi zhan	40
+沙马拉达	sha ma la da	40
+沙马拉达站	sha ma la da zhan	40
+沥林北	li lin bei	40
+沥林北站	li lin bei zhan	40
+沧州高新技术产业开发区	cang zhou gao xin ji shu chan ye kai fa qu	120
+沧源	cang yuan	80
+沧源机场	cang yuan ji chang	80
+河东里	he dong li	40
+河东里站	he dong li zhan	40
+河北唐山海港经济开发区	he bei tang shan hai gang jing ji kai fa qu	120
+河北唐山芦台经济开发区	he bei tang shan lu tai jing ji kai fa qu	120
+河北沧州经济开发区	he bei cang zhou jing ji kai fa qu	120
+河北衡水高新技术产业开发区	he bei heng shui gao xin ji shu chan ye kai fa qu	120
+河北邢台经济开发区	he bei xing tai jing ji kai fa qu	120
+河南三门峡经济开发区	he nan san men xia jing ji kai fa qu	120
+河南商丘经济开发区	he nan shang qiu jing ji kai fa qu	120
+河南濮阳工业园区	he nan pu yang gong ye yuan qu	120
+河南驻马店经济开发区	he nan zhu ma dian jing ji kai fa qu	120
+河口北	he kou bei	40
+河口北站	he kou bei zhan	40
+河口南	he kou nan	40
+河口南站	he kou nan zhan	40
+河唇	he chun	40
+河唇站	he chun zhan	40
+河池西	he chi xi	40
+河池西站	he chi xi zhan	40
+河汤沟	he tang gou	40
+河汤沟站	he tang gou zhan	40
+河洛营	he luo ying	40
+河洛营站	he luo ying zhan	40
+河源东	he yuan dong	40
+河源东站	he yuan dong zhan	40
+河源北	he yuan bei	40
+河源北站	he yuan bei zhan	40
+河钢	he gang	150
+河间西	he jian xi	40
+河间西站	he jian xi zhan	40
+油溪	you xi	40
+油溪站	you xi zhan	40
+治江	zhi jiang	40
+治江站	zhi jiang zhan	40
+沿河城西	yan he cheng xi	40
+沿河城西站	yan he cheng xi zhan	40
+泉州东	quan zhou dong	40
+泉州东站	quan zhou dong zhan	40
+泉州南	quan zhou nan	40
+泉州南站	quan zhou nan zhan	40
+泉水屯	quan shui tun	40
+泉水屯站	quan shui tun zhan	40
+泉江	quan jiang	40
+泉江站	quan jiang zhan	40
+泉沟	quan gou	40
+泉沟站	quan gou zhan	40
+泔溪	gan xi	40
+泔溪站	gan xi zhan	40
+法启	fa qi	40
+法启站	fa qi zhan	40
+泗水南	si shui nan	40
+泗水南站	si shui nan zhan	40
+泥河子	ni he zi	40
+泥河子站	ni he zi zhan	40
+泥溪	ni xi	40
+泥溪站	ni xi zhan	40
+泸阳	lu yang	40
+泸阳站	lu yang zhan	40
+泽润里	ze run li	40
+泽润里站	ze run li zhan	40
+洋县西	yang xian xi	40
+洋县西站	yang xian xi zhan	40
+洛川东	luo chuan dong	40
+洛川东站	luo chuan dong zhan	40
+洛湾三江	luo wan san jiang	40
+洛湾三江站	luo wan san jiang zhan	40
+洛门	luo men	40
+洛门站	luo men zhan	40
+洛阳高新技术产业开发区	luo yang gao xin ji shu chan ye kai fa qu	120
+洞井	dong jing	40
+洞井站	dong jing zhan	40
+洞子崖	dong zi ya	40
+洞子崖站	dong zi ya zhan	40
+洞庙河	dong miao he	40
+洞庙河站	dong miao he zhan	40
+洪安乡	hong an xiang	40
+洪安乡站	hong an xiang zhan	40
+洪梅	hong mei	40
+洪梅站	hong mei zhan	40
+洪洞西	hong dong xi	40
+洪洞西站	hong dong xi zhan	40
+流水沟	liu shui gou	40
+流水沟站	liu shui gou zhan	40
+济南高新技术产业开发区	ji nan gao xin ji shu chan ye kai fa qu	120
+济宁东	ji ning dong	40
+济宁东站	ji ning dong zhan	40
+济宁北	ji ning bei	40
+济宁北站	ji ning bei zhan	40
+济宁高新技术产业开发区	ji ning gao xin ji shu chan ye kai fa qu	120
+浠水南	xi shui nan	40
+浠水南站	xi shui nan zhan	40
+浩良河	hao liang he	40
+浩良河站	hao liang he zhan	40
+浩辰	hao chen	150
+浮图峪	fu tu yu	40
+浮图峪站	fu tu yu zhan	40
+浮梁东	fu liang dong	40
+浮梁东站	fu liang dong zhan	40
+海东西	hai dong xi	40
+海东西站	hai dong xi zhan	40
+海坨子	hai tuo zi	40
+海坨子站	hai tuo zi zhan	40
+海城西	hai cheng xi	40
+海城西站	hai cheng xi zhan	40
+海宁西	hai ning xi	40
+海宁西站	hai ning xi zhan	40
+海林北	hai lin bei	40
+海林北站	hai lin bei zhan	40
+海正	hai zheng	150
+海石湾	hai shi wan	40
+海石湾站	hai shi wan zhan	40
+海阳北	hai yang bei	40
+海阳北站	hai yang bei zhan	40
+涧池铺	jian chi pu	40
+涧池铺站	jian chi pu zhan	40
+涪陵北	fu ling bei	40
+涪陵北站	fu ling bei zhan	40
+涿州东	zhuo zhou dong	40
+涿州东站	zhuo zhou dong zhan	40
+淄博北	zi bo bei	40
+淄博北站	zi bo bei zhan	40
+淮北北	huai bei bei	40
+淮北北站	huai bei bei zhan	40
+淮南南	huai nan nan	40
+淮南南站	huai nan nan zhan	40
+淮安东	huai an dong	40
+淮安东站	huai an dong zhan	40
+淮安南	huai an nan	40
+淮安南站	huai an nan zhan	40
+淮安经济技术开发区	huai an jing ji ji shu kai fa qu	120
+淮阳南	huai yang nan	40
+淮阳南站	huai yang nan zhan	40
+深井子	shen jing zi	40
+深井子站	shen jing zi zhan	40
+深圳机场北	shen zhen ji chang bei	40
+深圳机场北站	shen zhen ji chang bei zhan	40
+清水北	qing shui bei	40
+清水北站	qing shui bei zhan	40
+清河门北	qing he men bei	40
+清河门北站	qing he men bei zhan	40
+清镇西	qing zhen xi	40
+清镇西站	qing zhen xi zhan	40
+渑池南	mian chi nan	40
+渑池南站	mian chi nan zhan	40
+渠旧	qu jiu	40
+渠旧站	qu jiu zhan	40
+渠黎	qu li	40
+渠黎站	qu li zhan	40
+渡市	du shi	40
+渡市站	du shi zhan	40
+温州北	wen zhou bei	40
+温州北站	wen zhou bei zhan	40
+温春	wen chun	40
+温春站	wen chun zhan	40
+温泉寺	wen quan si	40
+温泉寺站	wen quan si zhan	40
+温都和硕	wen dou he shuo	40
+温都和硕站	wen dou he shuo zhan	40
+渭南北	wei nan bei	40
+渭南北站	wei nan bei zhan	40
+渭南南	wei nan nan	40
+渭南南站	wei nan nan zhan	40
+渭南镇	wei nan zhen	40
+渭南镇站	wei nan zhen zhan	40
+渭津	wei jin	40
+渭津站	wei jin zhan	40
+湖南湘潭高新技术产业园区	hu nan xiang tan gao xin ji shu chan ye yuan qu	120
+湖南益阳高新技术产业园区	hu nan yi yang gao xin ji shu chan ye yuan qu	120
+湖南衡阳松木经济开发区	hu nan heng yang song mu jing ji kai fa qu	120
+湖南衡阳高新技术产业园区	hu nan heng yang gao xin ji shu chan ye yuan qu	120
+湖潮	hu chao	40
+湖潮东	hu chao dong	40
+湖潮东站	hu chao dong zhan	40
+湖潮站	hu chao zhan	40
+湘潭九华示范区	xiang tan jiu hua shi fan qu	120
+湘潭北	xiang tan bei	40
+湘潭北站	xiang tan bei zhan	40
+湘潭昭山示范区	xiang tan zhao shan shi fan qu	120
+湛江西	zhan jiang xi	40
+湛江西站	zhan jiang xi zhan	40
+湟中区	huang zhong qu	120
+湾沚南	wan zhi nan	40
+湾沚南站	wan zhi nan zhan	40
+湾沟	wan gou	40
+湾沟站	wan gou zhan	40
+溆浦南	xu pu nan	40
+溆浦南站	xu pu nan zhan	40
+源潭	yuan tan	40
+源潭站	yuan tan zhan	40
+源迁	yuan qian	40
+源迁站	yuan qian zhan	40
+溪洞	xi dong	40
+溪洞站	xi dong zhan	40
+滁州北	chu zhou bei	40
+滁州北站	chu zhou bei zhan	40
+滁州经济技术开发区	chu zhou jing ji ji shu kai fa qu	120
+滑县南	hua xian nan	40
+滑县南站	hua xian nan zhan	40
+滑浚	hua jun	40
+滑浚站	hua jun zhan	40
+滕州东	teng zhou dong	40
+滕州东站	teng zhou dong zhan	40
+满归	man gui	40
+满归站	man gui zhan	40
+滥坝	lan ba	40
+滥坝站	lan ba zhan	40
+滦县东	luan xian dong	40
+滦县东站	luan xian dong zhan	40
+滦河沿	luan he yan	40
+滦河沿站	luan he yan zhan	40
+滨海北	bin hai bei	40
+滨海北站	bin hai bei zhan	40
+滨海西	bin hai xi	40
+滨海西站	bin hai xi zhan	40
+漫流河	man liu he	40
+漫流河站	man liu he zhan	40
+漯河经济技术开发区	luo he jing ji ji shu kai fa qu	120
+漳州东	zhang zhou dong	40
+漳州东站	zhang zhou dong zhan	40
+漳平西	zhang ping xi	40
+漳平西站	zhang ping xi zhan	40
+潍坊滨海经济技术开发区	wei fang bin hai jing ji ji shu kai fa qu	120
+潘家店	pan jia dian	40
+潘家店站	pan jia dian zhan	40
+潮安区	chao an qu	120
+澜起	lan qi	150
+澳门外岛	ao men wai dao	120
+濑湍	lai tuan	40
+濑湍站	lai tuan zhan	40
+濮阳经济技术开发区	pu yang jing ji ji shu kai fa qu	120
+火炬沟	huo ju gou	40
+火炬沟站	huo ju gou zhan	40
+火烧寨	huo shao zhai	40
+火烧寨站	huo shao zhai zhan	40
+火连寨	huo lian zhai	40
+火连寨站	huo lian zhai zhan	40
+灵仙庙	ling xian miao	40
+灵仙庙站	ling xian miao zhan	40
+灵武北	ling wu bei	40
+灵武北站	ling wu bei zhan	40
+灵石东	ling shi dong	40
+灵石东站	ling shi dong zhan	40
+烟台南	yan tai nan	40
+烟台南站	yan tai nan zhan	40
+烟台经济技术开发区	yan tai jing ji ji shu kai fa qu	120
+烟台西	yan tai xi	40
+烟台西站	yan tai xi zhan	40
+烟台高新技术产业开发区	yan tai gao xin ji shu chan ye kai fa qu	120
+烟筒屯	yan tong tun	40
+烟筒屯站	yan tong tun zhan	40
+焦作东	jiao zuo dong	40
+焦作东站	jiao zuo dong zhan	40
+焦作城乡一体化示范区	jiao zuo cheng xiang yi ti hua shi fan qu	120
+焦作西	jiao zuo xi	40
+焦作西站	jiao zuo xi zhan	40
+照福铺	zhao fu pu	40
+照福铺站	zhao fu pu zhan	40
+熊岳城	xiong yue cheng	40
+熊岳城站	xiong yue cheng zhan	40
+燕子砭	yan zi bian	40
+燕子砭站	yan zi bian zhan	40
+燕家庄	yan jia zhuang	40
+燕家庄站	yan jia zhuang zhan	40
+燧原	sui yuan	150
+爱国者存储	ai guo zhe cun chu	150
+牙屯堡	ya tun bao	40
+牙屯堡站	ya tun bao zhan	40
+牙拉盖图	ya la gai tu	40
+牙拉盖图站	ya la gai tu zhan	40
+牛坪子	niu ping zi	40
+牛坪子站	niu ping zi zhan	40
+牛家梁	niu jia liang	40
+牛家梁站	niu jia liang zhan	40
+牛家营子	niu jia ying zi	40
+牛家营子站	niu jia ying zi zhan	40
+牛心台	niu xin tai	40
+牛心台站	niu xin tai zhan	40
+牛汾台	niu fen tai	40
+牛汾台站	niu fen tai zhan	40
+牛耳河	niu er he	40
+牛耳河站	niu er he zhan	40
+牛角山	niu jiao shan	40
+牛角山站	niu jiao shan zhan	40
+牛车河	niu che he	40
+牛车河站	niu che he zhan	40
+犀浦东	xi pu dong	40
+犀浦东站	xi pu dong zhan	40
+独山东	du shan dong	40
+独山东站	du shan dong zhan	40
+独立屯	du li tun	40
+独立屯站	du li tun zhan	40
+狮子营	shi zi ying	40
+狮子营站	shi zi ying zhan	40
+狮山北	shi shan bei	40
+狮山北站	shi shan bei zhan	40
+狮岭	shi ling	40
+狮岭站	shi ling zhan	40
+狼尾山	lang wei shan	40
+狼尾山站	lang wei shan zhan	40
+狼窝铺	lang wo pu	40
+狼窝铺站	lang wo pu zhan	40
+玉山南	yu shan nan	40
+玉山南站	yu shan nan zhan	40
+玉溪西	yu xi xi	40
+玉溪西站	yu xi xi zhan	40
+玉田南	yu tian nan	40
+玉田南站	yu tian nan zhan	40
+玉舍	yu she	40
+玉舍站	yu she zhan	40
+王兆屯	wang zhao tun	40
+王兆屯站	wang zhao tun zhan	40
+王团庄	wang tuan zhuang	40
+王团庄站	wang tuan zhuang zhan	40
+王场	wang chang	40
+王场站	wang chang zhan	40
+王安镇	wang an zhen	40
+王安镇站	wang an zhen zhan	40
+王家营西	wang jia ying xi	40
+王家营西站	wang jia ying xi zhan	40
+王杨	wang yang	40
+王杨站	wang yang zhan	40
+王瞳	wang tong	40
+王瞳站	wang tong zhan	40
+玛纳斯湖	ma na si hu	40
+玛纳斯湖站	ma na si hu zhan	40
+珞璜	luo huang	40
+珞璜东	luo huang dong	40
+珞璜东站	luo huang dong zhan	40
+珞璜南	luo huang nan	40
+珞璜南站	luo huang nan zhan	40
+珞璜站	luo huang zhan	40
+珠斯花	zhu si hua	40
+珠斯花站	zhu si hua zhan	40
+珠琳	zhu lin	40
+珠琳站	zhu lin zhan	40
+珠窝	zhu wo	40
+珠窝东	zhu wo dong	40
+珠窝东站	zhu wo dong zhan	40
+珠窝站	zhu wo zhan	40
+班猫箐	ban mao qing	40
+班猫箐站	ban mao qing zhan	40
+理正	li zheng	150
+瑞昌西	rui chang xi	40
+瑞昌西站	rui chang xi zhan	40
+瓢儿屯	piao er tun	40
+瓢儿屯站	piao er tun zhan	40
+瓦屋山	wa wu shan	40
+瓦屋山站	wa wu shan zhan	40
+瓦房店西	wa fang dian xi	40
+瓦房店西站	wa fang dian xi zhan	40
+瓦拉干	wa la gan	40
+瓦拉干站	wa la gan zhan	40
+瓦石峡	wa shi xia	40
+瓦石峡站	wa shi xia zhan	40
+瓦祖	wa zu	40
+瓦祖站	wa zu zhan	40
+瓦窑坝	wa yao ba	40
+瓦窑坝站	wa yao ba zhan	40
+瓦窑田	wa yao tian	40
+瓦窑田站	wa yao tian zhan	40
+甘家坝	gan jia ba	40
+甘家坝站	gan jia ba zhan	40
+甘旗卡	gan qi ka	40
+甘旗卡站	gan qi ka zhan	40
+甘河	gan he	40
+甘河站	gan he zhan	40
+甘泉北	gan quan bei	40
+甘泉北站	gan quan bei zhan	40
+甘洛南	gan luo nan	40
+甘洛南站	gan luo nan zhan	40
+甘草店	gan cao dian	40
+甘草店站	gan cao dian zhan	40
+甜水堡	tian shui bao	40
+甜水堡站	tian shui bao zhan	40
+生芝渠	sheng zhi qu	40
+生芝渠站	sheng zhi qu zhan	40
+田东北	tian dong bei	40
+田东北站	tian dong bei zhan	40
+田家沟	tian jia gou	40
+田家沟站	tian jia gou zhan	40
+田师府	tian shi fu	40
+田师府站	tian shi fu zhan	40
+田心东	tian xin dong	40
+田心东站	tian xin dong zhan	40
+田梁子	tian liang zi	40
+田梁子站	tian liang zi zhan	40
+甲山	jia shan	40
+甲山站	jia shan zhan	40
+申威	shen wei	150
+申家店	shen jia dian	40
+申家店站	shen jia dian zhan	40
+甸心	dian xin	40
+甸心站	dian xin zhan	40
+画桥	hua qiao	40
+画桥站	hua qiao zhan	40
+界首南	jie shou nan	40
+界首南站	jie shou nan zhan	40
+留庄	liu zhuang	40
+留庄站	liu zhuang zhan	40
+畲江北	she jiang bei	40
+畲江北站	she jiang bei zhan	40
+登沙河	deng sha he	40
+登沙河站	deng sha he zhan	40
+登瀛崖	deng ying ya	40
+登瀛崖站	deng ying ya zhan	40
+白云北	bai yun bei	40
+白云北站	bai yun bei zhan	40
+白云机场北	bai yun ji chang bei	40
+白云机场北站	bai yun ji chang bei zhan	40
+白云西	bai yun xi	40
+白云西站	bai yun xi zhan	40
+白云鄂博南	bai yun e bo nan	40
+白云鄂博南站	bai yun e bo nan zhan	40
+白合	bai he	40
+白合站	bai he zhan	40
+白壁关	bai bi guan	40
+白壁关站	bai bi guan zhan	40
+白奎堡	bai kui bao	40
+白奎堡站	bai kui bao zhan	40
+白山乡	bai shan xiang	40
+白山乡站	bai shan xiang zhan	40
+白文东	bai wen dong	40
+白文东站	bai wen dong zhan	40
+白杨市	bai yang shi	120
+白桦排	bai hua pai	40
+白桦排站	bai hua pai zhan	40
+白沙坡	bai sha po	40
+白沙坡站	bai sha po zhan	40
+白沙沱	bai sha tuo	40
+白沙沱站	bai sha tuo zhan	40
+白沙铺	bai sha pu	40
+白沙铺站	bai sha pu zhan	40
+白沟	bai gou	40
+白沟站	bai gou zhan	40
+白河东	bai he dong	40
+白河东站	bai he dong zhan	40
+白泉	bai quan	40
+白泉站	bai quan zhan	40
+白涛	bai tao	40
+白涛站	bai tao zhan	40
+白涧	bai jian	40
+白涧站	bai jian zhan	40
+白芨沟	bai ji gou	40
+白芨沟站	bai ji gou zhan	40
+白银南	bai yin nan	40
+白银南站	bai yin nan zhan	40
+白银哈尔	bai yin ha er	40
+白银哈尔站	bai yin ha er zhan	40
+白银西	bai yin xi	40
+白银西站	bai yin xi zhan	40
+白音乌拉	bai yin wu la	40
+白音乌拉站	bai yin wu la zhan	40
+白音他拉	bai yin ta la	40
+白音他拉站	bai yin ta la zhan	40
+白音华南	bai yin hua nan	40
+白音华南站	bai yin hua nan zhan	40
+白音察干	bai yin cha gan	40
+白音察干站	bai yin cha gan zhan	40
+白音胡硕	bai yin hu shuo	40
+白音胡硕站	bai yin hu shuo zhan	40
+白马北	bai ma bei	40
+白马北站	bai ma bei zhan	40
+白鸡坡	bai ji po	40
+白鸡坡站	bai ji po zhan	40
+百浪	bai lang	40
+百浪站	bai lang zhan	40
+皇德	huang de	40
+皇德站	huang de zhan	40
+皮口	pi kou	40
+皮口南	pi kou nan	40
+皮口南站	pi kou nan zhan	40
+皮口站	pi kou zhan	40
+皮爷	pi ye	150
+益阳南	yi yang nan	40
+益阳南站	yi yang nan zhan	40
+益阳市大通湖管理区	yi yang shi da tong hu guan li qu	120
+盐城经济技术开发区	yan cheng jing ji ji shu kai fa qu	120
+盐津北	yan jin bei	40
+盐津北站	yan jin bei zhan	40
+盖州西	gai zhou xi	40
+盖州西站	gai zhou xi zhan	40
+盘关	pan guan	40
+盘关站	pan guan zhan	40
+盘古寺	pan gu si	40
+盘古寺站	pan gu si zhan	40
+盘州	pan zhou	40
+盘州站	pan zhou zhan	40
+省直辖县级行政区划	sheng zhi xia xian ji xing zheng qu hua	120
+眉县东	mei xian dong	40
+眉县东站	mei xian dong zhan	40
+石丫口	shi ya kou	40
+石丫口站	shi ya kou zhan	40
+石人城	shi ren cheng	40
+石人城站	shi ren cheng zhan	40
+石坝	shi ba	40
+石坝站	shi ba zhan	40
+石城东	shi cheng dong	40
+石城东站	shi cheng dong zhan	40
+石子坝	shi zi ba	40
+石子坝站	shi zi ba zhan	40
+石家庄循环化工园区	shi jia zhuang xun huan hua gong yuan qu	120
+石家庄高新技术产业开发区	shi jia zhuang gao xin ji shu chan ye kai fa qu	120
+石岘	shi xian	40
+石岘站	shi xian zhan	40
+石岭	shi ling	40
+石岭站	shi ling zhan	40
+石峡子	shi xia zi	40
+石峡子站	shi xia zi zhan	40
+石庙沟	shi miao gou	40
+石庙沟站	shi miao gou zhan	40
+石景山南	shi jing shan nan	40
+石景山南站	shi jing shan nan zhan	40
+石板滩	shi ban tan	40
+石板滩站	shi ban tan zhan	40
+石林南	shi lin nan	40
+石林南站	shi lin nan zhan	40
+石林西	shi lin xi	40
+石林西站	shi lin xi zhan	40
+石柱槽	shi zhu cao	40
+石柱槽站	shi zhu cao zhan	40
+石桥子	shi qiao zi	40
+石桥子站	shi qiao zi zhan	40
+石磷	shi lin	40
+石磷站	shi lin zhan	40
+石脑	shi nao	40
+石脑站	shi nao zhan	40
+石郎庄	shi lang zhuang	40
+石郎庄站	shi lang zhuang zhan	40
+石长	shi zhang	40
+石长站	shi zhang zhan	40
+石门县北	shi men xian bei	40
+石门县北站	shi men xian bei zhan	40
+砀山南	dang shan nan	40
+砀山南站	dang shan nan zhan	40
+砚川	yan chuan	40
+砚川站	yan chuan zhan	40
+砬子河	la zi he	40
+砬子河站	la zi he zhan	40
+硬石岭	ying shi ling	40
+硬石岭站	ying shi ling zhan	40
+碧州	bi zhou	40
+碧州站	bi zhou zhan	40
+碧鸡关	bi ji guan	40
+碧鸡关站	bi ji guan zhan	40
+碱柜	jian gui	40
+碱柜站	jian gui zhan	40
+磁窑	ci yao	40
+磁窑站	ci yao zhan	40
+磁西	ci xi	40
+磁西站	ci xi zhan	40
+磐安南	pan an nan	40
+磐安南站	pan an nan zhan	40
+磐安镇	pan an zhen	40
+磐安镇站	pan an zhen zhan	40
+磨丁	mo ding	40
+磨丁站	mo ding zhan	40
+磨心坡	mo xin po	40
+磨心坡站	mo xin po zhan	40
+磨憨	mo han	40
+磨憨站	mo han zhan	40
+磨溪	mo xi	40
+磨溪站	mo xi zhan	40
+磨滩	mo tan	40
+磨滩站	mo tan zhan	40
+礼州	li zhou	40
+礼州站	li zhou zhan	40
+礼泉南	li quan nan	40
+礼泉南站	li quan nan zhan	40
+祁东北	qi dong bei	40
+祁东北站	qi dong bei zhan	40
+祁县东	qi xian dong	40
+祁县东站	qi xian dong zhan	40
+祁家堡	qi jia bao	40
+祁家堡站	qi jia bao zhan	40
+祁门南	qi men nan	40
+祁门南站	qi men nan zhan	40
+祁阳北	qi yang bei	40
+祁阳北站	qi yang bei zhan	40
+祁阳市	qi yang shi	120
+神峪河	shen yu he	40
+神峪河站	shen yu he zhan	40
+神木南	shen mu nan	40
+神木南站	shen mu nan zhan	40
+神木西	shen mu xi	40
+神木西站	shen mu xi zhan	40
+祥云西	xiang yun xi	40
+祥云西站	xiang yun xi zhan	40
+禄丰南	lu feng nan	40
+禄丰南站	lu feng nan zhan	40
+禄丰市	lu feng shi	120
+福临堡	fu lin bao	40
+福临堡站	fu lin bao zhan	40
+福兴地	fu xing di	40
+福兴地站	fu xing di zhan	40
+福利区	fu li qu	40
+福利区站	fu li qu zhan	40
+福利屯	fu li tun	40
+福利屯站	fu li tun zhan	40
+福山口	fu shan kou	40
+福山口站	fu shan kou zhan	40
+福山地	fu shan di	40
+福山地站	fu shan di zhan	40
+福山寺	fu shan si	40
+福山寺站	fu shan si zhan	40
+福山镇	fu shan zhen	40
+福山镇站	fu shan zhen zhan	40
+福巨	fu ju	40
+福巨站	fu ju zhan	40
+福海西	fu hai xi	40
+福海西站	fu hai xi zhan	40
+福清西	fu qing xi	40
+福清西站	fu qing xi zhan	40
+福溪	fu xi	40
+福溪站	fu xi zhan	40
+福生庄	fu sheng zhuang	40
+福生庄站	fu sheng zhuang zhan	40
+福绵区	fu mian qu	120
+禹城东	yu cheng dong	40
+禹城东站	yu cheng dong zhan	40
+秋木庄	qiu mu zhuang	40
+秋木庄站	qiu mu zhuang zhan	40
+秋梨沟	qiu li gou	40
+秋梨沟站	qiu li gou zhan	40
+科伦	ke lun	150
+秦家	qin jia	40
+秦家庄	qin jia zhuang	40
+秦家庄站	qin jia zhuang zhan	40
+秦家站	qin jia zhan	40
+秦皇岛市经济技术开发区	qin huang dao shi jing ji ji shu kai fa qu	120
+秧草地	yang cao di	40
+秧草地站	yang cao di zhan	40
+程家	cheng jia	40
+程家站	cheng jia zhan	40
+窑上	yao shang	40
+窑上站	yao shang zhan	40
+章丘北	zhang qiu bei	40
+章丘北站	zhang qiu bei zhan	40
+章丘南	zhang qiu nan	40
+章丘南站	zhang qiu nan zhan	40
+章党	zhang dang	40
+章党站	zhang dang zhan	40
+竹园坝	zhu yuan ba	40
+竹园坝站	zhu yuan ba zhan	40
+简阳南	jian yang nan	40
+简阳南站	jian yang nan zhan	40
+算王庄	suan wang zhuang	40
+算王庄站	suan wang zhuang zhan	40
+米易东	mi yi dong	40
+米易东站	mi yi dong zhan	40
+米林市	mi lin shi	120
+米沙子	mi sha zi	40
+米沙子站	mi sha zi zhan	40
+精河南	jing he nan	40
+精河南站	jing he nan zhan	40
+索图罕	suo tu han	40
+索图罕站	suo tu han zhan	40
+索泰	suo tai	150
+綦江东	qi jiang dong	40
+綦江东站	qi jiang dong zhan	40
+綦江区	qi jiang qu	120
+繁昌区	fan chang qu	120
+繁昌西	fan chang xi	40
+繁昌西站	fan chang xi zhan	40
+红兴隆	hong xing long	40
+红兴隆站	hong xing long zhan	40
+红安西	hong an xi	40
+红安西站	hong an xi zhan	40
+红寺堡北	hong si bao bei	40
+红寺堡北站	hong si bao bei zhan	40
+红岘台	hong xian tai	40
+红岘台站	hong xian tai zhan	40
+红岛	hong dao	40
+红岛站	hong dao zhan	40
+红峰	hong feng	40
+红峰站	hong feng zhan	40
+红彦	hong yan	40
+红彦站	hong yan zhan	40
+红旗营	hong qi ying	40
+红旗营站	hong qi ying zhan	40
+红柳河	hong liu he	40
+红柳河站	hong liu he zhan	40
+红砂坝	hong sha ba	40
+红砂坝站	hong sha ba zhan	40
+红砂岘	hong sha xian	40
+红砂岘站	hong sha xian zhan	40
+红花园	hong hua yuan	40
+红花园站	hong hua yuan zhan	40
+红花塘	hong hua tang	40
+红花塘站	hong hua tang zhan	40
+红花沟	hong hua gou	40
+红花沟站	hong hua gou zhan	40
+纪家沟	ji jia gou	40
+纪家沟站	ji jia gou zhan	40
+纬衡	wei heng	150
+纸坊东	zhi fang dong	40
+纸坊东站	zhi fang dong zhan	40
+绅坊	shen fang	40
+绅坊站	shen fang zhan	40
+织金北	zhi jin bei	40
+织金北站	zhi jin bei zhan	40
+绍兴东	shao xing dong	40
+绍兴东站	shao xing dong zhan	40
+绍根	shao gen	40
+绍根站	shao gen zhan	40
+经棚	jing peng	40
+经棚站	jing peng zhan	40
+统军庄	tong jun zhuang	40
+统军庄站	tong jun zhuang zhan	40
+统景	tong jing	40
+统景站	tong jing zhan	40
+绣峰	xiu feng	40
+绣峰站	xiu feng zhan	40
+绥中北	sui zhong bei	40
+绥中北站	sui zhong bei zhan	40
+绩溪北	ji xi bei	40
+绩溪北站	ji xi bei zhan	40
+绵竹南	mian zhu nan	40
+绵竹南站	mian zhu nan zhan	40
+绿潭	lv tan	40
+绿潭站	lv tan zhan	40
+缙云西	jin yun xi	40
+缙云西站	jin yun xi zhan	40
+缯溪河	zeng xi he	40
+缯溪河站	zeng xi he zhan	40
+网户	wang hu	40
+网户站	wang hu zhan	40
+罗家	luo jia	40
+罗家站	luo jia zhan	40
+罗江东	luo jiang dong	40
+罗江东站	luo jiang dong zhan	40
+羊圈子	yang juan zi	40
+羊圈子站	yang juan zi zhan	40
+羊坪	yang ping	40
+羊坪站	yang ping zhan	40
+羊堡	yang bao	40
+羊堡站	yang bao zhan	40
+羊尾哨	yang wei shao	40
+羊尾哨站	yang wei shao zhan	40
+羊者窝	yang zhe wo	40
+羊者窝站	yang zhe wo zhan	40
+羊臼河	yang jiu he	40
+羊臼河站	yang jiu he zhan	40
+羊草	yang cao	40
+羊草站	yang cao zhan	40
+美岱召	mei dai zhao	40
+美岱召站	mei dai zhao zhan	40
+翠岗	cui gang	40
+翠岗站	cui gang zhan	40
+老古沟	lao gu gou	40
+老古沟站	lao gu gou zhan	40
+老岭	lao ling	40
+老岭站	lao ling zhan	40
+老府	lao fu	40
+老府站	lao fu zhan	40
+老松岭	lao song ling	40
+老松岭站	lao song ling zhan	40
+老王洞	lao wang dong	40
+老王洞站	lao wang dong zhan	40
+老罗堡	lao luo bao	40
+老罗堡站	lao luo bao zhan	40
+老羊壕	lao yang hao	40
+老羊壕站	lao yang hao zhan	40
+老莱	lao lai	40
+老莱站	lao lai zhan	40
+老锅厂	lao guo chang	40
+老锅厂站	lao guo chang zhan	40
+耒阳西	lei yang xi	40
+耒阳西站	lei yang xi zhan	40
+聂河	nie he	40
+聂河站	nie he zhan	40
+聊城西	liao cheng xi	40
+聊城西站	liao cheng xi zhan	40
+胜芳	sheng fang	40
+胜芳站	sheng fang zhan	40
+胡杨河市	hu yang he shi	120
+胪滨	lu bin	40
+胪滨站	lu bin zhan	40
+胶州北	jiao zhou bei	40
+胶州北站	jiao zhou bei zhan	40
+能家	neng jia	40
+能家站	neng jia zhan	40
+腰栈	yao zhan	40
+腰栈站	yao zhan zhan	40
+自治区直辖县级行政区划	zi zhi qu zhi xia xian ji xing zheng qu hua	120
+自贡北	zi gong bei	40
+自贡北站	zi gong bei zhan	40
+致钛	zhi tai	150
+舍伯吐	she bo tu	40
+舍伯吐站	she bo tu zhan	40
+舍力虎	she li hu	40
+舍力虎站	she li hu zhan	40
+舒城东	shu cheng dong	40
+舒城东站	shu cheng dong zhan	40
+良各庄	liang ge zhuang	40
+良各庄站	liang ge zhuang zhan	40
+良村	liang cun	40
+良村站	liang cun zhan	40
+色尼区	se ni qu	120
+艾不盖	ai bu gai	40
+艾不盖站	ai bu gai zhan	40
+艾家村	ai jia cun	40
+艾家村站	ai jia cun zhan	40
+艾河	ai he	40
+艾河站	ai he zhan	40
+芒市	mang shi	80
+芒市机场	mang shi ji chang	80
+芙蓉南	fu rong nan	40
+芙蓉南站	fu rong nan zhan	40
+芜湖北	wu hu bei	40
+芜湖北站	wu hu bei zhan	40
+芜湖南	wu hu nan	40
+芜湖南站	wu hu nan zhan	40
+芜湖经济技术开发区	wu hu jing ji ji shu kai fa qu	120
+芝奇	zhi qi	150
+芦官	lu guan	40
+芦官站	lu guan zhan	40
+芦家庄	lu jia zhuang	40
+芦家庄站	lu jia zhuang zhan	40
+芦家村	lu jia cun	40
+芦家村站	lu jia cun zhan	40
+芦庙	lu miao	40
+芦庙站	lu miao zhan	40
+芦沟	lu gou	40
+芦沟站	lu gou zhan	40
+芨岭	ji ling	40
+芨岭站	ji ling zhan	40
+花博山	hua bo shan	40
+花博山站	hua bo shan zhan	40
+花土坡	hua tu po	40
+花土坡站	hua tu po zhan	40
+花家庄	hua jia zhuang	40
+花家庄站	hua jia zhuang zhan	40
+花山南	hua shan nan	40
+花山南站	hua shan nan zhan	40
+花庄	hua zhuang	40
+花庄站	hua zhuang zhan	40
+花棚子	hua peng zi	40
+花棚子站	hua peng zi zhan	40
+花楼坝	hua lou ba	40
+花楼坝站	hua lou ba zhan	40
+花溪南	hua xi nan	40
+花溪南站	hua xi nan zhan	40
+花溪西	hua xi xi	40
+花溪西站	hua xi xi zhan	40
+花龙门	hua long men	40
+花龙门站	hua long men zhan	40
+苇子沟	wei zi gou	40
+苇子沟站	wei zi gou zhan	40
+苇河	wei he	40
+苇河站	wei he zhan	40
+苇河西	wei he xi	40
+苇河西站	wei he xi zhan	40
+苍坪	cang ping	40
+苍坪站	cang ping zhan	40
+苍石	cang shi	40
+苍石站	cang shi zhan	40
+苏吉达巴	su ji da ba	40
+苏吉达巴站	su ji da ba zhan	40
+苏坂	su ban	40
+苏坂站	su ban zhan	40
+苏宏图	su hong tu	40
+苏宏图站	su hong tu zhan	40
+苏家坡	su jia po	40
+苏家坡站	su jia po zhan	40
+苏雄	su xiong	40
+苏雄站	su xiong zhan	40
+苏集	su ji	40
+苏集站	su ji zhan	40
+苔青	tai qing	40
+苔青站	tai qing zhan	40
+英库勒	ying ku lei	40
+英库勒站	ying ku lei zhan	40
+英德西	ying de xi	40
+英德西站	ying de xi zhan	40
+英额门	ying e men	40
+英额门站	ying e men zhan	40
+茂名东	mao ming dong	40
+茂名东站	mao ming dong zhan	40
+茂名西	mao ming xi	40
+茂名西站	mao ming xi zhan	40
+茂舍祖	mao she zu	40
+茂舍祖站	mao she zu zhan	40
+范各庄	fan ge zhuang	40
+范各庄站	fan ge zhuang zhan	40
+范镇	fan zhen	40
+范镇站	fan zhen zhan	40
+茄子溪	qie zi xi	40
+茄子溪站	qie zi xi zhan	40
+茅岭	mao ling	40
+茅岭站	mao ling zhan	40
+茅草坪	mao cao ping	40
+茅草坪站	mao cao ping zhan	40
+茌平区	chi ping qu	120
+茌平南	chi ping nan	40
+茌平南站	chi ping nan zhan	40
+茨冲	ci chong	40
+茨冲站	ci chong zhan	40
+茨坝	ci ba	40
+茨坝站	ci ba zhan	40
+茫崖市	mang ya shi	120
+茶卡	cha ka	40
+茶卡站	cha ka zhan	40
+茶条沟	cha tiao gou	40
+茶条沟站	cha tiao gou zhan	40
+茶镇	cha zhen	40
+茶镇站	cha zhen zhan	40
+茶陵南	cha ling nan	40
+茶陵南站	cha ling nan zhan	40
+荆州经济技术开发区	jing zhou jing ji ji shu kai fa qu	120
+草河口	cao he kou	40
+草河口站	cao he kou zhan	40
+荒沟西	huang gou xi	40
+荒沟西站	huang gou xi zhan	40
+荣昌北	rong chang bei	40
+荣昌北站	rong chang bei zhan	40
+莒南北	ju nan bei	40
+莒南北站	ju nan bei zhan	40
+莫力达瓦达斡尔族自治旗	mo li da wa da wo er zu zi zhi qi	120
+莱芜东	lai wu dong	40
+莱芜东站	lai wu dong zhan	40
+莱芜北	lai wu bei	40
+莱芜北站	lai wu bei zhan	40
+莱芜西	lai wu xi	40
+莱芜西站	lai wu xi zhan	40
+莱西北	lai xi bei	40
+莱西北站	lai xi bei zhan	40
+莱西南	lai xi nan	40
+莱西南站	lai xi nan zhan	40
+莱阳南	lai yang nan	40
+莱阳南站	lai yang nan zhan	40
+莲东	lian dong	40
+莲东站	lian dong zhan	40
+莲江口	lian jiang kou	40
+莲江口站	lian jiang kou zhan	40
+菇园	gu yuan	40
+菇园站	gu yuan zhan	40
+菏泽东	he ze dong	40
+菏泽东站	he ze dong zhan	40
+菏泽经济技术开发区	he ze jing ji ji shu kai fa qu	120
+菏泽高新技术开发区	he ze gao xin ji shu kai fa qu	120
+营东	ying dong	40
+营东站	ying dong zhan	40
+营北	ying bei	40
+营北站	ying bei zhan	40
+营口东	ying kou dong	40
+营口东站	ying kou dong zhan	40
+营盘水	ying pan shui	40
+营盘水站	ying pan shui zhan	40
+营盘湾	ying pan wan	40
+营盘湾站	ying pan wan zhan	40
+营街	ying jie	40
+营街站	ying jie zhan	40
+萧县北	xiao xian bei	40
+萧县北站	xiao xian bei zhan	40
+落坡岭	luo po ling	40
+落坡岭站	luo po ling zhan	40
+落垡	luo fa	40
+落垡站	luo fa zhan	40
+葆园	bao yuan	40
+葆园站	bao yuan zhan	40
+葛根庙	ge gen miao	40
+葛根庙站	ge gen miao zhan	40
+葡萄菁	pu tao jing	40
+葡萄菁站	pu tao jing zhan	40
+葫芦岛北	hu lu dao bei	40
+葫芦岛北站	hu lu dao bei zhan	40
+葵潭	kui tan	40
+葵潭站	kui tan zhan	40
+蒋村	jiang cun	40
+蒋村站	jiang cun zhan	40
+蒙克山	meng ke shan	40
+蒙克山站	meng ke shan zhan	40
+蒙根塔拉	meng gen ta la	40
+蒙根塔拉站	meng gen ta la zhan	40
+蒙渡	meng du	40
+蒙渡站	meng du zhan	40
+蒙自北	meng zi bei	40
+蒙自北站	meng zi bei zhan	40
+蒲坝	pu ba	40
+蒲坝站	pu ba zhan	40
+蒲城东	pu cheng dong	40
+蒲城东站	pu cheng dong zhan	40
+蒲石	pu shi	40
+蒲石站	pu shi zhan	40
+蓝村	lan cun	40
+蓝村站	lan cun zhan	40
+蓟县南	ji xian nan	40
+蓟县南站	ji xian nan zhan	40
+蓟州北	ji zhou bei	40
+蓟州北站	ji zhou bei zhan	40
+蓟州南	ji zhou nan	40
+蓟州南站	ji zhou nan zhan	40
+蓬莱区	peng lai qu	120
+蔡家坡	cai jia po	40
+蔡家坡站	cai jia po zhan	40
+蔡家崖	cai jia ya	40
+蔡家崖站	cai jia ya zhan	40
+蔡山	cai shan	40
+蔡山站	cai shan zhan	40
+蔺家楼	lin jia lou	40
+蔺家楼站	lin jia lou zhan	40
+蔺市	lin shi	40
+蔺市站	lin shi zhan	40
+蕉内	jiao nei	150
+蕉溪	jiao xi	40
+蕉溪站	jiao xi zhan	40
+蕲春南	qi chun nan	40
+蕲春南站	qi chun nan zhan	40
+藁城南	gao cheng nan	40
+藁城南站	gao cheng nan zhan	40
+虎什哈	hu shen ha	40
+虎什哈站	hu shen ha zhan	40
+虎尔虎拉	hu er hu la	40
+虎尔虎拉站	hu er hu la zhan	40
+虎峰	hu feng	40
+虎峰站	hu feng zhan	40
+虎门东	hu men dong	40
+虎门东站	hu men dong zhan	40
+虎门北	hu men bei	40
+虎门北站	hu men bei zhan	40
+虢镇	guo zhen	40
+虢镇站	guo zhen zhan	40
+蚌埠南	beng bu nan	40
+蚌埠南站	beng bu nan zhan	40
+蚌埠市经济开发区	beng bu shi jing ji kai fa qu	120
+蚌埠市高新技术开发区	beng bu shi gao xin ji shu kai fa qu	120
+蚕厂屯	can chang tun	40
+蚕厂屯站	can chang tun zhan	40
+蛟河西	jiao he xi	40
+蛟河西站	jiao he xi zhan	40
+蛟洋	jiao yang	40
+蛟洋站	jiao yang zhan	40
+蛤蟆塘	ha ma tang	40
+蛤蟆塘站	ha ma tang zhan	40
+蜀山东	shu shan dong	40
+蜀山东站	shu shan dong zhan	40
+蜀河	shu he	40
+蜀河站	shu he zhan	40
+螺山	luo shan	40
+螺山站	luo shan zhan	40
+蟠龙镇	pan long zhen	40
+蟠龙镇站	pan long zhen zhan	40
+街基	jie ji	40
+街基站	jie ji zhan	40
+衙门庙	ya men miao	40
+衙门庙站	ya men miao zhan	40
+衡山西	heng shan xi	40
+衡山西站	heng shan xi zhan	40
+衡水北	heng shui bei	40
+衡水北站	heng shui bei zhan	40
+衡水滨湖新区	heng shui bin hu xin qu	120
+袁家堡	yuan jia bao	40
+袁家堡站	yuan jia bao zhan	40
+裕元	yu yuan	150
+裴德	pei de	40
+裴德站	pei de zhan	40
+褚家湾	chu jia wan	40
+褚家湾站	chu jia wan zhan	40
+襄垣东	xiang yuan dong	40
+襄垣东站	xiang yuan dong zhan	40
+襄州	xiang zhou	40
+襄州站	xiang zhou zhan	40
+襄汾西	xiang fen xi	40
+襄汾西站	xiang fen xi zhan	40
+襄都区	xiang du qu	120
+西八里	xi ba li	40
+西八里站	xi ba li zhan	40
+西六方	xi liu fang	40
+西六方站	xi liu fang zhan	40
+西刘	xi liu	40
+西刘站	xi liu zhan	40
+西哲里木	xi zhe li mu	40
+西哲里木站	xi zhe li mu zhan	40
+西固城	xi gu cheng	40
+西固城站	xi gu cheng zhan	40
+西大庙	xi da miao	40
+西大庙站	xi da miao zhan	40
+西小召	xi xiao zhao	40
+西小召站	xi xiao zhao zhan	40
+西岗子	xi gang zi	40
+西岗子站	xi gang zi zhan	40
+西岭口	xi ling kou	40
+西岭口站	xi ling kou zhan	40
+西平西	xi ping xi	40
+西平西站	xi ping xi zhan	40
+西斗铺	xi dou pu	40
+西斗铺站	xi dou pu zhan	40
+西昌北	xi chang bei	40
+西昌北站	xi chang bei zhan	40
+西昌南	xi chang nan	40
+西昌南站	xi chang nan zhan	40
+西昌西	xi chang xi	40
+西昌西站	xi chang xi zhan	40
+西柳	xi liu	40
+西柳站	xi liu zhan	40
+西桐古	xi tong gu	40
+西桐古站	xi tong gu zhan	40
+西武匠	xi wu jiang	40
+西武匠站	xi wu jiang zhan	40
+西湖东	xi hu dong	40
+西湖东站	xi hu dong zhan	40
+西胡尔清	xi hu er qing	40
+西胡尔清站	xi hu er qing zhan	40
+西藏文化旅游创意园区	xi zang wen hua lv you chuang yi yuan qu	120
+西贺村	xi he cun	40
+西贺村站	xi he cun zhan	40
+西阳岔	xi yang cha	40
+西阳岔站	xi yang cha zhan	40
+西麻山	xi ma shan	40
+西麻山站	xi ma shan zhan	40
+覃家坝	tan jia ba	40
+覃家坝站	tan jia ba zhan	40
+观沙岭	guan sha ling	40
+观沙岭站	guan sha ling zhan	40
+角美	jiao mei	40
+角美站	jiao mei zhan	40
+讷尔克气	ne er ke qi	40
+讷尔克气站	ne er ke qi zhan	40
+许三湾	xu san wan	40
+许三湾站	xu san wan zhan	40
+许家台	xu jia tai	40
+许家台站	xu jia tai zhan	40
+许昌北	xu chang bei	40
+许昌北站	xu chang bei zhan	40
+许昌经济技术开发区	xu chang jing ji ji shu kai fa qu	120
+读书铺	du shu pu	40
+读书铺站	du shu pu zhan	40
+谢家镇	xie jia zhen	40
+谢家镇站	xie jia zhen zhan	40
+谭家井	tan jia jing	40
+谭家井站	tan jia jing zhan	40
+谷城北	gu cheng bei	40
+谷城北站	gu cheng bei zhan	40
+谷山	gu shan	40
+谷山站	gu shan zhan	40
+豆庄	dou zhuang	40
+豆庄站	dou zhuang zhan	40
+豆张庄	dou zhang zhuang	40
+豆张庄站	dou zhang zhuang zhan	40
+豆罗	dou luo	40
+豆罗站	dou luo zhan	40
+豪森	hao sen	150
+豫东综合物流产业聚集区	yu dong zong he wu liu chan ye ju ji qu	120
+贲红	ben hong	40
+贲红站	ben hong zhan	40
+贵安	gui an	40
+贵安站	gui an zhan	40
+贵定北	gui ding bei	40
+贵定北站	gui ding bei zhan	40
+贵定南	gui ding nan	40
+贵定南站	gui ding nan zhan	40
+费县北	fei xian bei	40
+费县北站	fei xian bei zhan	40
+贺家店	he jia dian	40
+贺家店站	he jia dian zhan	40
+贺家河	he jia he	40
+贺家河站	he jia he zhan	40
+贺日斯台	he ri si tai	40
+贺日斯台站	he ri si tai zhan	40
+贺胜桥东	he sheng qiao dong	40
+贺胜桥东站	he sheng qiao dong zhan	40
+资中北	zi zhong bei	40
+资中北站	zi zhong bei zhan	40
+资中西	zi zhong xi	40
+资中西站	zi zhong xi zhan	40
+资阳北	zi yang bei	40
+资阳北站	zi yang bei zhan	40
+资阳西	zi yang xi	40
+资阳西站	zi yang xi zhan	40
+赛乌苏	sai wu su	40
+赛乌苏站	sai wu su zhan	40
+赛汉塔拉	sai han ta la	40
+赛汉塔拉站	sai han ta la zhan	40
+赛金桥	sai jin qiao	40
+赛金桥站	sai jin qiao zhan	40
+赛音胡都格	sai yin hu dou ge	40
+赛音胡都格站	sai yin hu dou ge zhan	40
+赣县北	gan xian bei	40
+赣县北站	gan xian bei zhan	40
+赤壁北	chi bi bei	40
+赤壁北站	chi bi bei zhan	40
+赤峰东	chi feng dong	40
+赤峰东站	chi feng dong zhan	40
+赤峰南	chi feng nan	40
+赤峰南站	chi feng nan zhan	40
+赤峰西	chi feng xi	40
+赤峰西站	chi feng xi zhan	40
+赫尔洪得	he er hong de	40
+赫尔洪得站	he er hong de zhan	40
+赵光	zhao guang	40
+赵光站	zhao guang zhan	40
+赵城	zhao cheng	40
+赵城站	zhao cheng zhan	40
+赵家店	zhao jia dian	40
+赵家店站	zhao jia dian zhan	40
+赶水	gan shui	40
+赶水东	gan shui dong	40
+赶水东站	gan shui dong zhan	40
+赶水站	gan shui zhan	40
+超梁沟	chao liang gou	40
+超梁沟站	chao liang gou zhan	40
+路口铺	lu kou pu	40
+路口铺站	lu kou pu zhan	40
+车墩	che dun	40
+车墩站	che dun zhan	40
+车转湾	che zhuan wan	40
+车转湾站	che zhuan wan zhan	40
+轵城	zhi cheng	40
+轵城站	zhi cheng zhan	40
+轸溪	zhen xi	40
+轸溪站	zhen xi zhan	40
+辛集南	xin ji nan	40
+辛集南站	xin ji nan zhan	40
+辰清	chen qing	40
+辰清站	chen qing zhan	40
+边沟	bian gou	40
+边沟站	bian gou zhan	40
+达孜区	da zi qu	120
+达孜工业园区	da zi gong ye yuan qu	120
+达家沟	da jia gou	40
+达家沟站	da jia gou zhan	40
+达布逊	da bu xun	40
+达布逊站	da bu xun zhan	40
+达拉滨	da la bin	40
+达拉滨站	da la bin zhan	40
+达拉特西	da la te xi	40
+达拉特西站	da la te xi zhan	40
+达日其嘎	da ri qi ga	40
+达日其嘎站	da ri qi ga zhan	40
+达连河	da lian he	40
+达连河站	da lian he zhan	40
+迎水桥	ying shui qiao	40
+迎水桥站	ying shui qiao zhan	40
+迎祥街	ying xiang jie	40
+迎祥街站	ying xiang jie zhan	40
+迎龙	ying long	40
+迎龙站	ying long zhan	40
+进贤北	jin xian bei	40
+进贤北站	jin xian bei zhan	40
+进贤南	jin xian nan	40
+进贤南站	jin xian nan zhan	40
+连云港经济技术开发区	lian yun gang jing ji ji shu kai fa qu	120
+连湖	lian hu	40
+连湖站	lian hu zhan	40
+连珠山	lian zhu shan	40
+连珠山站	lian zhu shan zhan	40
+迤资	yi zi	40
+迤资站	yi zi zhan	40
+迤那	yi na	40
+迤那站	yi na zhan	40
+迪兰	di lan	150
+通北	tong bei	40
+通北站	tong bei zhan	40
+通天屯	tong tian tun	40
+通天屯站	tong tian tun zhan	40
+通威	tong wei	150
+通安驿	tong an yi	40
+通安驿站	tong an yi zhan	40
+通州西	tong zhou xi	40
+通州西站	tong zhou xi zhan	40
+通沟	tong gou	40
+通沟站	tong gou zhan	40
+通辽北	tong liao bei	40
+通辽北站	tong liao bei zhan	40
+通辽经济技术开发区	tong liao jing ji ji shu kai fa qu	120
+通远堡	tong yuan bao	40
+通远堡站	tong yuan bao zhan	40
+通远堡西	tong yuan bao xi	40
+通远堡西站	tong yuan bao xi zhan	40
+遂宁南	sui ning nan	40
+遂宁南站	sui ning nan zhan	40
+道仑郭勒	dao lun guo lei	40
+道仑郭勒站	dao lun guo lei zhan	40
+道州	dao zhou	40
+道州站	dao zhou zhan	40
+道清	dao qing	40
+道清站	dao qing zhan	40
+道滘	dao jiao	40
+道滘站	dao jiao zhan	40
+道镇	dao zhen	40
+道镇站	dao zhen zhan	40
+遥林	yao lin	40
+遥林站	yao lin zhan	40
+遵义南	zun yi nan	40
+遵义南站	zun yi nan zhan	40
+遵义新舟	zun yi xin zhou	80
+遵义新舟机场	zun yi xin zhou ji chang	80
+遵义茅台	zun yi mao tai	80
+遵义茅台机场	zun yi mao tai ji chang	80
+遵义西	zun yi xi	40
+遵义西站	zun yi xi zhan	40
+邓州东	deng zhou dong	40
+邓州东站	deng zhou dong zhan	40
+邢台东	xing tai dong	40
+邢台东站	xing tai dong zhan	40
+那智不二越	na zhi bu er yue	150
+那玉	na yu	40
+那玉站	na yu zhan	40
+那罗	na luo	40
+那罗站	na luo zhan	40
+那铺	na pu	40
+那铺站	na pu zhan	40
+邯郸冀南新区	han dan ji nan xin qu	120
+邯郸经济技术开发区	han dan jing ji ji shu kai fa qu	120
+邳州东	pi zhou dong	40
+邳州东站	pi zhou dong zhan	40
+邵家堂	shao jia tang	40
+邵家堂站	shao jia tang zhan	40
+邵阳北	shao yang bei	40
+邵阳北站	shao yang bei zhan	40
+邵阳西	shao yang xi	40
+邵阳西站	shao yang xi zhan	40
+郁山	yu shan	40
+郁山站	yu shan zhan	40
+郎溪南	lang xi nan	40
+郎溪南站	lang xi nan zhan	40
+郑家堡	zheng jia bao	40
+郑家堡站	zheng jia bao zhan	40
+郑州经济技术开发区	zheng zhou jing ji ji shu kai fa qu	120
+郑州航空港经济综合实验区	zheng zhou hang kong gang jing ji zong he shi yan qu	120
+郑州高新技术产业开发区	zheng zhou gao xin ji shu chan ye kai fa qu	120
+郫县东	pi xian dong	40
+郫县东站	pi xian dong zhan	40
+郫县西	pi xian xi	40
+郫县西站	pi xian xi zhan	40
+郭尔奔敖包	guo er ben ao bao	40
+郭尔奔敖包站	guo er ben ao bao zhan	40
+郭磊庄	guo lei zhuang	40
+郭磊庄站	guo lei zhuang zhan	40
+都伦	du lun	40
+都伦站	du lun zhan	40
+都匀东	dou yun dong	40
+都匀东站	dou yun dong zhan	40
+都格	du ge	40
+都格站	du ge zhan	40
+鄂尔多斯羊绒	e er duo si yang rong	150
+鄂州东	e zhou dong	40
+鄂州东站	e zhou dong zhan	40
+鄠邑	hu yi	40
+鄠邑站	hu yi zhan	40
+鄯善北	shan shan bei	40
+鄯善北站	shan shan bei zhan	40
+鄱阳北	po yang bei	40
+鄱阳北站	po yang bei zhan	40
+酒泉南	jiu quan nan	40
+酒泉南站	jiu quan nan zhan	40
+醴陵东	li ling dong	40
+醴陵东站	li ling dong zhan	40
+里木店	li mu dian	40
+里木店站	li mu dian zhan	40
+金刚沱	jin gang tuo	40
+金刚沱站	jin gang tuo zhan	40
+金口河南	jin kou he nan	40
+金口河南站	jin kou he nan zhan	40
+金场堡	jin chang bao	40
+金场堡站	jin chang bao zhan	40
+金宝屯	jin bao tun	40
+金宝屯站	jin bao tun zhan	40
+金家店	jin jia dian	40
+金家店站	jin jia dian zhan	40
+金山北	jin shan bei	40
+金山北站	jin shan bei zhan	40
+金山园区	jin shan yuan qu	40
+金山园区站	jin shan yuan qu zhan	40
+金山湾	jin shan wan	40
+金山湾站	jin shan wan zhan	40
+金普	jin pu	40
+金普站	jin pu zhan	40
+金杖子	jin zhang zi	40
+金杖子站	jin zhang zi zhan	40
+金林区	jin lin qu	120
+金沙岗	jin sha gang	40
+金沙岗站	jin sha gang zhan	40
+金沟屯	jin gou tun	40
+金沟屯站	jin gou tun zhan	40
+金银川	jin yin chuan	40
+金银川站	jin yin chuan zhan	40
+金阳南	jin yang nan	40
+金阳南站	jin yang nan zhan	40
+金马村	jin ma cun	40
+金马村站	jin ma cun zhan	40
+金鸡村	jin ji cun	40
+金鸡村站	jin ji cun zhan	40
+钟山西	zhong shan xi	40
+钟山西站	zhong shan xi zhan	40
+钟杖子	zhong zhang zi	40
+钟杖子站	zhong zhang zi zhan	40
+钦州东	qin zhou dong	40
+钦州东站	qin zhou dong zhan	40
+钱家店	qian jia dian	40
+钱家店站	qian jia dian zhan	40
+铁厂沟	tie chang gou	40
+铁厂沟站	tie chang gou zhan	40
+铁岭西	tie ling xi	40
+铁岭西站	tie ling xi zhan	40
+铁干里克	tie gan li ke	40
+铁干里克站	tie gan li ke zhan	40
+铁锋区	tie feng qu	120
+铜佛寺	tong fo si	40
+铜佛寺站	tong fo si zhan	40
+铜川东	tong chuan dong	40
+铜川东站	tong chuan dong zhan	40
+铜陵北	tong ling bei	40
+铜陵北站	tong ling bei zhan	40
+铜鼓溪	tong gu xi	40
+铜鼓溪站	tong gu xi zhan	40
+铠侠	kai xia	150
+银浪	yin lang	40
+银浪站	yin lang zhan	40
+银盏	yin zhan	40
+银盏站	yin zhan zhan	40
+银镇	yin zhen	40
+银镇站	yin zhen zhan	40
+错那市	cuo na shi	120
+锡林呼都嘎	xi lin hu dou ga	40
+锡林呼都嘎站	xi lin hu dou ga zhan	40
+锡铁山	xi tie shan	40
+锡铁山站	xi tie shan zhan	40
+锦和	jin he	40
+锦和站	jin he zhan	40
+锦州北	jin zhou bei	40
+锦州北站	jin zhou bei zhan	40
+锦河	jin he	40
+锦河站	jin he zhan	40
+锦界	jin jie	40
+锦界站	jin jie zhan	40
+镇城底	zhen cheng di	40
+镇城底站	zhen cheng di zhan	40
+镇江关	zhen jiang guan	40
+镇江关站	zhen jiang guan zhan	40
+镇紫街	zhen zi jie	40
+镇紫街站	zhen zi jie zhan	40
+镜铁山	jing tie shan	40
+镜铁山站	jing tie shan zhan	40
+长乐东	chang le dong	40
+长乐东站	chang le dong zhan	40
+长乐南	chang le nan	40
+长乐南站	chang le nan zhan	40
+长兴南	chang xing nan	40
+长兴南站	chang xing nan zhan	40
+长农	chang nong	40
+长农站	chang nong zhan	40
+长冲	chang chong	40
+长冲站	chang chong zhan	40
+长发屯	chang fa tun	40
+长发屯站	chang fa tun zhan	40
+长坡岭	chang po ling	40
+长坡岭站	chang po ling zhan	40
+长垣市	chang yuan shi	120
+长安西	chang an xi	40
+长安西站	chang an xi zhan	40
+长寿北	chang shou bei	40
+长寿北站	chang shou bei zhan	40
+长山堡	chang shan bao	40
+长山堡站	chang shan bao zhan	40
+长山屯	chang shan tun	40
+长山屯站	chang shan tun zhan	40
+长岭子	chang ling zi	40
+长岭子站	chang ling zi zhan	40
+长春东	chang chun dong	40
+长春东站	chang chun dong zhan	40
+长春净月高新技术产业开发区	chang chun jing yue gao xin ji shu chan ye kai fa qu	120
+长春南	chang chun nan	40
+长春南站	chang chun nan zhan	40
+长春汽车经济技术开发区	chang chun qi che jing ji ji shu kai fa qu	120
+长春经济技术开发区	chang chun jing ji ji shu kai fa qu	120
+长春西	chang chun xi	40
+长春西站	chang chun xi zhan	40
+长春高新技术产业开发区	chang chun gao xin ji shu chan ye kai fa qu	120
+长汀南	chang ting nan	40
+长汀南站	chang ting nan zhan	40
+长汀镇	chang ting zhen	40
+长汀镇站	chang ting zhen zhan	40
+长沙埂	chang sha geng	40
+长沙埂站	chang sha geng zhan	40
+长河坝	chang he ba	40
+长河坝站	chang he ba zhan	40
+长河碥	chang he bian	40
+长河碥站	chang he bian zhan	40
+长治东	chang zhi dong	40
+长治东站	chang zhi dong zhan	40
+长治北	chang zhi bei	40
+长治北站	chang zhi bei zhan	40
+长治南	chang zhi nan	40
+长治南站	chang zhi nan zhan	40
+长泰区	chang tai qu	120
+长潭沟	chang tan gou	40
+长潭沟站	chang tan gou zhan	40
+长甸	chang dian	40
+长甸站	chang dian zhan	40
+长箐	chang qing	40
+长箐站	chang qing zhan	40
+长葛北	chang ge bei	40
+长葛北站	chang ge bei zhan	40
+门达	men da	40
+门达站	men da zhan	40
+闵集	min ji	40
+闵集站	min ji zhan	40
+闹海营	nao hai ying	40
+闹海营站	nao hai ying zhan	40
+闻喜西	wen xi xi	40
+闻喜西站	wen xi xi zhan	40
+闽清北	min qing bei	40
+闽清北站	min qing bei zhan	40
+阎家	yan jia	40
+阎家站	yan jia zhan	40
+阜宁东	fu ning dong	40
+阜宁东站	fu ning dong zhan	40
+阜宁南	fu ning nan	40
+阜宁南站	fu ning nan zhan	40
+阜新南	fu xin nan	40
+阜新南站	fu xin nan zhan	40
+阜阳合肥现代产业园区	fu yang he fei xian dai chan ye yuan qu	120
+阜阳经济技术开发区	fu yang jing ji ji shu kai fa qu	120
+阜阳西	fu yang xi	40
+阜阳西站	fu yang xi zhan	40
+防城港北	fang cheng gang bei	40
+防城港北站	fang cheng gang bei zhan	40
+阳东区	yang dong qu	120
+阳光集团	yang guang ji tuan	150
+阳岔	yang cha	40
+阳岔站	yang cha zhan	40
+阳方口	yang fang kou	40
+阳方口站	yang fang kou zhan	40
+阳曲西	yang qu xi	40
+阳曲西站	yang qu xi zhan	40
+阳泉东	yang quan dong	40
+阳泉东站	yang quan dong zhan	40
+阳泉曲	yang quan qu	40
+阳泉曲站	yang quan qu zhan	40
+阳邑	yang yi	40
+阳邑站	yang yi zhan	40
+阳高南	yang gao nan	40
+阳高南站	yang gao nan zhan	40
+阿乌尼	a wu ni	40
+阿乌尼站	a wu ni zhan	40
+阿南庄	a nan zhuang	40
+阿南庄站	a nan zhuang zhan	40
+阿城北	a cheng bei	40
+阿城北站	a cheng bei zhan	40
+阿寨	a zhai	40
+阿寨站	a zhai zhan	40
+阿尔山北	a er shan bei	40
+阿尔山北站	a er shan bei zhan	40
+阿木尔	a mu er	40
+阿木尔站	a mu er zhan	40
+阿贵图	a gui tu	40
+阿贵图站	a gui tu zhan	40
+阿龙山	a long shan	40
+阿龙山站	a long shan zhan	40
+陆丰东	lu feng dong	40
+陆丰东站	lu feng dong zhan	40
+陆丰南	lu feng nan	40
+陆丰南站	lu feng nan zhan	40
+陈官营	chen guan ying	40
+陈官营站	chen guan ying zhan	40
+陈江南	chen jiang nan	40
+陈江南站	chen jiang nan zhan	40
+陈相屯	chen xiang tun	40
+陈相屯站	chen xiang tun zhan	40
+陕州区	shan zhou qu	120
+陵城	ling cheng	40
+陵城站	ling cheng zhan	40
+陶力	tao li	40
+陶力站	tao li zhan	40
+陶卜齐	tao bo qi	40
+陶卜齐站	tao bo qi zhan	40
+陶家屯	tao jia tun	40
+陶家屯站	tao jia tun zhan	40
+陶家沟	tao jia gou	40
+陶家沟站	tao jia gou zhan	40
+陶思浩	tao si hao	40
+陶思浩站	tao si hao zhan	40
+陶赖昭	tao lai zhao	40
+陶赖昭站	tao lai zhao zhan	40
+隆基	long ji	150
+隆安东	long an dong	40
+隆安东站	long an dong zhan	40
+隆昌北	long chang bei	40
+隆昌北站	long chang bei zhan	40
+随州南	sui zhou nan	40
+随州南站	sui zhou nan zhan	40
+雁石	yan shi	40
+雁石南	yan shi nan	40
+雁石南站	yan shi nan zhan	40
+雁石站	yan shi zhan	40
+雅河	ya he	40
+雅河站	ya he zhan	40
+雅鹿	ya lu	150
+集北	ji bei	40
+集北站	ji bei zhan	40
+集宁南	ji ning nan	40
+集宁南站	ji ning nan zhan	40
+雨格	yu ge	40
+雨格站	yu ge zhan	40
+霍州东	huo zhou dong	40
+霍州东站	huo zhou dong zhan	40
+霸州北	ba zhou bei	40
+霸州北站	ba zhou bei zhan	40
+霸州西	ba zhou xi	40
+霸州西站	ba zhou xi zhan	40
+青堆	qing dui	40
+青堆子	qing dui zi	40
+青堆子站	qing dui zi zhan	40
+青堆站	qing dui zhan	40
+青岭子	qing ling zi	40
+青岭子站	qing ling zi zhan	40
+青州市北	qing zhou shi bei	40
+青州市北站	qing zhou shi bei zhan	40
+青水山	qing shui shan	40
+青水山站	qing shui shan zhan	40
+青沟子	qing gou zi	40
+青沟子站	qing gou zi zhan	40
+青白江东	qing bai jiang dong	40
+青白江东站	qing bai jiang dong zhan	40
+靖远北	jing yuan bei	40
+靖远北站	jing yuan bei zhan	40
+靖远西	jing yuan xi	40
+靖远西站	jing yuan xi zhan	40
+静岭	jing ling	40
+静岭站	jing ling zhan	40
+革居	ge ju	40
+革居站	ge ju zhan	40
+革镇堡	ge zhen bao	40
+革镇堡站	ge zhen bao zhan	40
+鞍山西	an shan xi	40
+鞍山西站	an shan xi zhan	40
+韩家园	han jia yuan	40
+韩家园站	han jia yuan zhan	40
+韩府湾	han fu wan	40
+韩府湾站	han fu wan zhan	40
+韩麻营	han ma ying	40
+韩麻营站	han ma ying zhan	40
+韶山南	shao shan nan	40
+韶山南站	shao shan nan zhan	40
+顺义西	shun yi xi	40
+顺义西站	shun yi xi zhan	40
+顺德学院	shun de xue yuan	40
+顺德学院站	shun de xue yuan zhan	40
+顺河场	shun he chang	40
+顺河场站	shun he chang zhan	40
+颍上北	ying shang bei	40
+颍上北站	ying shang bei zhan	40
+风水沟	feng shui gou	40
+风水沟站	feng shui gou zhan	40
+饮马峡	yin ma xia	40
+饮马峡站	yin ma xia zhan	40
+饮马峡西	yin ma xia xi	40
+饮马峡西站	yin ma xia xi zhan	40
+首山	shou shan	40
+首山站	shou shan zhan	40
+马嘎	ma ga	40
+马嘎站	ma ga zhan	40
+马架子	ma jia zi	40
+马架子站	ma jia zi zhan	40
+马柳	ma liu	40
+马柳站	ma liu zhan	40
+马桥河	ma qiao he	40
+马桥河站	ma qiao he zhan	40
+马海	ma hai	40
+马海站	ma hai zhan	40
+马田墟	ma tian xu	40
+马田墟站	ma tian xu zhan	40
+马皇	ma huang	40
+马皇站	ma huang zhan	40
+马盖图	ma gai tu	40
+马盖图站	ma gai tu zhan	40
+马铺营	ma pu ying	40
+马铺营站	ma pu ying zhan	40
+马鞍山东	ma an shan dong	40
+马鞍山东站	ma an shan dong zhan	40
+驼腰岭	tuo yao ling	40
+驼腰岭站	tuo yao ling zhan	40
+骆驼巷	luo tuo xiang	40
+骆驼巷站	luo tuo xiang zhan	40
+高台南	gao tai nan	40
+高台南站	gao tai nan zhan	40
+高各庄	gao ge zhuang	40
+高各庄站	gao ge zhuang zhan	40
+高坪铺	gao ping pu	40
+高坪铺站	gao ping pu zhan	40
+高家岁	gao jia sui	40
+高家岁站	gao jia sui zhan	40
+高密北	gao mi bei	40
+高密北站	gao mi bei zhan	40
+高寺台	gao si tai	40
+高寺台站	gao si tai zhan	40
+高山子	gao shan zi	40
+高山子站	gao shan zi zhan	40
+高川	gao chuan	40
+高川站	gao chuan zhan	40
+高平东	gao ping dong	40
+高平东站	gao ping dong zhan	40
+高林屯	gao lin tun	40
+高林屯站	gao lin tun zhan	40
+高梁铺	gao liang pu	40
+高梁铺站	gao liang pu zhan	40
+高楞	gao leng	40
+高楞站	gao leng zhan	40
+高楼房	gao lou fang	40
+高楼房站	gao lou fang zhan	40
+高滩	gao tan	40
+高滩站	gao tan zhan	40
+高潭子	gao tan zi	40
+高潭子站	gao tan zi zhan	40
+高碑店东	gao bei dian dong	40
+高碑店东站	gao bei dian dong zhan	40
+高花	gao hua	40
+高花站	gao hua zhan	40
+高谷	gao gu	40
+高谷站	gao gu zhan	40
+高邑西	gao yi xi	40
+高邑西站	gao yi xi zhan	40
+高邮北	gao you bei	40
+高邮北站	gao you bei zhan	40
+魏家泉	wei jia quan	40
+魏家泉站	wei jia quan zhan	40
+魏杖子	wei zhang zi	40
+魏杖子站	wei zhang zi zhan	40
+魏桥	wei qiao	150
+鱼儿沟	yu er gou	40
+鱼儿沟站	yu er gou zhan	40
+鱼卡	yu ka	40
+鱼卡站	yu ka zhan	40
+鱼泉	yu quan	40
+鱼泉站	yu quan zhan	40
+鱼背山	yu bei shan	40
+鱼背山站	yu bei shan zhan	40
+鲁河	lu he	40
+鲁河站	lu he zhan	40
+鲁番	lu fan	40
+鲁番站	lu fan zhan	40
+鲇鱼山	nian yu shan	40
+鲇鱼山站	nian yu shan zhan	40
+鲘门	hou men	40
+鲘门站	hou men zhan	40
+鲜滩	xian tan	40
+鲜滩站	xian tan zhan	40
+鸡西西	ji xi xi	40
+鸡西西站	ji xi xi zhan	40
+鸭园	ya yuan	40
+鸭园站	ya yuan zhan	40
+鸭圆	ya yuan	40
+鸭圆站	ya yuan zhan	40
+鸭江	ya jiang	40
+鸭江站	ya jiang zhan	40
+鸳鸯镇	yuan yang zhen	40
+鸳鸯镇站	yuan yang zhen zhan	40
+鸽子洞	ge zi dong	40
+鸽子洞站	ge zi dong zhan	40
+鹤北	he bei	40
+鹤北站	he bei zhan	40
+鹤壁经济技术开发区	he bi jing ji ji shu kai fa qu	120
+鹰手营子	ying shou ying zi	40
+鹰手营子站	ying shou ying zi zhan	40
+鹿寨北	lu zhai bei	40
+鹿寨北站	lu zhai bei zhan	40
+鹿道	lu dao	40
+鹿道站	lu dao zhan	40
+麻城北	ma cheng bei	40
+麻城北站	ma cheng bei zhan	40
+麻斯塔拉	ma si ta la	40
+麻斯塔拉站	ma si ta la zhan	40
+麻旺	ma wang	40
+麻旺站	ma wang zhan	40
+麻柳	ma liu	40
+麻柳站	ma liu zhan	40
+麻栗	ma li	40
+麻栗站	ma li zhan	40
+麻阳西	ma yang xi	40
+麻阳西站	ma yang xi zhan	40
+黄丝	huang si	40
+黄丝站	huang si zhan	40
+黄冈东	huang gang dong	40
+黄冈东站	huang gang dong zhan	40
+黄冈西	huang gang xi	40
+黄冈西站	huang gang xi zhan	40
+黄家坝	huang jia ba	40
+黄家坝站	huang jia ba zhan	40
+黄家店	huang jia dian	40
+黄家店站	huang jia dian zhan	40
+黄松甸	huang song dian	40
+黄松甸站	huang song dian zhan	40
+黄桶	huang tong	40
+黄桶北	huang tong bei	40
+黄桶北站	huang tong bei zhan	40
+黄桶站	huang tong zhan	40
+黄梅东	huang mei dong	40
+黄梅东站	huang mei dong zhan	40
+黄水塘	huang shui tang	40
+黄水塘站	huang shui tang zhan	40
+黄河景区	huang he jing qu	40
+黄河景区站	huang he jing qu zhan	40
+黄泥崴子	huang ni wai zi	40
+黄泥崴子站	huang ni wai zi zhan	40
+黄瓜园	huang gua yuan	40
+黄瓜园站	huang gua yuan zhan	40
+黄甲屯	huang jia tun	40
+黄甲屯站	huang jia tun zhan	40
+黄白茨	huang bai ci	40
+黄白茨站	huang bai ci zhan	40
+黄石东	huang shi dong	40
+黄石东站	huang shi dong zhan	40
+黄石北	huang shi bei	40
+黄石北站	huang shi bei zhan	40
+黄磏	huang lian	40
+黄磏站	huang lian zhan	40
+黄羊滩	huang yang tan	40
+黄羊滩站	huang yang tan zhan	40
+黄联关	huang lian guan	40
+黄联关站	huang lian guan zhan	40
+黄花筒	huang hua tong	40
+黄花筒站	huang hua tong zhan	40
+黄陵南	huang ling nan	40
+黄陵南站	huang ling nan zhan	40
+黎塘	li tang	40
+黎塘站	li tang zhan	40
+黑冲滩	hei chong tan	40
+黑冲滩站	hei chong tan zhan	40
+黑台	hei tai	40
+黑台站	hei tai zhan	40
+黑山北	hei shan bei	40
+黑山北站	hei shan bei zhan	40
+黑山寺	hei shan si	40
+黑山寺站	hei shan si zhan	40
+黑旺	hei wang	40
+黑旺站	hei wang zhan	40
+黑沙土	hei sha tu	40
+黑沙土站	hei sha tu zhan	40
+黑石木	hei shi mu	40
+黑石木站	hei shi mu zhan	40
+黔西市	qian xi shi	120
+黟县东	yi xian dong	40
+黟县东站	yi xian dong zhan	40
+鼎湖东	ding hu dong	40
+鼎湖东站	ding hu dong zhan	40
+齐哈日格图	qi ha ri ge tu	40
+齐哈日格图站	qi ha ri ge tu zhan	40
+龙丰	long feng	40
+龙丰站	long feng zhan	40
+龙伯屯	long bo tun	40
+龙伯屯站	long bo tun zhan	40
+龙南东	long nan dong	40
+龙南东站	long nan dong zhan	40
+龙嘉	long jia	40
+龙嘉站	long jia zhan	40
+龙圩区	long xu qu	120
+龙塘坝	long tang ba	40
+龙塘坝站	long tang ba zhan	40
+龙家堡	long jia bao	40
+龙家堡站	long jia bao zhan	40
+龙山北	long shan bei	40
+龙山北站	long shan bei zhan	40
+龙川西	long chuan xi	40
+龙川西站	long chuan xi zhan	40
+龙市	long shi	40
+龙市站	long shi zhan	40
+龙感湖管理区	long gan hu guan li qu	120
+龙沟	long gou	40
+龙沟站	long gou zhan	40
+龙海区	long hai qu	120
+龙游南	long you nan	40
+龙游南站	long you nan zhan	40
+龙爪沟	long zhao gou	40
+龙爪沟站	long zhao gou zhan	40
+龙里北	long li bei	40
+龙里北站	long li bei zhan	40
+龙镇	long zhen	40
+龙镇站	long zhen zhan	40
+龙门河	long men he	40
+龙门河站	long men he zhan	40
+龙骨甸	long gu dian	40
+龙骨甸站	long gu dian zhan	40

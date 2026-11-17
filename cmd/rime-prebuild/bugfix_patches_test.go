@@ -265,6 +265,71 @@ func TestMergeColloquialDictPatch(t *testing.T) {
 	}
 }
 
+// 专名词典补丁：锚在前驱补丁 moqi_colloquial 上，验证挂载/拷贝/幂等。
+// 另校验补丁文件本身可解析（每个数据行三列、拼音音节数=汉字数）——这份
+// 文件是脚本生成的，列数错会静默让整条词条失效。
+func TestMergeProperNounsDictPatch(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "cn_dicts"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	src := filepath.Join(t.TempDir(), "moqi_propernouns.dict.yaml")
+	if err := os.WriteFile(src, []byte("---\nname: moqi_propernouns\nversion: \"1\"\nsort: by_weight\n...\n浩辰\thao chen\t150\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	writeTempFile(t, dir, "rime_frost.dict.yaml", "---\nname: rime_frost\nimport_tables:\n  - cn_dicts/base\n  - cn_dicts/moqi_colloquial\n...\n")
+
+	if err := installDictPatch(src, dir, "moqi_propernouns", "- cn_dicts/moqi_colloquial", "专名词典补丁"); err != nil {
+		t.Fatal(err)
+	}
+	got := readTempFile(t, dir, "rime_frost.dict.yaml")
+	if !strings.Contains(got, "- cn_dicts/moqi_propernouns") {
+		t.Fatalf("import_tables 未挂上 moqi_propernouns:\n%s", got)
+	}
+	// 幂等
+	if err := installDictPatch(src, dir, "moqi_propernouns", "- cn_dicts/moqi_colloquial", "专名词典补丁"); err != nil {
+		t.Fatal(err)
+	}
+	if c := strings.Count(readTempFile(t, dir, "rime_frost.dict.yaml"), "cn_dicts/moqi_propernouns"); c != 1 {
+		t.Fatalf("import 行重复 %d 次", c)
+	}
+}
+
+// 专名词典补丁文件本身的行格式校验：每行三列，拼音音节数必须等于汉字数
+// （脚本生成，列错/音错会让词条静默失效或打不出）。
+func TestProperNounsPatchFileWellFormed(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", "input_methods", "rime", "patches", "moqi_propernouns.dict.yaml"))
+	if err != nil {
+		t.Fatalf("读取专名词典补丁失败: %v", err)
+	}
+	dataRows, inBody := 0, false
+	for _, line := range strings.Split(string(body), "\n") {
+		line = strings.TrimRight(line, "\r")
+		if line == "..." {
+			inBody = true
+			continue
+		}
+		if !inBody || line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		fields := strings.Split(line, "\t")
+		if len(fields) != 3 {
+			t.Fatalf("行格式错误（应为三列）: %q", line)
+		}
+		word, pinyin := fields[0], fields[1]
+		if n, m := len([]rune(word)), len(strings.Fields(pinyin)); n != m {
+			t.Fatalf("音节数(%d) != 汉字数(%d): %q", m, n, line)
+		}
+		if fields[2] == "0" {
+			t.Fatalf("权重为 0 的词条等于不出候选: %q", line)
+		}
+		dataRows++
+	}
+	if dataRows < 3000 {
+		t.Fatalf("补丁词条数异常偏少: %d", dataRows)
+	}
+}
+
 func TestPatchDemoteJunk(t *testing.T) {
 	dir := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(dir, "cn_dicts"), 0o755); err != nil {
