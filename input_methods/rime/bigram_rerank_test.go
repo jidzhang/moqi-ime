@@ -310,3 +310,38 @@ func TestMixedPairRerankRespectsWordEvidence(t *testing.T) {
 		t.Fatalf("是的 应提前: changed=%t first=%q", changed2, got2[0].Text)
 	}
 }
+
+// 2026-11-18 混拼首候选事故（用户实报 zaiwokl 首选 在我 而非 在我看来）：
+// 字级高频对（在|我 9708）轻松过 floor，把丢弃简拼尾巴的短前缀候选
+// （在我=2字）顶到完整覆盖候选（在我看来=4字）之上。覆盖闸门后，
+// 更短的候选一律不得被配对证据提升；等长提升（原设计场景）保持。
+func TestMixedPairRerankCoverageGateBlocksShorterCandidate(t *testing.T) {
+	resetBigramTableForTest()
+	sharedBigramTable.mu.Lock()
+	sharedBigramTable.pairCounts = map[string]map[string]int{
+		"在": {"我": 9708}, // 在我：字级高频对，灾难源
+		"是": {"的": 29010},
+	}
+	sharedBigramTable.wordMass = map[string]int{}
+	sharedBigramTable.loaded = true
+	sharedBigramTable.mu.Unlock()
+
+	ime := newTestIME()
+	ime.contextualCfg = &contextualConfig{BigramRerank: bigramRerankConfig{
+		MixedPair: true, PairRatio: 999, PairFloor: 300, PairMaxLen: 4, PairWordRatio: 1.0,
+	}}
+
+	// zaiwo k l 生产实况：引擎序 [在我看来#1, 在我看#2, 在我#3, ...]，
+	// 在我 不得越过 在我看来。
+	cands := []candidateItem{{Text: "在我看来"}, {Text: "在我看"}, {Text: "在我"}, {Text: "在握"}}
+	got, cursor, changed := ime.applyMixedPairRerank(cands, 0, "zai wo k l")
+	if changed || got[0].Text != "在我看来" {
+		t.Fatalf("在我(2字)不得越过在我看来(4字): changed=%t first=%q cursor=%d", changed, got[0].Text, cursor)
+	}
+	// 等长提升必须保持（原设计场景 shid）：时代→是的。
+	cands2 := []candidateItem{{Text: "时代"}, {Text: "是的"}, {Text: "使得"}}
+	got2, _, changed2 := ime.applyMixedPairRerank(cands2, 0, "shid")
+	if !changed2 || got2[0].Text != "是的" {
+		t.Fatalf("等长提升应保持: changed=%t first=%q", changed2, got2[0].Text)
+	}
+}

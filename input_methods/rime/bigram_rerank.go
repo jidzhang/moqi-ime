@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unicode/utf8"
 )
 
 // bigram 重排（hit@3→hit@1 精修）：dll+语法模型已把正确候选排进前三，
@@ -782,6 +783,12 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int, com
 		return strings.TrimSpace(s)
 	}
 	first := pairScore(pairs, candidates[0].Text, maxLen)
+	// 覆盖闸门（2026-11-18 混拼首候选事故）：配对证据只允许把「不比首名
+	// 短」的候选提到第一。首名是引擎排的完整覆盖候选（如 zaiwokl 的
+	// 在我看来），更短的候选（在我）是丢弃简拼尾巴的前缀候选——字级
+	// 高频对（在|我 9708）轻易过 floor，把它顶上去就是把残缺候选当首选。
+	// 原设计场景（shid：时代/是的/使得 同长度）不受影响。
+	firstRunes := utf8.RuneCountInString(candidates[0].Text)
 	// 每位的"整词证据"前缀最大值：候选 i 想被提前，它的搭配证据必须压过
 	// 排在它上面的所有候选里最强的整词证据。
 	// 教训（2026-10-22 用户实报 k yi）：只跟首名比不够——首名可能是组句
@@ -791,6 +798,9 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int, com
 	bestIdx := -1
 	bestScore := 0
 	for i := 1; i < len(candidates); i++ {
+		if utf8.RuneCountInString(candidates[i].Text) < firstRunes {
+			continue
+		}
 		// 候选 i 上方是 candidates[0..i-1]，含首名——首名的整词证据必须参与
 		// 比较（2026-10-23 用户实报 k yi：引擎序 [可以#1, 抗疫#2]，抗疫越位时
 		// 旧代码 if i>1 跳过首名，wordMassAbove=0，闸门失明 → 抗疫提到首位）。
