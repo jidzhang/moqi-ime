@@ -2,6 +2,7 @@ package rime
 
 import (
 	"bufio"
+	"math"
 	"encoding/json"
 	"log"
 	"os"
@@ -31,6 +32,12 @@ type bigramRerankConfig struct {
 	PairRatio  float64 `json:"bigram_mixed_pair_ratio"`   // 候选配对频次超首名的倍率阈值
 	PairFloor  int     `json:"bigram_mixed_pair_floor"`   // 配对频次下限
 	PairMaxLen int     `json:"bigram_mixed_pair_max_len"` // 参与打分的候选最大字数
+	// 整句搭配证据通道 v3（2026-11-20）：判别量=PMI 强搭配对数
+	// ln(count·N/(mass[a]·mass[b])) ≥ collocPmi 计一对凝固搭配。v1 有据
+	// 对数/v2 等长闸被泛用字链击穿（不知道→我 PMI 仅 0.90）；v3 把泛用链
+	// 全部分离，剩余错案均为双重凝固搭配真歧义（用户拍板可接受）。
+	// 默认 2.0 开启；<0 关闭。
+	CollocPmi float64 `json:"bigram_colloc_pmi"`
 	// PairWordRatio：搭配证据必须 ≥ 首名"整词证据"×该倍率才换位。
 	// 判别原理：可以=整词 84137（搭配 0）vs 抗疫=整词 0（搭配 823）——
 	// 只看搭配会把整词误判为"无据"而挤掉（用户实报 k yi：按 2 上屏抗疫）。
@@ -47,6 +54,8 @@ func defaultBigramRerankConfig() bigramRerankConfig {
 		Enabled: false, Ratio: 1.6, FloorCount: 30,
 		MixedPair: true, PairRatio: 999, PairFloor: 300, PairMaxLen: 4,
 		PairWordRatio: 1.0,
+		// 2.0 = 数据实测一刀切（正解搭配 3.66~5.75，病句 ≤1.59）。
+		CollocPmi: 2.0,
 	}
 }
 
@@ -61,9 +70,14 @@ type bigramTable struct {
 	// 用于判别"真实整词"与"两字拼装"：可以=84137（整词），是的=0
 	// （靠 是+的 搭配 29010 成立）。重排闸门据此避免误伤整词。
 	wordMass map[string]int
+	// 全表 token 总量（PMI 归一化 N）。
+	totalTokens int64
 }
 
 var sharedBigramTable bigramTable
+
+// loadBigramTableFull 顺手记下全表 token 量（colloc PMI 归一化用）。
+var sharedBigramTableTotalTokens int64
 
 // loadBigramTable 从 data 目录解析 TSV；文件缺失时返回空表（功能关闭）。
 func loadBigramTable(dataDir string) map[string]map[string]int {
@@ -76,6 +90,7 @@ func loadBigramTableFull(dataDir string) (map[string]map[string]int, map[string]
 	table := make(map[string]map[string]int)
 	pairs := make(map[string]map[string]int)
 	wordMass := make(map[string]int)
+	var totalTokens int64
 	if dataDir == "" {
 		return table, pairs, wordMass
 	}
@@ -128,7 +143,9 @@ func loadBigramTableFull(dataDir string) (map[string]map[string]int, map[string]
 			rowTotal += c
 		}
 		wordMass[w1] += rowTotal
+		totalTokens += int64(rowTotal)
 	}
+	sharedBigramTableTotalTokens = totalTokens
 	return table, pairs, wordMass
 }
 
@@ -250,6 +267,7 @@ func applyBigramRerankFileConfig(cfg *bigramRerankConfig, body []byte) {
 			PairFloor         *int     `json:"pair_floor"`
 			PairMaxLen        *int     `json:"pair_max_len"`
 			PairWordRatio     *float64 `json:"pair_word_ratio"`
+			CollocPmi         *float64 `json:"colloc_pmi"`
 		} `json:"bigram_rerank"`
 	}
 	if err := json.Unmarshal(body, &wrapper); err != nil || wrapper.BigramRerank == nil {
@@ -278,6 +296,9 @@ func applyBigramRerankFileConfig(cfg *bigramRerankConfig, body []byte) {
 	}
 	if wrapper.BigramRerank.PairWordRatio != nil && *wrapper.BigramRerank.PairWordRatio >= 0 {
 		cfg.PairWordRatio = *wrapper.BigramRerank.PairWordRatio
+	}
+	if wrapper.BigramRerank.CollocPmi != nil && *wrapper.BigramRerank.CollocPmi >= 0 {
+		cfg.CollocPmi = *wrapper.BigramRerank.CollocPmi
 	}
 }
 
@@ -837,6 +858,135 @@ func (ime *IME) applyMixedPairRerank(candidates []candidateItem, cursor int, com
 	// 记录显示首选的引擎位次，供空格提交对齐（见 processKey）。
 	ime.mixedPairSwapIndex = bestIdx
 	debugLogf("mixed pair rerank: compo=%q %q(%d) 越过 %q(%d) 提前至#1（原#%d）", composition, winner.Text, bestScore, candidates[0].Text, first, bestIdx+1)
+	return reordered, cursor, true
+}
+
+
+// collocScore 整句候选的搭配证据 v3：按 bigram 词表穷举切分，统计相邻词对
+// 里 PMI = ln(count·N/(mass[a]·mass[b])) ≥ pmiMin 且 count ≥ 3 的"凝固
+// 搭配"对数与其中最小 PMI。切不开或只有一段 → (0, 0)。与 C++ 镜像。
+func collocScore(pairs map[string]map[string]int, wordMass map[string]int,
+	totalTokens int64, pmiMin float64, text string) (cnt int, minPmi float64) {
+	runes := []rune(text)
+	n := len(runes)
+	if n < 2 || totalTokens <= 0 {
+		return 0, 0
+	}
+	const maxWord = 8
+	const inf = 1e18
+	pmiOf := func(a, b string) float64 {
+		row, ok := pairs[a]
+		if !ok {
+			return -inf
+		}
+		c := row[b]
+		// 频次地板 3：PMI 再高、只出现 1~2 次的偶发组合不进判决
+		//（两案最小真实频次正是 3：务必→解决）。
+		if c < 3 {
+			return -inf
+		}
+		ma, mb := 1.0, 1.0
+		if m, ok := wordMass[a]; ok {
+			ma = float64(m)
+		}
+		if m, ok := wordMass[b]; ok {
+			mb = float64(m)
+		}
+		return math.Log(float64(c) * float64(totalTokens) / (ma * mb))
+	}
+	type node struct {
+		pos      int
+		lastWord string
+		cnt      int
+		mn       float64
+	}
+	queue := []node{{0, "", 0, inf}}
+	for len(queue) > 0 {
+		nd := queue[0]
+		queue = queue[1:]
+		if nd.pos == n {
+			if nd.lastWord != "" &&
+				(nd.cnt > cnt || (nd.cnt == cnt && nd.mn > minPmi)) {
+				cnt, minPmi = nd.cnt, nd.mn
+			}
+			continue
+		}
+		for l := 1; l <= maxWord && nd.pos+l <= n; l++ {
+			w := string(runes[nd.pos : nd.pos+l])
+			if _, ok := pairs[w]; !ok {
+				continue
+			}
+			c2, m2 := nd.cnt, nd.mn
+			if nd.lastWord != "" {
+				if p := pmiOf(nd.lastWord, w); p >= pmiMin {
+					c2++
+					if p < m2 {
+						m2 = p
+					}
+				}
+			}
+			queue = append(queue, node{nd.pos + l, w, c2, m2})
+		}
+	}
+	if cnt == 0 {
+		minPmi = 0
+	}
+	return cnt, minPmi
+}
+
+// applyCollocationRerank 整句搭配证据换位 v3（PMI 判别，与 C++ 镜像）。
+// 闸门：≥6 字长候选 / 严格等长 / 强搭配对数严格占优 / 只提到首位。
+func (ime *IME) applyCollocationRerank(candidates []candidateItem, cursor int) ([]candidateItem, int, bool) {
+	cfg := ime.contextualConfigSnapshot().BigramRerank
+	if cfg.CollocPmi < 0 || len(candidates) < 2 {
+		return candidates, cursor, false
+	}
+	// 只对 ≥3 词（≥6 字）的长候选生效（v1 守卫实炸：短候选越权换位）。
+	if utf8.RuneCountInString(candidates[0].Text) < 6 {
+		return candidates, cursor, false
+	}
+	_, pairs, wordMass := ime.bigramTableSnapshotFull()
+	if len(pairs) == 0 || sharedBigramTableTotalTokens <= 0 {
+		return candidates, cursor, false
+	}
+	stripMarks := func(s string) string {
+		if i := strings.IndexByte(s, ' '); i > 0 {
+			s = s[:i]
+		}
+		return strings.TrimSpace(s)
+	}
+	firstCnt, _ := collocScore(pairs, wordMass, sharedBigramTableTotalTokens,
+		cfg.CollocPmi, stripMarks(candidates[0].Text))
+	firstRunes := utf8.RuneCountInString(candidates[0].Text)
+	bestIdx, bestCnt := -1, 0
+	bestMn := 0.0
+	for i := 1; i < len(candidates); i++ {
+		// 严格等长（v2 实炸：对数优势偏向更长续词句"最重要的一点在于"）。
+		if utf8.RuneCountInString(candidates[i].Text) != firstRunes {
+			continue
+		}
+		cnt, mn := collocScore(pairs, wordMass, sharedBigramTableTotalTokens,
+			cfg.CollocPmi, stripMarks(candidates[i].Text))
+		if cnt <= firstCnt {
+			continue
+		}
+		if cnt > bestCnt || (cnt == bestCnt && mn > bestMn) {
+			bestIdx, bestCnt, bestMn = i, cnt, mn
+		}
+	}
+	if bestIdx < 0 {
+		return candidates, cursor, false
+	}
+	reordered := append([]candidateItem(nil), candidates...)
+	winner := reordered[bestIdx]
+	copy(reordered[1:bestIdx+1], reordered[0:bestIdx])
+	reordered[0] = winner
+	if cursor == bestIdx {
+		cursor = 0
+	}
+	ime.mixedPairSwapIndex = bestIdx
+	debugLogf("collocation rerank: %q(%d对/%.2f) 越过 %q(%d对) 提前至#1（原#%d）",
+		winner.Text, bestCnt, bestMn, candidates[0].Text, firstCnt, bestIdx+1)
 	return reordered, cursor, true
 }
 

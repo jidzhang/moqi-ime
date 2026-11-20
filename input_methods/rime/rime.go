@@ -2495,6 +2495,13 @@ func (ime *IME) fillResponseFromBackendState(resp *imecore.Response, allowCommit
 			state.Candidates = reordered
 			state.CandidateCursor = newCursor
 		}
+		// 整句搭配证据换位（2026-11-20 搭配层两案）：全拼/混拼都适用，
+		// mixedPair 未动时用 bigram 后继表的"有据对数优势"翻罚分杀不动的
+		// 固定搭配病句（这个无比解决→务必解决、随着时间太原→时间推移）。
+		if reordered, newCursor, changed := ime.applyCollocationRerank(state.Candidates, state.CandidateCursor); changed {
+			state.Candidates = reordered
+			state.CandidateCursor = newCursor
+		}
 	}
 	ime.displayPerm = buildDisplayPerm(engineOrder, state.Candidates)
 	if len(state.Candidates) > 0 || len(customPhraseCandidates) > 0 {
