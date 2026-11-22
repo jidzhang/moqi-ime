@@ -151,8 +151,11 @@ func removeDirAfterExit(dir string) {
 		return
 	}
 	del := exec.Command("cmd", "/c", "ping -n 8 127.0.0.1 >nul & rmdir /s /q \""+dir+"\"")
-	const detachedProcess = 0x00000008 // DETACHED_PROCESS（syscall 包未导出该常量）
-	del.SysProcAttr = &syscall.SysProcAttr{CreationFlags: detachedProcess}
+	// CREATE_NO_WINDOW（0x08000000）：给 cmd 一个隐藏控制台。先前用的
+	// DETACHED_PROCESS（0x8）实测藏不住——打包时用户会看到 ping -n 的
+	// 终端窗口闪出来（2026-11-22 用户实报）。
+	const createNoWindow = 0x08000000 // CREATE_NO_WINDOW（syscall 包未导出该常量）
+	del.SysProcAttr = &syscall.SysProcAttr{CreationFlags: createNoWindow}
 	if err := del.Start(); err != nil {
 		_ = os.RemoveAll(dir) // 分离进程起不来时退回进程内尽力删除
 	}
