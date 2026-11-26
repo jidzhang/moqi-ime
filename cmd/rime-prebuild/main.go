@@ -90,6 +90,9 @@ func main() {
 		if err := mergeProperNounsDictPatch(*dataDir); err != nil {
 			log.Printf("专名词典补丁合入失败（继续预编译）: %v", err)
 		}
+		if err := mergeHonorificsDictPatch(*dataDir); err != nil {
+			log.Printf("称呼词典补丁合入失败（继续预编译）: %v", err)
+		}
 		if err := mergeUserDictPatch(*dataDir); err != nil {
 			log.Printf("用户积累词库补丁合入失败（继续预编译）: %v", err)
 		}
@@ -881,6 +884,18 @@ func mergeProperNounsDictPatch(dataDir string) error {
 	src := filepath.Join("input_methods", "rime", "patches", "moqi_propernouns.dict.yaml")
 	return installDictPatch(src, dataDir, "moqi_propernouns", "- cn_dicts/moqi_colloquial",
 		"专名词典补丁：地名/车站/机场/企业名（moqi 打包期合入）")
+}
+
+// mergeHonorificsDictPatch 把称呼词典补丁合入打包数据（同 bigram 管线，幂等）。
+// 来源 patches/moqi_honorifics.dict.yaml（1092 条，生成与碰撞审计见其头部
+// 注释 + eval-workspace/honor-scan/audit 脚本）：补"姓×称谓"（工/总/局/处/
+// 哥/姐/叔/婶/姨/嫂）缺口。起因：全词库无任何"刘工/张工"条目（2026-11-26
+// 用户报障），zhanggong 首选张弓、liugong 首选刘恭。同词条目按最大权重
+// 合并，词库已达标的 X总/X哥/X姐 不重复生成。
+func mergeHonorificsDictPatch(dataDir string) error {
+	src := filepath.Join("input_methods", "rime", "patches", "moqi_honorifics.dict.yaml")
+	return installDictPatch(src, dataDir, "moqi_honorifics", "- cn_dicts/moqi_propernouns",
+		"称呼词典补丁：姓×工/总/局/处/哥/姐/叔/婶/姨/嫂（moqi 打包期合入）")
 }
 
 // mergeUserDictPatch 把用户积累词库补丁合入打包数据（同 bigram 管线，幂等）。

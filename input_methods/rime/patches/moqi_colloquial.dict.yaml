@@ -21,7 +21,7 @@
 # 落下风 la=现汉/汉典 + phrase-pinyin-data 主流（frost 只有 luo）。
 ---
 name: moqi_colloquial
-version: "2"
+version: "3"
 sort: by_weight
 ...
 是吗	shi ma	2000
@@ -46,3 +46,12 @@ sort: by_weight
 猪圈	zhu quan	250
 露脸	lu lian	757
 务必	wu bi	12000
+# 没有意见（2026-11-26 用户报障：womeiyouyijian 打不出）。三件套联动缺一不可：
+# 1) gram（zh-moqi）ctx 没有+一件 拿长度1前缀命中 +2.45（"没有一…"族高频），
+#    意见 只有 −2.07 整词据，逐词组合路径被压出候选集前 5（场外，翻页 9 条无它）；
+# 2) 本词条 1200 = 召回件——独立词图节点把"我没有意见"顶回候选集前 5
+#    （排名无关紧要，在场即可；ln(1200) 远低于逐词路径，显示去重取高分路径）；
+# 3) zh-bigram.tsv 补 没有→意见:100（PMI 2.47）+ colloc 长度门 6→5
+#    （LocalRerank.cpp）= 换位件，5 字等长+对数严格占优把它换到 #1。
+# 权重对照：个人意见@911/不同意见@802（frost 同族 4 字条）。
+没有意见	mei you yi jian	1200
